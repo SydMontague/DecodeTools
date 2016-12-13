@@ -1,0 +1,7 @@
+/target/
+/.settings/
+/Output/
+/Input/
+/MinerDefinitions/
+.classpath
+.project
