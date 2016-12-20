@@ -36,6 +36,8 @@ public class KCAPFile extends KCAPPayload {
     
     private List<KCAPPayload> entries = new ArrayList<>();
     
+    private boolean genericAligned;
+    
     public KCAPFile(Access source, int dataStart, KCAPFile parent, int size) {
         this(source, dataStart, parent);
     }
@@ -67,6 +69,12 @@ public class KCAPFile extends KCAPPayload {
         if (extension != null)
             extensionPayload = extension.loadPayload(source, numPayloadEntries);
         
+        genericAligned = true;
+        for(KCAPPointer pp : pointer)
+            if((pp.getOffset() % 0x10) != 0) {
+                genericAligned = false;
+            }
+        
         KCAPFile p = this;
         
         while ((p = p.getParent()) != null)
@@ -77,7 +85,9 @@ public class KCAPFile extends KCAPPayload {
             System.out.print(extension.getType());
         
         System.out.print(" " + Integer.toHexString(unknown2) + " " + Integer.toHexString(numEntries));
-        System.out.println();
+        System.out.println(" " + genericAligned);
+        
+        
         
         for (KCAPPointer entry : pointer) {
             source.setPosition(entry.getOffset() + startAddress);
@@ -105,6 +115,7 @@ public class KCAPFile extends KCAPPayload {
             entries.add(KCAPPayload.craft(source, dataStart, this, entry.getLength()));
         }
         
+        source.setPosition(Utils.getPadded(source.getPosition(), 0x10));
     }
     
     @Override
@@ -112,7 +123,7 @@ public class KCAPFile extends KCAPPayload {
         int value = 0x20; // magic value, KCAP base size
         
         // header extension, always padded to a multiple of 0x10
-        value += Utils.getPadded(extension.getSize(), 16);
+        value += Utils.getPadded(extension.getSize(), 0x10);
         
         // pointer table
         int payload = entries.size() * 8;
@@ -127,8 +138,12 @@ public class KCAPFile extends KCAPPayload {
         //
         for (KCAPPayload entry : entries) {
             value = Utils.getPadded(value, entry.getAlignment());
+            if(genericAligned)
+                value = Utils.getPadded(value, 0x10);
             value += entry.getSize();
         }
+
+        value = Utils.getPadded(value, 0x4);
         
         if (value != size) {
             System.out.println("AAA " + Long.toHexString(startAddress) + " " + Integer.toHexString(value) + " "
@@ -162,7 +177,7 @@ public class KCAPFile extends KCAPPayload {
     
     @Override
     public int getAlignment() {
-        return 0x10;
+        return getParent().getGenericAlignment();//0x10;
     }
     
     @Override
@@ -201,6 +216,9 @@ public class KCAPFile extends KCAPPayload {
         //pointer table
         for(KCAPPayload entry : entries) {
             fileStart = Utils.getPadded(fileStart, entry.getAlignment());
+            if(genericAligned)
+                fileStart = Utils.getPadded(fileStart, 0x10);
+            
             dest.writeInteger(entry.getSize() == 0 ? 0 : fileStart);
             dest.writeInteger(entry.getSize());
             fileStart += entry.getSize();
@@ -212,7 +230,6 @@ public class KCAPFile extends KCAPPayload {
         
         //write sub structures
         entries.forEach(a -> {
-            System.out.println(a);
             dest.setPosition(Utils.getPadded(dest.getPosition(), a.getAlignment()));
             a.writeKCAP(dest, dataStream);
             
@@ -220,5 +237,11 @@ public class KCAPFile extends KCAPPayload {
             
             dataStream.write(new byte[padding], 0, padding);
         });
+        
+        dest.setPosition(Utils.getPadded(dest.getPosition(), 0x4));
+    }
+
+    public int getGenericAlignment() {
+        return genericAligned ? 0x10 : 0x1;
     }
 }

@@ -39,6 +39,7 @@ public class ResFile {
     }
     
     public void repack(File file) {
+        file.delete();
         if(!file.exists())
             try {
                 file.createNewFile();

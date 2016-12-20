@@ -2,46 +2,45 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import java.io.ByteArrayOutputStream;
 
-import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 
-public class BTXFile extends KCAPPayload {
-    private short[] data;
+public class PADHPayload extends KCAPPayload {
+    private int[] data;
     
-    public BTXFile(Access source, int dataStart, KCAPFile parent, int size) {
+    public PADHPayload(Access source, int dataStart, KCAPFile parent, int size) {
         super(parent);
         
         KCAPPayload p = this;
         while((p = p.getParent()) != null)
             System.out.print("  ");
         
-        System.out.println(Long.toHexString(source.getPosition()) + " BTX ");
+        System.out.println(Long.toHexString(source.getPosition()) + " PADH ");
         
-        data = new short[size / 2];
+        data = new int[size / 4];
         
         for (int i = 0; i < data.length; i++)
-            data[i] = source.readShort();
+            data[i] = source.readInteger();
     }
     
     @Override
     public int getSize() {
-        return data.length * 2;
+        return data.length * 4;
     }
     
     @Override
     public int getAlignment() {
-        return 0x4;
+        return 0x10;
     }
 
     @Override
-    public KCAPPayload.Payload getType() {
-        return Payload.BTX;
+    public Payload getType() {
+        return Payload.PADH;
     }
 
     @Override
     public void writeKCAP(Access dest, ByteArrayOutputStream dataStream) {
-        for(short i : data)
-            dest.writeShort(i);
+        for(int i : data)
+            dest.writeInteger(i);
     }
 }

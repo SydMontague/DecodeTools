@@ -39,8 +39,6 @@ class FileNameExtensionPayload implements HeaderExtensionPayload {
     
     @Override
     public void writeKCAP(Access dest, int start) {
-        System.out.println("called" + nameMap.size());
-        
         int stringStart = start + nameMap.size() * 8;
         
         for(Entry<Integer, String> entry : nameMap.entrySet()) {
@@ -50,7 +48,6 @@ class FileNameExtensionPayload implements HeaderExtensionPayload {
         }
 
         for(String entry : nameMap.values()) {
-            System.out.println(entry);
             dest.writeString(entry, "ASCII");
             dest.writeByte((byte) 0);
         }

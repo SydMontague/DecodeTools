@@ -15,6 +15,6 @@ public class Main {
     }
     
     public static void main(String[] args) throws IOException {
-        new ResFile(new FileAccess(new File("digi1.res")));
+        new ResFile(new FileAccess(new File("Input/digi103.res")));
     }
 }

@@ -109,8 +109,15 @@ public class GMIOFile extends KCAPPayload {
         dest.writeInteger(unknown8);
         dest.writeInteger(unknown9);
         dest.writeInteger(unknown10);
+
+        dest.writeByteArray(extraData);
         
         dataStream.write(pixelData, 0, pixelData.length);
+    }
+    
+    @Override
+    public int getAlignment() {
+        return getParent().getGenericAlignment();
     }
     
     enum PixelFormat {
@@ -127,6 +134,7 @@ public class GMIOFile extends KCAPPayload {
         L4(10, 4),
         A4(11, 4),
         ETC1(12, 4),
+        ETC1A4(13, 8), //really ETC1A4?
         
         UNKNOWN(-1, 32);
         

@@ -170,8 +170,6 @@ public class FileAccess implements Access {
 
     @Override
     public byte[] readByteArray(int length, long start) {
-        System.out.println("AAA " + Long.toHexString(start));
-        
         byte[] data = new byte[length];
         
         ByteBuffer buff = ByteBuffer.wrap(data);

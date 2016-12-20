@@ -37,6 +37,8 @@ public class XFEPExtension implements HeaderExtension {
         int size = 0x0C + data1.length * 4 + data2.length * 4 + name.length() + 1;
         size = Utils.getPadded(size, 16) - size;
         
+        System.out.println(Long.toHexString(source.getPosition()) + " " + size);
+        
         if(size == 0)
             size = 16;
         
@@ -78,7 +80,9 @@ public class XFEPExtension implements HeaderExtension {
         
         dest.writeString(name, "ASCII");
         
-        int extra = (0x0C + data1.length * 4 + data2.length * 4 + name.length() + 1) % 0x10 == 0 ? 16 : 0;
+        int extra = (0x0C + data1.length * 4 + data2.length * 4 + name.length() + 1) % 0x10;
+        extra = extra == 0 ? 16 : 16 - extra + 1;
+        System.out.println(Long.toHexString(dest.getPosition()) + " " + extra);
         for(int i = 0; i < extra; i++)
             dest.writeByte((byte) 0);
     }

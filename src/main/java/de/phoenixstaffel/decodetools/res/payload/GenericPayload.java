@@ -8,6 +8,8 @@ import de.phoenixstaffel.decodetools.res.KCAPPayload;
 public class GenericPayload extends KCAPPayload {
     private int[] data;
     
+    //TODO read alignment of generic payload when reading the file
+    
     public GenericPayload(Access source, int dataStart, KCAPFile parent, int size) {
         super(parent);
         //System.out.println(source.readString(source.getPosition(), 4, "ASCII") + " " + size);
@@ -35,6 +37,11 @@ public class GenericPayload extends KCAPPayload {
     @Override
     public Payload getType() {
         return Payload.GENERIC;
+    }
+    
+    @Override
+    public int getAlignment() {
+        return getParent().getGenericAlignment();
     }
 
     @Override
