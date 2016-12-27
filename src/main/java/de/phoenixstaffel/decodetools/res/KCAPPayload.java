@@ -2,12 +2,14 @@ package de.phoenixstaffel.decodetools.res;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
+import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.payload.BTXFile;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
@@ -43,14 +45,14 @@ public abstract class KCAPPayload {
     public abstract int getSize();
     
     public MutableTreeNode getTreeNode() {
-        return new DefaultMutableTreeNode(this.getType());
+        return new DefaultMutableTreeNode(this);
     }
     
     public abstract Payload getType();
     
     /**
-     * Get the size of the uppermost parent element, which includes all the child elements.
-     * This function should only be called after the root element has been fully initialised.
+     * Get the size of the uppermost parent element, which includes all the child elements. This function should only be
+     * called after the root element has been fully initialised.
      * 
      * @return the size of the root node
      */
@@ -59,8 +61,8 @@ public abstract class KCAPPayload {
     }
     
     /**
-     * Gets the alignment of that data structure, so that padding gets added if necessary.
-     * For example, if the value is 0x10 then each address is dividable by 0x10.
+     * Gets the alignment of that data structure, so that padding gets added if necessary. For example, if the value is
+     * 0x10 then each address is dividable by 0x10.
      * 
      * @return the alignment
      */
@@ -79,8 +81,8 @@ public abstract class KCAPPayload {
     
     public enum Payload {
         GENERIC(0, GenericPayload.class),
-        GMIO(0x4F494D47, GMIOFile.class),
-        KCAP(0x5041434B, KCAPFile.class),
+        GMIO(0x4F494D47, GMIOFile.class, a -> 0x40 + a.readInteger(0x3C)),
+        KCAP(0x5041434B, KCAPFile.class, a -> a.readInteger(0x08)),
         XTVO(0x4F565458, XTVOFile.class),
         XDIO(0x4F494458, XDIOFile.class),
         VCTM(0x4D544356, VCTMFile.class),
@@ -96,10 +98,16 @@ public abstract class KCAPPayload {
         
         private final int magicValue;
         private final Class<? extends KCAPPayload> clazz;
+        private Function<Access, Integer> method;
         
         private Payload(int magicValue, Class<? extends KCAPPayload> clazz) {
+            this(magicValue, clazz, a -> 0);
+        }
+        
+        private Payload(int magicValue, Class<? extends KCAPPayload> clazz, Function<Access, Integer> method) {
             this.magicValue = magicValue;
             this.clazz = clazz;
+            this.method = method;
         }
         
         public int getMagicValue() {
@@ -135,7 +143,7 @@ public abstract class KCAPPayload {
         public KCAPPayload newInstance(Access source, int dataStart, KCAPFile parent, int size) {
             try {
                 return clazz.getConstructor(Access.class, int.class, KCAPFile.class, int.class)
-                            .newInstance(source, dataStart, parent, size);
+                        .newInstance(source, dataStart, parent, size);
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException
                     | SecurityException e) {
@@ -146,6 +154,10 @@ public abstract class KCAPPayload {
                 log.log(Level.WARNING, this.name());
                 throw e;
             }
+        }
+        
+        public int getDataStart(Access source) {
+            return Utils.getPadded(method.apply(source), 0x80);
         }
     }
 }

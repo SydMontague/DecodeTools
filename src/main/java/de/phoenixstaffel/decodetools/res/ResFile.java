@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public class ResFile {
     private static final Logger log = Logger.getLogger("DataMiner");
@@ -16,16 +15,9 @@ public class ResFile {
     private KCAPPayload root;
     
     public ResFile(Access source) {
-        int dataStart = Utils.getPadded(source.readInteger(0x8), 0x80);
-        System.out.println(dataStart);
-        root = new KCAPFile(source, dataStart, null);
+        int dataStart = KCAPPayload.Payload.valueOf(null, source.readInteger(0)).getDataStart(source);
         
-        System.out.println(root.getSize());
-        
-        //TreeModel model = new DefaultTreeModel(root.getTreeNode());
-        //new ExampleFrame(model).setVisible(true);
-        
-        repack(new File("newRes.res"));
+        root = KCAPPayload.craft(source, dataStart, null, -1);
     }
     
     public KCAPPayload getRoot() {
@@ -34,7 +26,7 @@ public class ResFile {
     
     public void repack(File file) {
         file.delete();
-        if(!file.exists())
+        if (!file.exists())
             try {
                 file.createNewFile();
             }
