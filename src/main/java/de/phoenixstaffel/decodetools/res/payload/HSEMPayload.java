@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
 
 public class HSEMPayload extends KCAPPayload {
     private int[] data;

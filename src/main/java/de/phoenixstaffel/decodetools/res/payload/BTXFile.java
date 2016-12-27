@@ -2,7 +2,6 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import java.io.ByteArrayOutputStream;
 
-import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 

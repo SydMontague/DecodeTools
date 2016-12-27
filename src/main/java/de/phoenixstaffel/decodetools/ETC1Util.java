@@ -2,7 +2,6 @@ package de.phoenixstaffel.decodetools;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 
 public class ETC1Util {
     /**
