@@ -13,6 +13,7 @@ public class JImage extends JComponent {
     }
 
     public JImage() {
+        //nothing to initialise
     }
 
     public void setImage(Image image) {

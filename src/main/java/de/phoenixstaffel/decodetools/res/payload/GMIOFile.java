@@ -1,10 +1,11 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.util.function.Function;
 
-import de.phoenixstaffel.decodetools.ETC1Util;
+import de.phoenixstaffel.decodetools.PixelFormatDecoder;
+import de.phoenixstaffel.decodetools.PixelFormatEncoder;
 import de.phoenixstaffel.decodetools.TriFunction;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
@@ -36,10 +37,8 @@ public class GMIOFile extends KCAPPayload {
     
     private byte[] extraData;
     
-    private byte[] pixelData;
-    
     // TODO remove all variables that can be deducted from the image
-    private Image image;
+    private BufferedImage image;
     
     public GMIOFile(Access source, int dataStart, KCAPFile parent, int size) {
         this(source, dataStart, parent);
@@ -81,15 +80,15 @@ public class GMIOFile extends KCAPPayload {
         for (int i = 0; i < unknown10; i++)
             extraData[i] = source.readByte();
         
-        pixelData = source.readByteArray((width * height * format.getBPP()) / 8, dataPointer + dataStart);
+        byte[] pixelData = source.readByteArray((width * height * format.getBPP()) / 8, dataPointer + dataStart);
         
         int[] convertedPixels = format.convertToRGBA(pixelData, width, height);
         convertedPixels = format.isTiled() ? Utils.untile(width, height, convertedPixels) : convertedPixels;
         
         BufferedImage i = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         i.setRGB(0, 0, width, height, convertedPixels, 0, width);
-        
-        image = i;
+
+        image = format == PixelFormat.ETC1 || format == PixelFormat.ETC1A4 ? Utils.flipImage(i) : i;
     }
     
     @Override
@@ -110,25 +109,25 @@ public class GMIOFile extends KCAPPayload {
         dest.writeInteger(dataStream.size());
         
         dest.writeInteger(unknown2);
-        dest.writeShort(uvSizeX);
-        dest.writeShort(uvSizeY);
+        dest.writeShort((short) image.getWidth()); //uv width?
+        dest.writeShort((short) image.getHeight()); //uv height?
         dest.writeInteger(unknown3);
         dest.writeInteger(unknown4);
         
         dest.writeInteger(unknown5);
-        dest.writeShort(width);
-        dest.writeShort(height);
+        dest.writeShort((short) image.getWidth()); //width
+        dest.writeShort((short) image.getHeight()); //height
         dest.writeInteger(unknown6);
         dest.writeInteger(unknown7);
         
-        dest.writeInteger(format.id);
+        dest.writeInteger(format.getId());
         dest.writeInteger(unknown8);
         dest.writeInteger(unknown9);
         dest.writeInteger(unknown10);
         
         dest.writeByteArray(extraData);
         
-        // TODO IMPORTANT: Convert image data into specified PixelFormat
+        byte[] pixelData = format.convertToFormat(image);
         dataStream.write(pixelData, 0, pixelData.length);
     }
     
@@ -138,39 +137,48 @@ public class GMIOFile extends KCAPPayload {
     }
     
     enum PixelFormat {
-        // TODO de- and encoder have to be nicer
-        RGBA8(0, 32, true, Utils::convertFromRGBA8),
-        RGB8(1, 24, true, Utils::convertFromRGB8),
-        RGB5551(2, 16, true, Utils::convertFromRGBA5551),
-        RGB565(3, 16, true, Utils::convertFromRGB565),
-        RGAB4(4, 16, true, Utils::convertFromRGBA4),
-        LA8(5, 16, true, Utils::convertFromLA8),
-        HILO8(6, 16, true, null),
-        L8(7, 8, true, Utils::convertFromL8),
-        A8(8, 8, true, Utils::convertFromA8),
-        LA4(9, 8, true, Utils::convertFromLA4),
-        L4(10, 4, true, Utils::convertFromL4),
-        A4(11, 4, true, Utils::convertFromA4),
-        ETC1(12, 4, false, ETC1Util::calculateWithoutAlpha),
-        ETC1A4(13, 8, false, ETC1Util::calculateWithAlpha),
+        RGBA8(0, 32, true, PixelFormatDecoder::convertFromRGBA8, PixelFormatEncoder::convertToRGBA8),
+        RGB8(1, 24, true, PixelFormatDecoder::convertFromRGB8, PixelFormatEncoder::convertToRGB8),
+        RGB5551(2, 16, true, PixelFormatDecoder::convertFromRGBA5551, PixelFormatEncoder::convertToRGBA5551),
+        RGB565(3, 16, true, PixelFormatDecoder::convertFromRGB565, PixelFormatEncoder::convertToRGB565),
+        RGBA4(4, 16, true, PixelFormatDecoder::convertFromRGBA4, PixelFormatEncoder::convertToRGBA4),
+        LA8(5, 16, true, PixelFormatDecoder::convertFromLA8, PixelFormatEncoder::convertToLA8),
+        HILO8(6, 16, true, null, null),
+        L8(7, 8, true, PixelFormatDecoder::convertFromL8, PixelFormatEncoder::convertToL8),
+        A8(8, 8, true, PixelFormatDecoder::convertFromA8, PixelFormatEncoder::convertToA8),
+        LA4(9, 8, true, PixelFormatDecoder::convertFromLA4, PixelFormatEncoder::convertToLA4),
+        L4(10, 4, true, PixelFormatDecoder::convertFromL4, PixelFormatEncoder::convertToL4),
+        A4(11, 4, true, PixelFormatDecoder::convertFromA4, PixelFormatEncoder::convertToA4),
+        ETC1(12, 4, false, PixelFormatDecoder::convertFromETC1, PixelFormatEncoder::convertToETC1),
+        ETC1A4(13, 8, false, PixelFormatDecoder::convertFromETC1A4, PixelFormatEncoder::convertToETC1A4),
         
-        UNKNOWN(-1, 32, false, Utils::convertFromRGBA8);
+        UNKNOWN(-1, 32, false, PixelFormatDecoder::convertFromRGBA8, PixelFormatEncoder::convertToUnknown);
         
         private int id;
         private int bpp;
         private boolean tiled;
         
         private TriFunction<byte[], Integer, Integer, int[]> decoder;
+        private Function<BufferedImage, byte[]> encoder;
         
-        private PixelFormat(int id, int bytes, boolean tiled, TriFunction<byte[], Integer, Integer, int[]> convert) {
+        private PixelFormat(int id, int bytes, boolean tiled, TriFunction<byte[], Integer, Integer, int[]> decoder, Function<BufferedImage, byte[]> encoder) {
             this.id = id;
             this.bpp = bytes;
             this.tiled = tiled;
-            this.decoder = convert;
+            this.decoder = decoder;
+            this.encoder = encoder;
         }
         
+        public int getId() {
+            return id;
+        }
+
         public int[] convertToRGBA(byte[] pixelData, int width, int height) {
             return decoder.apply(pixelData, width, height);
+        }
+        
+        public byte[] convertToFormat(BufferedImage image) {
+            return encoder.apply(this == PixelFormat.ETC1 || this == PixelFormat.ETC1A4 ? Utils.flipImage(image) : image);
         }
         
         public static PixelFormat valueOf(int id) {
@@ -209,12 +217,16 @@ public class GMIOFile extends KCAPPayload {
         
     }
     
-    public Image getImage() {
+    public BufferedImage getImage() {
         return image;
     }
     
     @Override
     public String toString() {
         return "GMIO " + " " + format + " " + width + " " + height;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
     }
 }

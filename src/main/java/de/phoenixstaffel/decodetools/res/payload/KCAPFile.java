@@ -68,11 +68,7 @@ public class KCAPFile extends KCAPPayload {
         if (extension != null)
             extensionPayload = extension.loadPayload(source, numPayloadEntries);
         
-        genericAligned = true;
-        for(KCAPPointer pp : pointer)
-            if((pp.getOffset() % 0x10) != 0) {
-                genericAligned = false;
-            }
+        genericAligned = !pointer.stream().anyMatch(a -> (a.getOffset() % 0x10) != 0);
         
         KCAPFile p = this;
         
@@ -86,32 +82,13 @@ public class KCAPFile extends KCAPPayload {
         System.out.print(" " + Integer.toHexString(unknown2) + " " + Integer.toHexString(numEntries));
         System.out.println(" " + genericAligned);
         
-        
-        
         for (KCAPPointer entry : pointer) {
             source.setPosition(entry.getOffset() + startAddress);
             
-            if (entry.getOffset() == 0 && entry.getLength() == 0) {
-                entries.add(new KCAPPayload(parent) {
-                    @Override
-                    public int getSize() {
-                        return 0;
-                    }
-                    
-                    @Override
-                    public Payload getType() {
-                        return null;
-                    }
-                    
-                    @Override
-                    public void writeKCAP(Access dest, ByteArrayOutputStream dataStream) {
-                        // nothing to write
-                    }
-                });
-                continue;
-            }
-            
-            entries.add(KCAPPayload.craft(source, dataStart, this, entry.getLength()));
+            if (entry.getOffset() == 0 && entry.getLength() == 0)
+                entries.add(new VoidPayload(parent));
+            else
+                entries.add(KCAPPayload.craft(source, dataStart, this, entry.getLength()));
         }
         
         source.setPosition(Utils.getPadded(source.getPosition(), 0x10));
@@ -137,11 +114,11 @@ public class KCAPFile extends KCAPPayload {
         //
         for (KCAPPayload entry : entries) {
             value = Utils.getPadded(value, entry.getAlignment());
-            if(genericAligned)
+            if (genericAligned)
                 value = Utils.getPadded(value, 0x10);
             value += entry.getSize();
         }
-
+        
         value = Utils.getPadded(value, 0x4);
         
         if (value != size) {
@@ -176,7 +153,7 @@ public class KCAPFile extends KCAPPayload {
     
     @Override
     public int getAlignment() {
-        return getParent().getGenericAlignment();//0x10;
+        return getParent().getGenericAlignment();
     }
     
     @Override
@@ -207,15 +184,16 @@ public class KCAPFile extends KCAPPayload {
         int extPayloadStart = Utils.getPadded(0x20 + extension.getSize(), 0x10) + entries.size() * 8;
         dest.writeInteger(extensionPayload.getEntryNumber() == 0 ? 0 : extPayloadStart);
         
-        extension.writeKCAP(dest); //extension header
+        extension.writeKCAP(dest); // extension header
         
-        int fileStart = Utils.getPadded(0x20 + extension.getSize(), 0x10) + entries.size() * 8 + extensionPayload.getSize();
+        int fileStart = Utils.getPadded(0x20 + extension.getSize(), 0x10) + entries.size() * 8
+                + extensionPayload.getSize();
         fileStart = Utils.getPadded(fileStart, extension.getType().getPadding());
         
-        //pointer table
-        for(KCAPPayload entry : entries) {
+        // pointer table
+        for (KCAPPayload entry : entries) {
             fileStart = Utils.getPadded(fileStart, entry.getAlignment());
-            if(genericAligned)
+            if (genericAligned)
                 fileStart = Utils.getPadded(fileStart, 0x10);
             
             dest.writeInteger(entry.getSize() == 0 ? 0 : fileStart);
@@ -223,11 +201,11 @@ public class KCAPFile extends KCAPPayload {
             fileStart += entry.getSize();
         }
         
-        extensionPayload.writeKCAP(dest, extPayloadStart); //extension payload
+        extensionPayload.writeKCAP(dest, extPayloadStart); // extension payload
         
-        dest.setPosition(Utils.getPadded(dest.getPosition(), extension.getType().getPadding())); //padding
+        dest.setPosition(Utils.getPadded(dest.getPosition(), extension.getType().getPadding())); // padding
         
-        //write sub structures
+        // write sub structures
         entries.forEach(a -> {
             dest.setPosition(Utils.getPadded(dest.getPosition(), a.getAlignment()));
             a.writeKCAP(dest, dataStream);
@@ -239,7 +217,7 @@ public class KCAPFile extends KCAPPayload {
         
         dest.setPosition(Utils.getPadded(dest.getPosition(), 0x4));
     }
-
+    
     public int getGenericAlignment() {
         return genericAligned ? 0x10 : 0x1;
     }

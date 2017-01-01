@@ -81,8 +81,8 @@ public class XFEPExtension implements HeaderExtension {
         dest.writeString(name, "ASCII");
         
         int extra = (0x0C + data1.length * 4 + data2.length * 4 + name.length() + 1) % 0x10;
-        extra = extra == 0 ? 16 : 16 - extra + 1;
-        System.out.println(Long.toHexString(dest.getPosition()) + " " + extra);
+        extra = extra == 0 ? 17 : 16 - extra + 1;
+
         for(int i = 0; i < extra; i++)
             dest.writeByte((byte) 0);
     }

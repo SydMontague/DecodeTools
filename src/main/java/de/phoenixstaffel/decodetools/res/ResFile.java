@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.res;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.phoenixstaffel.decodetools.Utils;
@@ -31,7 +32,7 @@ public class ResFile {
                 file.createNewFile();
             }
             catch (IOException e1) {
-                e1.printStackTrace();
+                log.log(Level.WARNING, "Exception while writing new .res file.", e1);
             }
         
         try (Access dest = new FileAccess(file); ByteArrayOutputStream data = new ByteArrayOutputStream()) {
@@ -40,8 +41,7 @@ public class ResFile {
             dest.writeByteArray(data.toByteArray());
         }
         catch (IOException e) {
-            log.warning("Exception while writing new .res file.");
-            e.printStackTrace();
+            log.log(Level.WARNING, "Exception while writing new .res file.", e);
         }
     }
 }
