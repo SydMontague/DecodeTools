@@ -1,6 +1,5 @@
 package de.phoenixstaffel.decodetools.res;
 
-import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -17,10 +16,18 @@ import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
 import de.phoenixstaffel.decodetools.res.payload.GenericPayload;
 import de.phoenixstaffel.decodetools.res.payload.HSEMPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.LDMPPayload;
 import de.phoenixstaffel.decodetools.res.payload.LRTMPayload;
 import de.phoenixstaffel.decodetools.res.payload.LTMPPayload;
+import de.phoenixstaffel.decodetools.res.payload.MFTPPayload;
 import de.phoenixstaffel.decodetools.res.payload.PADHPayload;
+import de.phoenixstaffel.decodetools.res.payload.PRGMPayload;
 import de.phoenixstaffel.decodetools.res.payload.QSTMFile;
+import de.phoenixstaffel.decodetools.res.payload.RTCLPayload;
+import de.phoenixstaffel.decodetools.res.payload.TMEPPayload;
+import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
+import de.phoenixstaffel.decodetools.res.payload.TNOJPayload;
+import de.phoenixstaffel.decodetools.res.payload.TREPPayload;
 import de.phoenixstaffel.decodetools.res.payload.VCTMFile;
 import de.phoenixstaffel.decodetools.res.payload.XDIOFile;
 import de.phoenixstaffel.decodetools.res.payload.XTVOFile;
@@ -70,13 +77,18 @@ public abstract class KCAPPayload {
         return DEFAULT_ALIGNMENT;
     }
     
-    public abstract void writeKCAP(Access dest, ByteArrayOutputStream dataStream);
+    public abstract void writeKCAP(Access dest, ResData dataStream);
     
     public static KCAPPayload craft(Access source, int dataStart, KCAPFile parent, int size) {
         return Payload.valueOf(parent, source.readInteger(source.getPosition())).newInstance(source,
                                                                                              dataStart,
                                                                                              parent,
                                                                                              size);
+    }
+    
+    @Override
+    public String toString() {
+        return getType().name();
     }
     
     public enum Payload {
@@ -92,7 +104,15 @@ public abstract class KCAPPayload {
         HSEM(0, HSEMPayload.class),
         LRTM(0, LRTMPayload.class),
         CTPP(0, CTPPPayload.class),
-        LTMP(0, LTMPPayload.class),;
+        LTMP(0, LTMPPayload.class),
+        TNFO(0, TNFOPayload.class),
+        LDMP(0, LDMPPayload.class),
+        MFTP(0, MFTPPayload.class),
+        PRGM(0, PRGMPayload.class),
+        RTCL(0, RTCLPayload.class),
+        TMEP(0, TMEPPayload.class),
+        TREP(0, TREPPayload.class),
+        TNOJ(0, TNOJPayload.class),;
         
         private static final Logger log = Logger.getLogger("DataMiner");
         
@@ -123,7 +143,7 @@ public abstract class KCAPPayload {
                     return extension;
             }
             
-            if (parent.getExtension() == null)
+            if (parent == null || parent.getExtension() == null)
                 return GENERIC;
             
             switch (parent.getExtension().getType()) {
@@ -135,6 +155,22 @@ public abstract class KCAPPayload {
                     return CTPP;
                 case LTMP:
                     return LTMP;
+                case KPTF:
+                    return TNFO;
+                case LDMP:
+                    return LDMP;
+                case MFTP:
+                    return MFTP;
+                case PRGM:
+                    return PRGM;
+                case RTCL:
+                    return RTCL;
+                case TMEP:
+                    return TMEP;
+                case TREP:
+                    return TREP;
+                case TNOJ:
+                    return TNOJ;
                 default:
                     return GENERIC;
             }
@@ -143,7 +179,7 @@ public abstract class KCAPPayload {
         public KCAPPayload newInstance(Access source, int dataStart, KCAPFile parent, int size) {
             try {
                 return clazz.getConstructor(Access.class, int.class, KCAPFile.class, int.class)
-                        .newInstance(source, dataStart, parent, size);
+                            .newInstance(source, dataStart, parent, size);
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException
                     | SecurityException e) {
@@ -159,5 +195,8 @@ public abstract class KCAPPayload {
         public int getDataStart(Access source) {
             return Utils.getPadded(method.apply(source), 0x80);
         }
+    }
+    
+    public void fillResData(ResData data) {
     }
 }

@@ -9,6 +9,7 @@ import de.phoenixstaffel.decodetools.res.extensions.CTPPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.GMIPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.HSEMExtension;
 import de.phoenixstaffel.decodetools.res.extensions.HSMPExtension;
+import de.phoenixstaffel.decodetools.res.extensions.KPTFExtension;
 import de.phoenixstaffel.decodetools.res.extensions.LDMPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.LRTMExtension;
 import de.phoenixstaffel.decodetools.res.extensions.LTMPExtension;
@@ -23,6 +24,7 @@ import de.phoenixstaffel.decodetools.res.extensions.VoidExtension;
 import de.phoenixstaffel.decodetools.res.extensions.XDIPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.XFEPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.XTVPExtension;
+import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public interface HeaderExtension {
     
@@ -48,8 +50,9 @@ public interface HeaderExtension {
         CTPP(0x50505443, CTPPExtension.class),
         LTMP(0x504D544C, LTMPExtension.class),
         LDMP(0x504D444C, LDMPExtension.class),
-        VOID(0x00000000, VoidExtension.class); //no extension
-
+        KPTF(0x4654504B, KPTFExtension.class),
+        VOID(0x00000000, VoidExtension.class); // no extension
+        
         private static final Logger log = Logger.getLogger("DataMiner");
         
         private final int magicValue;
@@ -82,18 +85,18 @@ public interface HeaderExtension {
                 throw e;
             }
         }
-
+        
         public int getMagicValue() {
             return magicValue;
         }
-
+        
         public int getPadding() {
             switch (this) {
                 case VOID:
                 case GMIP:
-                    return 4;
+                    return 0x4;
                 default:
-                    return 16;
+                    return 0x10;
             }
         }
     }
@@ -115,12 +118,14 @@ public interface HeaderExtension {
             return id;
         }
     }
-
+    
     public HeaderExtensionPayload loadPayload(Access source, int kcapEntries);
-
+    
     public Extensions getType();
-
+    
+    public int getContentAlignment(KCAPFile parent);
+    
     public int getSize();
-
+    
     public void writeKCAP(Access dest);
 }

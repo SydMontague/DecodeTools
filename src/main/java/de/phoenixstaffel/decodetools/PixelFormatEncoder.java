@@ -85,7 +85,7 @@ public class PixelFormatEncoder {
     }
     
     public static byte[] convertToRGBA5551(BufferedImage image) {
-        byte[] data = new byte[image.getWidth() * image.getHeight() * 4];
+        byte[] data = new byte[image.getWidth() * image.getHeight() * 2];
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -104,7 +104,7 @@ public class PixelFormatEncoder {
     }
     
     public static byte[] convertToRGB565(BufferedImage image) {
-        byte[] data = new byte[image.getWidth() * image.getHeight() * 4];
+        byte[] data = new byte[image.getWidth() * image.getHeight() * 2];
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -204,8 +204,8 @@ public class PixelFormatEncoder {
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         for(int i = 0; i < pixels.length / 2; i++) {
             byte value = 0;
-            value |= (pixels[i * 2] >>> 4) & 0xF;
-            value |= pixels[i * 2 + 1] & 0xF0;
+            value |= (pixels[i * 2]) & 0xF0;
+            value |= (pixels[i * 2 + 1] >>> 4) & 0xF;
             buffer.put(value);
         }
         
@@ -219,8 +219,8 @@ public class PixelFormatEncoder {
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         for(int i = 0; i < pixels.length / 2; i++) {
             byte value = 0;
-            value |= pixels[i * 2] >>> 28;
-            value |= (pixels[i * 2 + 1] >>> 24) & 0xF0;
+            value |= pixels[i * 2] >>> 24 & 0xF0;
+            value |= (pixels[i * 2 + 1] >>> 28) & 0xF;
             buffer.put(value);
         }
         

@@ -4,10 +4,10 @@ import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 import de.phoenixstaffel.decodetools.res.ResData;
 
-public class LRTMPayload extends KCAPPayload {
+public class RTCLPayload extends KCAPPayload {
     private int[] data;
     
-    public LRTMPayload(Access source, int dataStart, KCAPFile parent, int size) {
+    public RTCLPayload(Access source, int dataStart, KCAPFile parent, int size) {
         super(parent);
         
         data = new int[size / 4];
@@ -28,7 +28,7 @@ public class LRTMPayload extends KCAPPayload {
     
     @Override
     public Payload getType() {
-        return Payload.LRTM;
+        return Payload.RTCL;
     }
     
     @Override

@@ -1,13 +1,11 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
-import java.io.ByteArrayOutputStream;
-
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 
 public class VCTMFile extends KCAPPayload {
-    private int magicValue;
     private int numEntries;
     private int coordStart;
     private int entriesStart;
@@ -30,15 +28,8 @@ public class VCTMFile extends KCAPPayload {
     public VCTMFile(Access source, int dataStart, KCAPFile parent) {
         super(parent);
         long start = source.getPosition();
-
         
-        KCAPPayload p = this;
-        while((p = p.getParent()) != null)
-            System.out.print("  ");
-        
-        System.out.println(Long.toHexString(source.getPosition()) + " VCTM ");
-        
-        magicValue = source.readInteger();
+        source.readInteger(); // magic value
         numEntries = source.readInteger();
         coordStart = source.readInteger();
         entriesStart = source.readInteger();
@@ -67,50 +58,48 @@ public class VCTMFile extends KCAPPayload {
         public VCTMEntry(byte[] data) {
             this.data = data;
         }
-
+        
         public byte[] getData() {
             return data;
         }
     }
-
+    
     @Override
     public int getSize() {
         return 0x20 + Utils.getPadded(data1.length * sizeValue2, 4) + Utils.getPadded(data2.length * sizeValue1, 4);
     }
-
+    
     @Override
     public int getAlignment() {
         return 0x10;
     }
-
+    
     @Override
     public Payload getType() {
         return Payload.VCTM;
     }
     
     @Override
-    public void writeKCAP(Access dest, ByteArrayOutputStream dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(numEntries);
         dest.writeInteger(coordStart);
         dest.writeInteger(entriesStart);
-
+        
         dest.writeInteger(unknown1);
         dest.writeShort(sizeValue1);
         dest.writeShort(sizeValue2);
         dest.writeInteger(unknown4);
         dest.writeInteger(unknown5);
         
-        for(VCTMEntry entry : data1)
-            for(byte b : entry.getData())
+        for (VCTMEntry entry : data1)
+            for (byte b : entry.getData())
                 dest.writeByte(b);
+            
+        dest.setPosition(Utils.getPadded(dest.getPosition(), 0x4));
         
-        dest.setPosition(Utils.getPadded(dest.getPosition(), 0x4));
-
-        for(VCTMEntry entry : data2)
-            for(byte b : entry.getData())
+        for (VCTMEntry entry : data2)
+            for (byte b : entry.getData())
                 dest.writeByte(b);
-
-        dest.setPosition(Utils.getPadded(dest.getPosition(), 0x4));
     }
 }

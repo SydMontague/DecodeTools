@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension.NamePointer;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
@@ -34,25 +35,27 @@ class FileNameExtensionPayload implements HeaderExtensionPayload {
             size += name.length() + 1;
         }
         
-        return size;
+        return Utils.getPadded(size, 0x4);
     }
     
     @Override
     public void writeKCAP(Access dest, int start) {
         int stringStart = start + nameMap.size() * 8;
         
-        for(Entry<Integer, String> entry : nameMap.entrySet()) {
+        for (Entry<Integer, String> entry : nameMap.entrySet()) {
             dest.writeInteger(stringStart);
             dest.writeInteger(entry.getKey());
             stringStart += entry.getValue().length() + 1;
         }
-
-        for(String entry : nameMap.values()) {
+        
+        for (String entry : nameMap.values()) {
             dest.writeString(entry, "ASCII");
             dest.writeByte((byte) 0);
         }
+        
+        dest.setPosition(start + getSize());
     }
-
+    
     @Override
     public int getEntryNumber() {
         return nameMap.size();

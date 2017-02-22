@@ -70,6 +70,12 @@ public interface Access extends Closeable {
     public long getPosition();
     
     public void setPosition(long address);
-
+    
     public String readASCIIString();
+
+    public String readASCIIString(long address);
+
+    public long getSize();
+    
+    public void setSize(long size);
 }

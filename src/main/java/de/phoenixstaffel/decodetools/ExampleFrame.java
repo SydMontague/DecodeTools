@@ -35,6 +35,7 @@ import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
 import javax.swing.JButton;
 import java.awt.Color;
+import javax.swing.border.LineBorder;
 
 public class ExampleFrame extends JFrame {
     static final Logger log = Logger.getLogger("DataMiner");
@@ -86,7 +87,7 @@ public class ExampleFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileDialogue = new JFileChooser("./Output");
                 fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fileDialogue.showOpenDialog(null);
+                fileDialogue.showSaveDialog(null);
                 
                 if(fileDialogue.getSelectedFile() == null)
                     return;
@@ -149,7 +150,7 @@ public class ExampleFrame extends JFrame {
 
                 JFileChooser fileDialogue = new JFileChooser("./Output");
                 fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fileDialogue.showOpenDialog(null);
+                fileDialogue.showSaveDialog(null);
                 
                 if(fileDialogue.getSelectedFile() == null)
                     return;
@@ -199,8 +200,8 @@ public class ExampleFrame extends JFrame {
                     .addComponent(btnExport)
                     .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addComponent(btnImport)
-                    .addContainerGap(236, Short.MAX_VALUE))
-                .addComponent(image, GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .addContainerGap(535, Short.MAX_VALUE))
+                .addComponent(image, GroupLayout.DEFAULT_SIZE, 681, Short.MAX_VALUE)
         );
         gl_panel.setVerticalGroup(
             gl_panel.createParallelGroup(Alignment.TRAILING)
@@ -210,7 +211,7 @@ public class ExampleFrame extends JFrame {
                         .addComponent(btnImport)
                         .addComponent(btnExport))
                     .addGap(18)
-                    .addComponent(image, GroupLayout.PREFERRED_SIZE, 467, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(image, GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))
         );
         panel.setLayout(gl_panel);
         

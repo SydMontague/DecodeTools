@@ -3,11 +3,9 @@ package de.phoenixstaffel.decodetools.res.extensions;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
+import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public class TNOJExtension implements HeaderExtension {
-    
-    private int magicValue = Extensions.TNOJ.getMagicValue();
-    
     private int padding1;
     private int padding2;
     private int padding3;
@@ -32,12 +30,17 @@ public class TNOJExtension implements HeaderExtension {
     public int getSize() {
         return 0x10;
     }
-
+    
     @Override
     public void writeKCAP(Access dest) {
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(padding1);
         dest.writeInteger(padding2);
         dest.writeInteger(padding3);
+    }
+    
+    @Override
+    public int getContentAlignment(KCAPFile parent) {
+        return 0x10;
     }
 }

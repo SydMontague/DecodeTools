@@ -1,6 +1,5 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,16 +11,14 @@ import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.extensions.VoidExtension;
 
 public class KCAPFile extends KCAPPayload {
-    private static final int KCAP_MAGIC_VALUE = 0x5041434B;
+    private static final int VERSION = 1;
     
     private long startAddress;
     
-    private int magicValue;
-    private int version;
-    private int size;
     private int unknown2; // flags?
     
     private int numEntries;
@@ -45,13 +42,9 @@ public class KCAPFile extends KCAPPayload {
         super(parent);
         startAddress = source.getPosition();
         
-        magicValue = source.readInteger();
-        
-        if (magicValue != KCAP_MAGIC_VALUE)
-            throw new IllegalArgumentException("Access is currently not pointing at a KCAP Structure! " + magicValue);
-        
-        version = source.readInteger();
-        size = source.readInteger();
+        source.readInteger(); // magic value
+        source.readInteger(); // version
+        source.readInteger(); // size
         
         unknown2 = source.readInteger();
         numEntries = source.readInteger();
@@ -62,6 +55,9 @@ public class KCAPFile extends KCAPPayload {
         if (headerSize > 0x20)
             extension = HeaderExtension.craft(source);
         
+        if (source.getPosition() - startAddress < startAddress + headerSize)
+            source.setPosition(startAddress + headerSize);
+        
         for (int i = 0; i < numEntries; i++)
             pointer.add(new KCAPPointer(source.readInteger(), source.readInteger()));
         
@@ -69,18 +65,6 @@ public class KCAPFile extends KCAPPayload {
             extensionPayload = extension.loadPayload(source, numPayloadEntries);
         
         genericAligned = !pointer.stream().anyMatch(a -> (a.getOffset() % 0x10) != 0);
-        
-        KCAPFile p = this;
-        
-        while ((p = p.getParent()) != null)
-            System.out.print("  ");
-        
-        System.out.print(Integer.toHexString((int) startAddress) + " KCAP ");
-        if (extension != null)
-            System.out.print(extension.getType());
-        
-        System.out.print(" " + Integer.toHexString(unknown2) + " " + Integer.toHexString(numEntries));
-        System.out.println(" " + genericAligned);
         
         for (KCAPPointer entry : pointer) {
             source.setPosition(entry.getOffset() + startAddress);
@@ -103,6 +87,7 @@ public class KCAPFile extends KCAPPayload {
         
         // pointer table
         int payload = entries.size() * 8;
+        
         // payload of the extension, so far only FileNameExtensionPayload
         payload += extensionPayload.getSize();
         
@@ -110,21 +95,18 @@ public class KCAPFile extends KCAPPayload {
         payload = Utils.getPadded(payload, extension.getType().getPadding());
         
         value += payload;
+        value = Utils.getPadded(value, extension.getContentAlignment(this));
         
         //
         for (KCAPPayload entry : entries) {
-            value = Utils.getPadded(value, entry.getAlignment());
-            if (genericAligned)
-                value = Utils.getPadded(value, 0x10);
+            if (entry.getType() == null)
+                continue;
+            
+            value = Utils.getPadded(value, extension.getContentAlignment(this));
             value += entry.getSize();
         }
         
         value = Utils.getPadded(value, 0x4);
-        
-        if (value != size) {
-            System.out.println("AAA " + Long.toHexString(startAddress) + " " + Integer.toHexString(value) + " "
-                    + Integer.toHexString(size) + " " + this);
-        }
         
         return value;
     }
@@ -158,7 +140,7 @@ public class KCAPFile extends KCAPPayload {
     
     @Override
     public MutableTreeNode getTreeNode() {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode(this.getType());
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(this);
         
         entries.forEach(a -> node.add(a.getTreeNode()));
         
@@ -171,30 +153,34 @@ public class KCAPFile extends KCAPPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, ByteArrayOutputStream dataStream) {
-        dest.writeInteger(KCAP_MAGIC_VALUE); // Header Indicator
-        dest.writeInteger(1); // Version
-        dest.writeInteger(getSize()); // Size
+    public void writeKCAP(Access dest, ResData dataStream) {
+        long start = dest.getPosition();
+        
+        dest.writeInteger(getType().getMagicValue()); // Header Indicator
+        dest.writeInteger(VERSION); // Version
+        dest.writeInteger(0); // Size Dummy
+        dest.writeInteger(getSize(), start + 0x8); // Size
         dest.writeInteger(unknown2); // Flags
         
         dest.writeInteger(entries.size()); // number of entries
         dest.writeInteger(extensionPayload.getEntryNumber()); // number of extension payload entries
-        dest.writeInteger(0x20 + extension.getSize()); // header size
         
-        int extPayloadStart = Utils.getPadded(0x20 + extension.getSize(), 0x10) + entries.size() * 8;
+        int pointerPointer = 0x20 + extension.getSize();
+        dest.writeInteger(pointerPointer); // header size
+        
+        int extPayloadStart = pointerPointer + entries.size() * 8;
         dest.writeInteger(extensionPayload.getEntryNumber() == 0 ? 0 : extPayloadStart);
         
         extension.writeKCAP(dest); // extension header
         
-        int fileStart = Utils.getPadded(0x20 + extension.getSize(), 0x10) + entries.size() * 8
-                + extensionPayload.getSize();
-        fileStart = Utils.getPadded(fileStart, extension.getType().getPadding());
+        int fileStart = Utils.getPadded(extPayloadStart + extensionPayload.getSize(), extension.getType().getPadding());
+        fileStart = Utils.getPadded(fileStart, extension.getContentAlignment(this));
+        int tmp = fileStart;
         
         // pointer table
         for (KCAPPayload entry : entries) {
-            fileStart = Utils.getPadded(fileStart, entry.getAlignment());
-            if (genericAligned)
-                fileStart = Utils.getPadded(fileStart, 0x10);
+            if (entry.getType() != null)
+                fileStart = Utils.getPadded(fileStart, extension.getContentAlignment(this));
             
             dest.writeInteger(entry.getSize() == 0 ? 0 : fileStart);
             dest.writeInteger(entry.getSize());
@@ -203,22 +189,39 @@ public class KCAPFile extends KCAPPayload {
         
         extensionPayload.writeKCAP(dest, extPayloadStart); // extension payload
         
-        dest.setPosition(Utils.getPadded(dest.getPosition(), extension.getType().getPadding())); // padding
+        dest.setSize(start + tmp); // padding
         
         // write sub structures
         entries.forEach(a -> {
-            dest.setPosition(Utils.getPadded(dest.getPosition(), a.getAlignment()));
+            if (a.getType() == null)
+                return;
+            
+            int i = (int) (dest.getPosition() - start);
+            int d = Utils.getPadded(i, extension.getContentAlignment(this)) - i;
+            
+            dest.setPosition(dest.getPosition() + d);
             a.writeKCAP(dest, dataStream);
-            
-            int padding = Utils.getPadded(dataStream.size(), 0x80) - dataStream.size();
-            
-            dataStream.write(new byte[padding], 0, padding);
         });
         
-        dest.setPosition(Utils.getPadded(dest.getPosition(), 0x4));
+        int diff = (int) (Utils.getPadded(dest.getPosition(), 0x4) - dest.getPosition());
+        dest.writeByteArray(new byte[diff]);
     }
     
     public int getGenericAlignment() {
-        return genericAligned ? 0x10 : 0x1;
+        return genericAligned ? 0x10 : 0x4;
+    }
+    
+    public int getNumEntries() {
+        return numEntries;
+    }
+    
+    @Override
+    public void fillResData(ResData data) {
+        entries.forEach(a -> a.fillResData(data));
+    }
+    
+    @Override
+    public String toString() {
+        return getType().name() + " " + (getExtension() != null ? getExtension().getType().name() : "");
     }
 }

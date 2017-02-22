@@ -3,11 +3,10 @@ package de.phoenixstaffel.decodetools.res.extensions;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
+import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public class GMIPExtension implements HeaderExtension {
-    
-    private int magicValue = Extensions.GMIP.getMagicValue();
-    private int version; //TODO remove in case it is actually fixed
+    private int version; // TODO remove in case it is actually fixed
     private int numEntries;
     private int padding;
     
@@ -22,9 +21,8 @@ public class GMIPExtension implements HeaderExtension {
         return new FileNameExtensionPayload(kcapEntries, source);
     }
     
-    //TODO update when new GMIO images get added to root KCAP
+    // TODO update when new GMIO images get added to root KCAP
     public int getEntryCount() {
-        System.out.println("MEH " + numEntries);
         return numEntries;
     }
     
@@ -37,12 +35,17 @@ public class GMIPExtension implements HeaderExtension {
     public int getSize() {
         return 0x10;
     }
-
+    
     @Override
     public void writeKCAP(Access dest) {
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(version);
         dest.writeInteger(numEntries);
         dest.writeInteger(padding);
+    }
+    
+    @Override
+    public int getContentAlignment(KCAPFile parent) {
+        return 0x4;
     }
 }

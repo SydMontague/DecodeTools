@@ -6,12 +6,13 @@ import java.util.logging.Logger;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
+import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public class VoidExtension implements HeaderExtension {
     private static final Logger log = Logger.getLogger("DataMiner");
     
     public VoidExtension() {
-        //nothing to instantiate
+        // nothing to instantiate
     }
     
     public VoidExtension(Access source) {
@@ -33,9 +34,17 @@ public class VoidExtension implements HeaderExtension {
     public int getSize() {
         return 0;
     }
-
+    
     @Override
     public void writeKCAP(Access dest) {
-        //nothing to write
+        // nothing to write
+    }
+    
+    @Override
+    public int getContentAlignment(KCAPFile parent) {
+        if (parent.hasParent() && parent.getParent().getExtension().getType() == Extensions.TDTM)
+            return 0x10;
+        
+        return parent.getGenericAlignment();
     }
 }

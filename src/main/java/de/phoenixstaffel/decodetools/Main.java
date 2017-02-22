@@ -2,16 +2,21 @@ package de.phoenixstaffel.decodetools;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 
-import javax.swing.JFileChooser;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-
+import de.phoenixstaffel.decodetools.arcv.ARCVFile;
+import de.phoenixstaffel.decodetools.arcv.VCRAFile;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 import de.phoenixstaffel.decodetools.res.ResFile;
 
+/*
+ * 
+ * 
+ * 
+ */
 public class Main {
     private static final Logger log = Logger.getLogger("DataMiner");
     
@@ -20,10 +25,41 @@ public class Main {
     }
     
     public static void main(String[] args) throws IOException {
-        //try (Access access = new FileAccess(fileDialogue.getSelectedFile())) {
-        //    ResFile file = new ResFile(access);
-        //    TreeModel model = new DefaultTreeModel(file.getRoot().getTreeNode());
-            new ExampleFrame().setVisible(true);
-        //}
+        new ExampleFrame().setVisible(true);
+        
+        /*try (Access b = new FileAccess(new File("./Input/Map/life01.res"))) {
+            ResFile f = new ResFile(b);
+            f.getRoot().getSize();
+            System.out.println("Packing");
+            f.repack(new File("Output/life01.res"));
+            
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }/*/
+        /*
+        Files.walk(Paths.get("./Input")).forEach(a -> {
+            File f = a.toFile();
+            
+            if(!f.isFile())
+                return;
+            
+            System.out.println(f.getPath());
+            
+            try (Access b = new FileAccess(f)) {
+                new ResFile(b).getRoot().getSize();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        });*/
+        //new ARCVFile(new File("./Input"));
+        
+        /*try(Access source = new FileAccess(new File("./Inputa/ARCVINFO.BIN"))) {
+            new VCRAFile(source);//.repack(new File("./Output/ARCVINFO.BIN"));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 }

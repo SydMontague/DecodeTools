@@ -7,10 +7,9 @@ import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
+import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public class TDTMExtension implements HeaderExtension {
-    private int magicValue = Extensions.TDTM.getMagicValue();
-    
     private int version;
     private int numEntries;
     private int padding;
@@ -34,25 +33,11 @@ public class TDTMExtension implements HeaderExtension {
         
         for (int i = 0; i < numEntries; i++)
             entries.add(new TDTMExtensionEntry(source));
-        
-        // padding
-        if ((source.getPosition() & 0x8) != 0)
-            source.readLong();
     }
     
     @Override
     public Extensions getType() {
         return Extensions.TDTM;
-    }
-    
-    class TDTMExtensionEntry {
-        private int unknown1;
-        private int unknown2;
-        
-        public TDTMExtensionEntry(Access source) {
-            this.unknown1 = source.readInteger();
-            this.unknown2 = source.readInteger();
-        }
     }
     
     @Override
@@ -63,11 +48,13 @@ public class TDTMExtension implements HeaderExtension {
     
     @Override
     public int getSize() {
-        return Utils.getPadded(0x20 + entries.size() * 8, 16);
+        return Utils.getPadded(0x20 + entries.size() * 8, 0x10);
     }
     
     @Override
     public void writeKCAP(Access dest) {
+        long start = dest.getPosition();
+        
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(version);
         dest.writeInteger(numEntries);
@@ -82,7 +69,21 @@ public class TDTMExtension implements HeaderExtension {
             dest.writeInteger(a.unknown2);
         });
         
-        if(entries.size() % 2 != 0)
-            dest.writeLong(0L);
+        dest.setPosition(start + getSize());
+    }
+    
+    @Override
+    public int getContentAlignment(KCAPFile parent) {
+        return 0x10;
+    }
+    
+    class TDTMExtensionEntry {
+        int unknown1;
+        int unknown2;
+        
+        public TDTMExtensionEntry(Access source) {
+            this.unknown1 = source.readInteger();
+            this.unknown2 = source.readInteger();
+        }
     }
 }

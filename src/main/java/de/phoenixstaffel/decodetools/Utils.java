@@ -3,6 +3,9 @@ package de.phoenixstaffel.decodetools;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Utils {
     private Utils() {
@@ -72,6 +75,13 @@ public class Utils {
         return createTransformed(image, at);
     }
     
+    public static BufferedImage flipImageVertically(BufferedImage image) {
+        AffineTransform at = new AffineTransform();
+        at.concatenate(AffineTransform.getScaleInstance(-1, 1));
+        at.concatenate(AffineTransform.getTranslateInstance(-image.getWidth(), 0));
+        return createTransformed(image, at);
+    }
+    
     private static BufferedImage createTransformed(BufferedImage image, AffineTransform at) {
         BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = newImage.createGraphics();
@@ -79,5 +89,27 @@ public class Utils {
         g.drawImage(image, 0, 0, null);
         g.dispose();
         return newImage;
+    }
+
+    public static List<File> fileOrder(File file) {
+        List<File> files = new ArrayList<>();
+        
+        for(File f : file.listFiles()) {
+            if(f.isFile())
+                files.add(f);
+        }
+        
+        for(File f : file.listFiles()) {
+            if(f.isDirectory())
+                files.addAll(fileOrder(f));
+        }
+        
+        return files;
+    }
+
+    public static BufferedImage rotateImage(BufferedImage image, byte rotation) {
+        AffineTransform at = new AffineTransform();
+        at.rotate(rotation * Math.PI / 2, image.getWidth() / 2D, image.getHeight() / 2D);
+        return createTransformed(image, at);
     }
 }

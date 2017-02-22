@@ -1,6 +1,5 @@
 package de.phoenixstaffel.decodetools.res;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -17,7 +16,6 @@ public class ResFile {
     
     public ResFile(Access source) {
         int dataStart = KCAPPayload.Payload.valueOf(null, source.readInteger(0)).getDataStart(source);
-        
         root = KCAPPayload.craft(source, dataStart, null, -1);
     }
     
@@ -35,10 +33,10 @@ public class ResFile {
                 log.log(Level.WARNING, "Exception while writing new .res file.", e1);
             }
         
-        try (Access dest = new FileAccess(file); ByteArrayOutputStream data = new ByteArrayOutputStream()) {
+        try (Access dest = new FileAccess(file); ResData data = new ResData()) {
             root.writeKCAP(dest, data);
             dest.setPosition(Utils.getPadded(root.getSizeOfRoot(), 0x80));
-            dest.writeByteArray(data.toByteArray());
+            dest.writeByteArray(data.getStream().toByteArray());
         }
         catch (IOException e) {
             log.log(Level.WARNING, "Exception while writing new .res file.", e);

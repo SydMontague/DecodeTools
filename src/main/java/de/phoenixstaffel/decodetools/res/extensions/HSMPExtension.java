@@ -1,13 +1,12 @@
 package de.phoenixstaffel.decodetools.res.extensions;
 
+import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
+import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public class HSMPExtension implements HeaderExtension {
-    
-    private int magicValue = Extensions.HSMP.getMagicValue();
-    
     private int unknown1;
     private float unknown2;
     private float unknown3;
@@ -34,7 +33,7 @@ public class HSMPExtension implements HeaderExtension {
         unknown9 = source.readFloat();
         unknown10 = source.readInteger();
         
-        name = source.readString(0x14, "ASCII");
+        name = source.readASCIIString();
     }
     
     @Override
@@ -42,18 +41,21 @@ public class HSMPExtension implements HeaderExtension {
         return new HeaderExtensionPayload() {
         };
     }
+    
     @Override
     public Extensions getType() {
         return Extensions.HSMP;
     }
-
+    
     @Override
     public int getSize() {
-        return 0x40;
+        return Utils.getPadded(0x2C + name.length() + 2, 0x10);
     }
-
+    
     @Override
     public void writeKCAP(Access dest) {
+        long start = dest.getPosition();
+        
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(unknown1);
         dest.writeFloat(unknown2);
@@ -68,7 +70,11 @@ public class HSMPExtension implements HeaderExtension {
         
         dest.writeString(name, "ASCII");
         
-        for(int i = 0x14 - name.length(); i > 0; i--)
-            dest.writeByte((byte) 0); 
+        dest.setPosition(start + getSize());
+    }
+    
+    @Override
+    public int getContentAlignment(KCAPFile parent) {
+        return 0x10;
     }
 }

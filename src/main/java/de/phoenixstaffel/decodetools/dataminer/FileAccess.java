@@ -37,7 +37,10 @@ public class FileAccess implements Access {
     
     public FileAccess(File file, String name) throws IOException {
         this.name = name;
-        this.chan = FileChannel.open(file.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE);
+        this.chan = FileChannel.open(file.toPath(),
+                                     StandardOpenOption.READ,
+                                     StandardOpenOption.WRITE,
+                                     StandardOpenOption.CREATE);
         
         byteBuf.order(ByteOrder.LITTLE_ENDIAN);
         shortBuf.order(ByteOrder.LITTLE_ENDIAN);
@@ -128,13 +131,24 @@ public class FileAccess implements Access {
     public String getName() {
         return name;
     }
-
+    
     @Override
     public String readASCIIString() {
         StringBuilder b = new StringBuilder();
-
+        
         byte value;
-        while((value = readByte()) != 0)
+        while ((value = readByte()) != 0)
+            b.append((char) value);
+        
+        return b.toString();
+    }
+    
+    @Override
+    public String readASCIIString(long address) {
+        StringBuilder b = new StringBuilder();
+        
+        byte value;
+        while ((value = readByte(address++)) != 0)
             b.append((char) value);
         
         return b.toString();
@@ -157,7 +171,7 @@ public class FileAccess implements Access {
         readBuffer(buff, address);
         return localCharset.decode(buff).toString();
     }
-
+    
     @Override
     public byte[] readByteArray(int length) {
         byte[] data = new byte[length];
@@ -167,7 +181,7 @@ public class FileAccess implements Access {
         
         return data;
     }
-
+    
     @Override
     public byte[] readByteArray(int length, long start) {
         byte[] data = new byte[length];
@@ -294,14 +308,14 @@ public class FileAccess implements Access {
         
         writeBuffer(buffer, address);
     }
-
+    
     @Override
     public void writeByteArray(byte[] data) {
         ByteBuffer buff = ByteBuffer.allocate(data.length);
         buff.put(data);
         writeBuffer(buff);
     }
-
+    
     @Override
     public void writeByteArray(byte[] data, long start) {
         ByteBuffer buff = ByteBuffer.allocate(data.length);
@@ -381,9 +395,27 @@ public class FileAccess implements Access {
             return Charset.defaultCharset();
         }
     }
-
+    
     @Override
     public void close() throws IOException {
         chan.close();
+    }
+    
+    @Override
+    public long getSize() {
+        try {
+            return chan.size();
+        }
+        catch (IOException e) {
+            log.log(Level.WARNING, "Could not get size of FileChannel", e);
+            return -1;
+        }
+    }
+    
+    @Override
+    public void setSize(long size) {
+        long origSize = getSize();
+        setPosition(origSize);
+        writeByteArray(new byte[(int) (size - origSize)]);
     }
 }

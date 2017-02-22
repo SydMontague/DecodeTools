@@ -1,7 +1,6 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.util.function.Function;
 
 import de.phoenixstaffel.decodetools.PixelFormatDecoder;
@@ -10,11 +9,11 @@ import de.phoenixstaffel.decodetools.TriFunction;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 
 public class GMIOFile extends KCAPPayload {
+    private static final int VERSION = 6;
     
-    private int magicValue;
-    private int version; // ?
     private int unknown1;
     private int dataPointer;
     
@@ -38,6 +37,8 @@ public class GMIOFile extends KCAPPayload {
     private byte[] extraData;
     
     // TODO remove all variables that can be deducted from the image
+    private float uvWidth;
+    private float uvHeight;
     private BufferedImage image;
     
     public GMIOFile(Access source, int dataStart, KCAPFile parent, int size) {
@@ -47,14 +48,8 @@ public class GMIOFile extends KCAPPayload {
     private GMIOFile(Access source, int dataStart, KCAPFile parent) {
         super(parent);
         
-        KCAPPayload p = this;
-        while ((p = p.getParent()) != null)
-            System.out.print("  ");
-        
-        System.out.println(Long.toHexString(source.getPosition()) + " GMIO ");
-        
-        magicValue = source.readInteger();
-        version = source.readInteger();
+        source.readInteger(); // magic value
+        int version = source.readInteger();
         unknown1 = source.readInteger();
         dataPointer = source.readInteger();
         
@@ -65,20 +60,33 @@ public class GMIOFile extends KCAPPayload {
         unknown4 = source.readInteger();
         
         unknown5 = source.readInteger();
-        width = source.readShort();
-        height = source.readShort();
-        unknown6 = source.readInteger();
-        unknown7 = source.readInteger();
+        
+        if (version == 6) {
+            width = source.readShort();
+            height = source.readShort();
+            unknown6 = source.readInteger();
+            unknown7 = source.readInteger();
+        }
+        else {
+            width = uvSizeX;
+            height = uvSizeY;
+            unknown6 = 0;
+            unknown7 = 0;
+        }
         
         format = PixelFormat.valueOf(source.readInteger());
+        
         unknown8 = source.readInteger();
         unknown9 = source.readInteger();
         unknown10 = source.readInteger();
         
-        extraData = new byte[unknown10];
+        extraData = source.readByteArray(unknown10);
         
-        for (int i = 0; i < unknown10; i++)
-            extraData[i] = source.readByte();
+        if (width == 0 || height == 0 || dataPointer == 0xFFFFFFFF)
+            return;
+        
+        uvWidth = (float) uvSizeX / width;
+        uvHeight = (float) uvSizeY / height;
         
         byte[] pixelData = source.readByteArray((width * height * format.getBPP()) / 8, dataPointer + dataStart);
         
@@ -87,13 +95,13 @@ public class GMIOFile extends KCAPPayload {
         
         BufferedImage i = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         i.setRGB(0, 0, width, height, convertedPixels, 0, width);
-
+        
         image = format == PixelFormat.ETC1 || format == PixelFormat.ETC1A4 ? Utils.flipImage(i) : i;
     }
     
     @Override
     public int getSize() {
-        return 0x40 + extraData.length;
+        return Utils.getPadded(0x40 + extraData.length, 4);
     }
     
     @Override
@@ -102,21 +110,27 @@ public class GMIOFile extends KCAPPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, ByteArrayOutputStream dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
+        int dataAddress = 0xFFFFFFFF;
+        if (image != null) {
+            byte[] pixelData = format.convertToFormat(image);
+            dataAddress = dataStream.add(pixelData, true, getParent());
+        }
+        
         dest.writeInteger(getType().getMagicValue());
-        dest.writeInteger(6); // TODO externalise version magic number
+        dest.writeInteger(VERSION);
         dest.writeInteger(unknown1);
-        dest.writeInteger(dataStream.size());
+        dest.writeInteger(dataAddress);
         
         dest.writeInteger(unknown2);
-        dest.writeShort((short) image.getWidth()); //uv width?
-        dest.writeShort((short) image.getHeight()); //uv height?
+        dest.writeShort(image == null ? 0 : (short) (image.getWidth() * uvWidth)); // uv width?
+        dest.writeShort(image == null ? 0 : (short) (image.getHeight() * uvHeight)); // uv height?
         dest.writeInteger(unknown3);
         dest.writeInteger(unknown4);
         
         dest.writeInteger(unknown5);
-        dest.writeShort((short) image.getWidth()); //width
-        dest.writeShort((short) image.getHeight()); //height
+        dest.writeShort(image == null ? 0 : (short) image.getWidth()); // width
+        dest.writeShort(image == null ? 0 : (short) image.getHeight()); // height
         dest.writeInteger(unknown6);
         dest.writeInteger(unknown7);
         
@@ -126,14 +140,11 @@ public class GMIOFile extends KCAPPayload {
         dest.writeInteger(unknown10);
         
         dest.writeByteArray(extraData);
-        
-        byte[] pixelData = format.convertToFormat(image);
-        dataStream.write(pixelData, 0, pixelData.length);
     }
     
     @Override
     public int getAlignment() {
-        return getParent().getGenericAlignment();
+        return 4;
     }
     
     enum PixelFormat {
@@ -161,7 +172,8 @@ public class GMIOFile extends KCAPPayload {
         private TriFunction<byte[], Integer, Integer, int[]> decoder;
         private Function<BufferedImage, byte[]> encoder;
         
-        private PixelFormat(int id, int bytes, boolean tiled, TriFunction<byte[], Integer, Integer, int[]> decoder, Function<BufferedImage, byte[]> encoder) {
+        private PixelFormat(int id, int bytes, boolean tiled, TriFunction<byte[], Integer, Integer, int[]> decoder,
+                Function<BufferedImage, byte[]> encoder) {
             this.id = id;
             this.bpp = bytes;
             this.tiled = tiled;
@@ -172,20 +184,21 @@ public class GMIOFile extends KCAPPayload {
         public int getId() {
             return id;
         }
-
+        
         public int[] convertToRGBA(byte[] pixelData, int width, int height) {
             return decoder.apply(pixelData, width, height);
         }
         
         public byte[] convertToFormat(BufferedImage image) {
-            return encoder.apply(this == PixelFormat.ETC1 || this == PixelFormat.ETC1A4 ? Utils.flipImage(image) : image);
+            return encoder.apply(this == PixelFormat.ETC1 || this == PixelFormat.ETC1A4 ? Utils.flipImage(image)
+                    : image);
         }
         
         public static PixelFormat valueOf(int id) {
             for (PixelFormat f : values())
                 if (f.id == id)
                     return f;
-            
+                
             throw new IllegalArgumentException("Unknown PixelFormat " + id);
         }
         
@@ -196,25 +209,6 @@ public class GMIOFile extends KCAPPayload {
         public boolean isTiled() {
             return tiled;
         }
-        
-        /*-
-         * public enum Bpp
-        {
-        Etc1A4 = 13,
-        BC1 = 14,
-        BC2 = 15,
-        BC3 = 16,
-        BC4L = 17,
-        BC4A = 18,
-        BC5 = 19,
-        Rgba8_SRGB = 20,
-        BC1_SRGB = 21,
-        BC2_SRGB = 22,
-        BC3_SRGB = 23,
-        RGB10_A2 = 24
-        }
-         */
-        
     }
     
     public BufferedImage getImage() {
@@ -225,8 +219,16 @@ public class GMIOFile extends KCAPPayload {
     public String toString() {
         return "GMIO " + " " + format + " " + width + " " + height;
     }
-
+    
     public void setImage(BufferedImage image) {
         this.image = image;
+    }
+    
+    @Override
+    public void fillResData(ResData data) {
+        if (image != null) {
+            byte[] pixelData = format.convertToFormat(image);
+            data.add(pixelData, true, getParent());
+        }
     }
 }

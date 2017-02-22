@@ -1,21 +1,14 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
-import java.io.ByteArrayOutputStream;
-
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 
 public class CTPPPayload extends KCAPPayload {
     private int[] data;
     
     public CTPPPayload(Access source, int dataStart, KCAPFile parent, int size) {
         super(parent);
-        
-        KCAPPayload p = this;
-        while((p = p.getParent()) != null)
-            System.out.print("  ");
-        
-        System.out.println(Long.toHexString(source.getPosition()) + " CTPP ");
         
         data = new int[size / 4];
         
@@ -32,15 +25,15 @@ public class CTPPPayload extends KCAPPayload {
     public int getAlignment() {
         return 0x10;
     }
-
+    
     @Override
     public Payload getType() {
         return Payload.CTPP;
     }
-
+    
     @Override
-    public void writeKCAP(Access dest, ByteArrayOutputStream dataStream) {
-        for(int i : data)
+    public void writeKCAP(Access dest, ResData dataStream) {
+        for (int i : data)
             dest.writeInteger(i);
     }
 }

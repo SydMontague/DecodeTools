@@ -285,11 +285,11 @@ public class PixelFormatDecoder {
         return data & 0xFFFFFFFF;
     }
     
-    private static long crop(long value, long min, long max) {
+    public static long crop(long value, long min, long max) {
         return Math.min(Math.max(min, value), max);
     }
     
-    private static long add3BitSigned(long base, long toAdd) {
+    public static long add3BitSigned(long base, long toAdd) {
         if (toAdd < 0 || toAdd > 7)
             throw new IllegalArgumentException("Second argument must be between 0 and 7 (inclusive), but was " + toAdd);
         
@@ -299,14 +299,14 @@ public class PixelFormatDecoder {
         return base - ((~toAdd & 0x3) + 1);
     }
     
-    private static boolean getBitValue(long value, int bit) {
+    public static boolean getBitValue(long value, int bit) {
         if (bit >= Long.SIZE || bit < 0)
             throw new IllegalArgumentException("Can't get the " + bit + " bit of a 64bit number.");
         
         return (value >>> bit & 0x1) != 0;
     }
     
-    private static long getSubInteger(long value, int bit, int length) {
+    public static long getSubInteger(long value, int bit, int length) {
         if (bit < 0 || length <= 0 || Long.SIZE - bit < length)
             throw new IllegalArgumentException("Can't get bits " + bit + " to " + (bit + length) + " of a long int.");
         

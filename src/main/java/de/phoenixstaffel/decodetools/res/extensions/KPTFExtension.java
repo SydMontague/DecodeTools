@@ -5,15 +5,15 @@ import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
-public class XDIPExtension implements HeaderExtension {
-    private int version; // TODO remove in case it is actually fixed
-    private int numEntries;
-    private int padding;
+public class KPTFExtension implements HeaderExtension {
+    private int unknown1;
+    private int unknown2;
+    private int unknown3;
     
-    public XDIPExtension(Access source) {
-        this.version = source.readInteger();
-        this.numEntries = source.readInteger();
-        this.padding = source.readInteger();
+    public KPTFExtension(Access source) {
+        unknown1 = source.readInteger();
+        unknown2 = source.readInteger();
+        unknown3 = source.readInteger();
     }
     
     @Override
@@ -24,7 +24,7 @@ public class XDIPExtension implements HeaderExtension {
     
     @Override
     public Extensions getType() {
-        return Extensions.XDIP;
+        return Extensions.KPTF;
     }
     
     @Override
@@ -35,13 +35,14 @@ public class XDIPExtension implements HeaderExtension {
     @Override
     public void writeKCAP(Access dest) {
         dest.writeInteger(getType().getMagicValue());
-        dest.writeInteger(version);
-        dest.writeInteger(numEntries);
-        dest.writeInteger(padding);
+        dest.writeInteger(unknown1);
+        dest.writeInteger(unknown2);
+        dest.writeInteger(unknown3);
     }
     
     @Override
     public int getContentAlignment(KCAPFile parent) {
         return 0x10;
     }
+    
 }

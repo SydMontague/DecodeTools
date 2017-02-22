@@ -146,6 +146,17 @@ public class MemoryAccess implements Access {
     }
     
     @Override
+    public String readASCIIString(long address) {
+        StringBuilder b = new StringBuilder();
+
+        byte value;
+        while((value = readByte(address++)) != 0)
+            b.append((char) value);
+        
+        return b.toString();
+    }
+    
+    @Override
     public String readString(int length, String charset) {
         String value = readString(currentPointer, length, charset);
         currentPointer += length;
@@ -295,5 +306,15 @@ public class MemoryAccess implements Access {
     @Override
     public void close() throws IOException {
         kernel.CloseHandle(process);
+    }
+
+    @Override
+    public long getSize() {
+        throw new UnsupportedOperationException("Can't get size of MemoryAccess.");
+    }
+
+    @Override
+    public void setSize(long size) {
+        throw new UnsupportedOperationException("Can't set size of MemoryAccess.");
     }
 }

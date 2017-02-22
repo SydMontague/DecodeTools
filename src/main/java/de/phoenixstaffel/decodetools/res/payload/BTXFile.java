@@ -1,21 +1,14 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
-import java.io.ByteArrayOutputStream;
-
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 
 public class BTXFile extends KCAPPayload {
     private short[] data;
     
     public BTXFile(Access source, int dataStart, KCAPFile parent, int size) {
         super(parent);
-        
-        KCAPPayload p = this;
-        while((p = p.getParent()) != null)
-            System.out.print("  ");
-        
-        System.out.println(Long.toHexString(source.getPosition()) + " BTX ");
         
         data = new short[size / 2];
         
@@ -32,15 +25,15 @@ public class BTXFile extends KCAPPayload {
     public int getAlignment() {
         return 0x4;
     }
-
+    
     @Override
     public KCAPPayload.Payload getType() {
         return Payload.BTX;
     }
-
+    
     @Override
-    public void writeKCAP(Access dest, ByteArrayOutputStream dataStream) {
-        for(short i : data)
+    public void writeKCAP(Access dest, ResData dataStream) {
+        for (short i : data)
             dest.writeShort(i);
     }
 }

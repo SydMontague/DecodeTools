@@ -6,12 +6,12 @@ public interface HeaderExtensionPayload {
     public default int getSize() {
         return 0;
     }
-
+    
     public default int getEntryNumber() {
         return 0;
     }
-
+    
     public default void writeKCAP(Access dest, int start) {
-        //nothing to write
+        // nothing to write
     }
 }
