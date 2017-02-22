@@ -1,7 +1,11 @@
 /target/
 /.settings/
+.classpath
+.project
+
+#garbage folders
 /Output/
 /Input/
 /MinerDefinitions/
-.classpath
-.project
+/LostEvoInput
+/Inputa
