@@ -33,7 +33,7 @@ public class ResFile {
                 log.log(Level.WARNING, "Exception while writing new .res file.", e1);
             }
         
-        try (Access dest = new FileAccess(file); ResData data = new ResData()) {
+        try (Access dest = new FileAccess(file); IResData data = new ResData()) {
             root.writeKCAP(dest, data);
             dest.setPosition(Utils.getPadded(root.getSizeOfRoot(), 0x80));
             dest.writeByteArray(data.getStream().toByteArray());

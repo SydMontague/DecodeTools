@@ -9,11 +9,10 @@ import java.util.Optional;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
-public class ResData implements IResData {
-    private ByteArrayOutputStream stream = new ByteArrayOutputStream();
-    
+public class DummyResData implements IResData {
     private List<ResDataEntry> list = new ArrayList<>();
     private int count = 0;
+    private int currentAddress = 0;
     
     @Override
     public int add(byte[] data, boolean onlyOnce, KCAPFile parent) {
@@ -24,36 +23,36 @@ public class ResData implements IResData {
         }
 
         byte[] padding = new byte[Utils.getPadded(getSize(), 0x80) - getSize()];
-        stream.write(padding, 0, padding.length);
+        currentAddress += padding.length;
         
-        int address = stream.size();
+        int address = currentAddress; 
         count++;
         
         if (onlyOnce)
             list.add(new ResDataEntry(data, address, parent));
         
-        stream.write(data, 0, data.length);
+        currentAddress += data.length;
         
         return address;
     }
     
     @Override
     public void close() throws IOException {
-        stream.close();
+        //nothing to implement
     }
     
     @Override
     public ByteArrayOutputStream getStream() {
-        return stream;
+        return null;
     }
     
     @Override
     public int getDataEntries() {
         return count;
     }
-    
+
     @Override
     public int getSize() {
-        return stream.size();
+        return currentAddress;
     }
 }

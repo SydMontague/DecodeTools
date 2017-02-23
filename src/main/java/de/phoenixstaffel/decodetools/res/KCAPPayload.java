@@ -77,7 +77,7 @@ public abstract class KCAPPayload {
         return DEFAULT_ALIGNMENT;
     }
     
-    public abstract void writeKCAP(Access dest, ResData dataStream);
+    public abstract void writeKCAP(Access dest, IResData dataStream);
     
     public static KCAPPayload craft(Access source, int dataStart, KCAPFile parent, int size) {
         return Payload.valueOf(parent, source.readInteger(source.getPosition())).newInstance(source,
@@ -197,6 +197,6 @@ public abstract class KCAPPayload {
         }
     }
     
-    public void fillResData(ResData data) {
+    public void fillResData(IResData data) {
     }
 }

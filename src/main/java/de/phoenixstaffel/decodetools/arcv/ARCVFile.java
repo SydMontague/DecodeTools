@@ -13,12 +13,14 @@ import java.util.zip.Deflater;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.res.DummyResData;
+import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
-import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResFile;
 
 //this is crap, but it works...
+//FIXME it's slow as fuck and needs optimisation + multi-threading
 public class ARCVFile {
     private static final Logger log = Logger.getLogger("DataMiner");
     
@@ -98,11 +100,10 @@ public class ARCVFile {
         KCAPPayload res = new ResFile(access).getRoot();
         access.close();
         
-        // FIXME this part is slow as fuck
         int structureSize = res.getSizeOfRoot();
-        ResData resData = new ResData();
+        IResData resData = new DummyResData();
         res.fillResData(resData);
-        int dataSize = resData.getStream().size();
+        int dataSize = resData.getSize();
         int dataEntries = resData.getDataEntries();
         resData.close();
         

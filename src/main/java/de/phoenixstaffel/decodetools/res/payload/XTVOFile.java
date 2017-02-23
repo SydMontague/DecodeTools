@@ -1,8 +1,8 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.ResData;
 
 public class XTVOFile extends KCAPPayload {
     private int unknown1;
@@ -69,7 +69,7 @@ public class XTVOFile extends KCAPPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, ResData dataStream) {
+    public void writeKCAP(Access dest, IResData dataStream) {
         int dataAddress = dataStream.add(data, false, getParent());
         
         dest.writeInteger(getType().getMagicValue());
@@ -92,7 +92,7 @@ public class XTVOFile extends KCAPPayload {
     }
     
     @Override
-    public void fillResData(ResData resData) {
+    public void fillResData(IResData resData) {
         resData.add(this.data, false, getParent());
     }
 }

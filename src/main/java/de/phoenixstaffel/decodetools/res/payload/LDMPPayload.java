@@ -1,8 +1,8 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.ResData;
 
 public class LDMPPayload extends KCAPPayload {
     private int unknown1;
@@ -43,7 +43,7 @@ public class LDMPPayload extends KCAPPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, ResData dataStream) {
+    public void writeKCAP(Access dest, IResData dataStream) {
         dest.writeInteger(unknown1);
         dest.writeInteger(unknown2);
         dest.writeInteger(unknown3);

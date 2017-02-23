@@ -10,8 +10,8 @@ import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
+import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.extensions.VoidExtension;
 
 public class KCAPFile extends KCAPPayload {
@@ -153,7 +153,7 @@ public class KCAPFile extends KCAPPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, ResData dataStream) {
+    public void writeKCAP(Access dest, IResData dataStream) {
         long start = dest.getPosition();
         
         dest.writeInteger(getType().getMagicValue()); // Header Indicator
@@ -216,7 +216,7 @@ public class KCAPFile extends KCAPPayload {
     }
     
     @Override
-    public void fillResData(ResData data) {
+    public void fillResData(IResData data) {
         entries.forEach(a -> a.fillResData(data));
     }
     

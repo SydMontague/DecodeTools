@@ -8,8 +8,8 @@ import de.phoenixstaffel.decodetools.PixelFormatEncoder;
 import de.phoenixstaffel.decodetools.TriFunction;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.ResData;
 
 public class GMIOFile extends KCAPPayload {
     private static final int VERSION = 6;
@@ -110,7 +110,7 @@ public class GMIOFile extends KCAPPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, ResData dataStream) {
+    public void writeKCAP(Access dest, IResData dataStream) {
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
             byte[] pixelData = format.convertToFormat(image);
@@ -225,7 +225,7 @@ public class GMIOFile extends KCAPPayload {
     }
     
     @Override
-    public void fillResData(ResData data) {
+    public void fillResData(IResData data) {
         if (image != null) {
             byte[] pixelData = format.convertToFormat(image);
             data.add(pixelData, true, getParent());

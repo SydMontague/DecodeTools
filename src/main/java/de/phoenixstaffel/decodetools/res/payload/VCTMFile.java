@@ -2,8 +2,8 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.ResData;
 
 public class VCTMFile extends KCAPPayload {
     private int numEntries;
@@ -80,7 +80,7 @@ public class VCTMFile extends KCAPPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, ResData dataStream) {
+    public void writeKCAP(Access dest, IResData dataStream) {
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(numEntries);
         dest.writeInteger(coordStart);
