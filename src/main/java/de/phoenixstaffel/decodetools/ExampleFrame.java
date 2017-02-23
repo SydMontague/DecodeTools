@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -29,6 +30,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 
+import de.phoenixstaffel.decodetools.arcv.ARCVFile;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 import de.phoenixstaffel.decodetools.res.ResFile;
@@ -109,6 +111,41 @@ public class ExampleFrame extends JFrame {
         mnFile.add(mntmLoadFile);
         mnFile.add(mntmSaveFile);
         mnFile.add(mntmExit);
+        
+        JMenu mnArcv = new JMenu("ARCV");
+        menuBar.add(mnArcv);
+        
+        JMenuItem mntmRebuildArcv = new JMenuItem("Rebuild ARCV");
+        mntmRebuildArcv.setAction(new AbstractAction("Redbuild ARCV") {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                JFileChooser inputFileDialogue = new JFileChooser("./");
+                inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                inputFileDialogue.showOpenDialog(null);
+
+                JFileChooser outputFileDialogue = new JFileChooser("./");
+                outputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                outputFileDialogue.showSaveDialog(null);
+                
+                if(inputFileDialogue.getSelectedFile() == null)
+                    return;
+
+                if(outputFileDialogue.getSelectedFile() == null)
+                    return;
+                
+                try {
+                    new ARCVFile(inputFileDialogue.getSelectedFile()).saveFiles(outputFileDialogue.getSelectedFile());
+                }
+                catch (IOException e1) {
+                    log.log(Level.WARNING, "Error while rebuilding ARCV files!", e1);
+                }
+                
+            }
+        });
+        
+        mnArcv.add(mntmRebuildArcv);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
