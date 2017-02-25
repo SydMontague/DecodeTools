@@ -98,7 +98,7 @@ public class GMIOFile extends KCAPPayload {
         BufferedImage i = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         i.setRGB(0, 0, width, height, convertedPixels, 0, width);
         
-        image = format == PixelFormat.ETC1 || format == PixelFormat.ETC1A4 ? Utils.flipImage(i) : i;
+        image = i;
     }
     
     @Override

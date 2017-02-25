@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -122,10 +124,12 @@ public class ExampleFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
 
                 JFileChooser inputFileDialogue = new JFileChooser("./");
+                inputFileDialogue.setDialogTitle("Please select the directory with the extracted ARCV contents.");
                 inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 inputFileDialogue.showOpenDialog(null);
 
                 JFileChooser outputFileDialogue = new JFileChooser("./");
+                outputFileDialogue.setDialogTitle("Please select the directory in which the ARCV0 and ARCVINFO will be saved.");
                 outputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 outputFileDialogue.showSaveDialog(null);
                 
@@ -187,13 +191,31 @@ public class ExampleFrame extends JFrame {
 
                 JFileChooser fileDialogue = new JFileChooser("./Output");
                 fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileDialogue.setFileFilter(new FileFilter() {
+                    
+                    @Override
+                    public boolean accept(File pathname) {
+                        return !pathname.isDirectory();
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "PNG Image File (.png)";
+                    }
+                });
                 fileDialogue.showSaveDialog(null);
                 
                 if(fileDialogue.getSelectedFile() == null)
                     return;
                 
                 try {
-                    ImageIO.write(((GMIOFile) selected).getImage(), "PNG", fileDialogue.getSelectedFile());
+                    File file;
+                    if(fileDialogue.getSelectedFile().getName().endsWith(".png"))
+                        file = fileDialogue.getSelectedFile();
+                    else
+                        file = new File(fileDialogue.getSelectedFile().getPath() + ".png");
+                    
+                    ImageIO.write(((GMIOFile) selected).getImage(), "PNG", file);
                 }
                 catch(IOException ex) {
                     log.log(Level.WARNING, "Could not read image file, not an image?", ex);
