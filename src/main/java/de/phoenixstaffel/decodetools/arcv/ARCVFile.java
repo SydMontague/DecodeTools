@@ -14,7 +14,6 @@ import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 import de.phoenixstaffel.decodetools.res.DummyResData;
-import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
 import de.phoenixstaffel.decodetools.res.ResFile;
@@ -29,6 +28,10 @@ public class ARCVFile {
     private Access destination;
     private int sectorCount = 0;
     private VCRAFile arcvinfo;
+    
+    private long zipTime = 0;
+    private long resLoadTime = 0;
+    private long resDataTime = 0;
     
     public ARCVFile(File inputDir) {
         if (!inputDir.isDirectory())
@@ -65,6 +68,8 @@ public class ARCVFile {
         
         destination.close();
         arcvinfo.repack(new File(outputDir, "/ARCVINFO.BIN"));
+        
+        System.out.println("ZIP: " + zipTime + " | Res Load: " + resLoadTime + " | Res Data: " + resDataTime);
     }
     
     private void addFile(Path a, String name) throws IOException {
@@ -74,10 +79,12 @@ public class ARCVFile {
         int startSector = sectorCount;
         int compressedSize = 0;
         
+        long t = System.nanoTime();
+        
         byte[] input = Files.readAllBytes(a);
         
         if (input.length > 0x1000) {
-            Deflater compresser = new Deflater(Deflater.BEST_COMPRESSION);
+            Deflater compresser = new Deflater(Deflater.DEFAULT_COMPRESSION);
             compresser.setInput(input);
             compresser.finish();
             
@@ -96,16 +103,24 @@ public class ARCVFile {
             sectorCount += output.length / 0x800;
         }
         
+        zipTime += System.nanoTime() - t;
+        t = System.nanoTime();
+        
         Access access = new FileAccess(a.toFile());
         KCAPPayload res = new ResFile(access).getRoot();
         access.close();
         
+        resLoadTime += System.nanoTime() - t;
+        t = System.nanoTime();
+        
         int structureSize = res.getSizeOfRoot();
-        IResData resData = new DummyResData();
-        res.fillResData(resData);
+        DummyResData resData = new DummyResData();
+        res.fillDummyResData(resData);
         int dataSize = resData.getSize();
         int dataEntries = resData.getDataEntries();
         resData.close();
+        
+        resDataTime += System.nanoTime() - t;
         
         MARVEntry marv = new MARVEntry(structureSize, dataSize, dataEntries);
         if (res.getType() == Payload.GENERIC)

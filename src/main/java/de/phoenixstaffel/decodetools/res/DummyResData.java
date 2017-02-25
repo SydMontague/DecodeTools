@@ -14,8 +14,8 @@ public class DummyResData implements IResData {
     private int count = 0;
     private int currentAddress = 0;
     
-    @Override
-    public int add(byte[] data, boolean onlyOnce, KCAPFile parent) {
+    public int add(byte[] data, int size, boolean onlyOnce, KCAPFile parent) {
+
         Optional<ResDataEntry> entry = list.stream().filter(a -> onlyOnce && a.isEqual(data, parent)).findFirst();
         
         if (entry.isPresent()) {
@@ -31,9 +31,14 @@ public class DummyResData implements IResData {
         if (onlyOnce)
             list.add(new ResDataEntry(data, address, parent));
         
-        currentAddress += data.length;
+        currentAddress += size;
         
         return address;
+    }
+    
+    @Override
+    public int add(byte[] data, boolean onlyOnce, KCAPFile parent) {
+        return add(data, data.length, onlyOnce, parent);
     }
     
     @Override

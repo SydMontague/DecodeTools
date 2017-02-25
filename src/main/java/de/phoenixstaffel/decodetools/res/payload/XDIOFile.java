@@ -1,6 +1,7 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 
@@ -62,7 +63,7 @@ public class XDIOFile extends KCAPPayload {
     }
     
     @Override
-    public void fillResData(IResData resData) {
+    public void fillDummyResData(DummyResData resData) {
         resData.add(this.data, false, getParent());
     }
 }

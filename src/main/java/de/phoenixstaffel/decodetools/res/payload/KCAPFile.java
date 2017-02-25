@@ -8,6 +8,7 @@ import javax.swing.tree.MutableTreeNode;
 
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.IResData;
@@ -216,8 +217,8 @@ public class KCAPFile extends KCAPPayload {
     }
     
     @Override
-    public void fillResData(IResData data) {
-        entries.forEach(a -> a.fillResData(data));
+    public void fillDummyResData(DummyResData data) {
+        entries.forEach(a -> a.fillDummyResData(data));
     }
     
     @Override

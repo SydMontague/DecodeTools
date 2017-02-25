@@ -1,6 +1,7 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.function.Function;
 
 import de.phoenixstaffel.decodetools.PixelFormatDecoder;
@@ -8,6 +9,7 @@ import de.phoenixstaffel.decodetools.PixelFormatEncoder;
 import de.phoenixstaffel.decodetools.TriFunction;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 
@@ -225,10 +227,26 @@ public class GMIOFile extends KCAPPayload {
     }
     
     @Override
-    public void fillResData(IResData data) {
-        if (image != null) {
-            byte[] pixelData = format.convertToFormat(image);
-            data.add(pixelData, true, getParent());
+    public void fillDummyResData(DummyResData data) {
+        if (image == null)
+            return;
+        
+        byte[] pixelData;
+        int size;
+        
+        if (format == PixelFormat.ETC1 || format == PixelFormat.ETC1A4) {
+            int[] rgbData = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+            ByteBuffer buffer = ByteBuffer.allocate(rgbData.length * 4);
+            for (int i : rgbData)
+                buffer.putInt(i);
+            pixelData = buffer.array();
+            size = image.getWidth() * image.getHeight() * format.getBPP() / 8;
         }
+        else {
+            pixelData = format.convertToFormat(image);
+            size = pixelData.length;
+        }
+        
+        data.add(pixelData, size, true, getParent());
     }
 }

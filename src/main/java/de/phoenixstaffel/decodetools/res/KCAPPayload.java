@@ -197,6 +197,6 @@ public abstract class KCAPPayload {
         }
     }
     
-    public void fillResData(IResData data) {
+    public void fillDummyResData(DummyResData data) {
     }
 }
