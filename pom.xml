@@ -1,12 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.phoenixstaffel</groupId>
   <artifactId>decodetools</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>DecodeTools</name>
   <description>Tools for modding and data mining Decode</description>
-  
-  
+
+
   <dependencies>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
@@ -18,7 +19,7 @@
       <artifactId>jna-platform</artifactId>
       <version>4.1.0</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
@@ -28,6 +29,7 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -43,6 +45,17 @@
       </plugin>
 
       <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>de.phoenixstaffel.decodetools.Main</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>2.10</version>
@@ -53,22 +66,27 @@
             <goals>
               <goal>copy</goal>
             </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>net.java.dev.jna</groupId>
-                  <artifactId>jna-platform</artifactId>
-                  <version>4.1.0</version>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>net.java.dev.jna</groupId>
-                  <artifactId>jna</artifactId>
-                  <version>4.1.0</version>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <artifactItems>
+            <artifactItem>
+              <groupId>net.java.dev.jna</groupId>
+              <artifactId>jna-platform</artifactId>
+              <version>4.1.0</version>
+            </artifactItem>
+            <artifactItem>
+              <groupId>net.java.dev.jna</groupId>
+              <artifactId>jna</artifactId>
+              <version>4.1.0</version>
+            </artifactItem>
+            <artifactItem>
+              <groupId>org.yaml</groupId>
+              <artifactId>snakeyaml</artifactId>
+              <version>1.17</version>
+            </artifactItem>
+          </artifactItems>
+        </configuration>
       </plugin>
     </plugins>
   </build>
