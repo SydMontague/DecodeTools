@@ -171,7 +171,7 @@ public class ExampleFrame extends JFrame implements Observer {
         private static final long serialVersionUID = 423960702402170030L;
         
         public LoadAction() {
-            super("Load");
+            super("Load File");
         }
         
         @Override
