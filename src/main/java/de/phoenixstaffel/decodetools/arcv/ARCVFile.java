@@ -19,7 +19,6 @@ import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
 import de.phoenixstaffel.decodetools.res.ResFile;
 
 //this is crap, but it works...
-//FIXME it's slow as fuck and needs optimisation + multi-threading
 public class ARCVFile {
     private static final Logger log = Logger.getLogger("DataMiner");
     

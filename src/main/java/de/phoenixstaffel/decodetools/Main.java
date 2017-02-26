@@ -10,6 +10,7 @@ import de.phoenixstaffel.decodetools.arcv.ARCVFile;
 import de.phoenixstaffel.decodetools.arcv.VCRAFile;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.gui.ExampleFrame;
 import de.phoenixstaffel.decodetools.res.ResFile;
 
 /*
