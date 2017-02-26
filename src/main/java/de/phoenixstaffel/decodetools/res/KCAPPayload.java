@@ -1,6 +1,8 @@
 package de.phoenixstaffel.decodetools.res;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,6 +12,7 @@ import javax.swing.tree.MutableTreeNode;
 
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.BTXFile;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
@@ -198,5 +201,15 @@ public abstract class KCAPPayload {
     }
     
     public void fillDummyResData(DummyResData data) {
+    }
+
+
+    public List<KCAPPayload> getElementsWithType(Payload type) {
+        List<KCAPPayload> list = new ArrayList<>();
+        
+        if(getType() == type)
+            list.add(this);
+        
+        return list;
     }
 }

@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools;
+package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.Graphics;
 import java.awt.Image;
@@ -6,6 +6,8 @@ import java.awt.Image;
 import javax.swing.JComponent;
 
 public class JImage extends JComponent {
+    private static final long serialVersionUID = 4941666770159805904L;
+    
     private Image image;
 
     public JImage(Image image) {

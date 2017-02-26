@@ -217,6 +217,15 @@ public class KCAPFile extends KCAPPayload {
     }
     
     @Override
+    public List<KCAPPayload> getElementsWithType(Payload type) {
+        List<KCAPPayload> list = super.getElementsWithType(type);
+        
+        entries.forEach(a -> list.addAll(a.getElementsWithType(type)));
+        
+        return list;
+    }
+    
+    @Override
     public void fillDummyResData(DummyResData data) {
         entries.forEach(a -> a.fillDummyResData(data));
     }
