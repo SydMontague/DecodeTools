@@ -18,6 +18,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import de.phoenixstaffel.decodetools.arcv.ARCVFile;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
@@ -178,6 +182,22 @@ public class ExampleFrame extends JFrame implements Observer {
         public void actionPerformed(ActionEvent e) {
             JFileChooser fileDialogue = new JFileChooser("./Input");
             fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            try {
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            } catch (ClassNotFoundException e2) {
+                // TODO Auto-generated catch block
+                e2.printStackTrace();
+            } catch (InstantiationException e2) {
+                // TODO Auto-generated catch block
+                e2.printStackTrace();
+            } catch (IllegalAccessException e2) {
+                // TODO Auto-generated catch block
+                e2.printStackTrace();
+            } catch (UnsupportedLookAndFeelException e2) {
+                // TODO Auto-generated catch block
+                e2.printStackTrace();
+            }
+            SwingUtilities.updateComponentTreeUI(fileDialogue);
             fileDialogue.showOpenDialog(null);
             
             if (fileDialogue.getSelectedFile() == null)
