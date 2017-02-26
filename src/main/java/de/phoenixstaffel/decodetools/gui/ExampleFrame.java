@@ -214,7 +214,8 @@ public class ExampleFrame extends JFrame implements Observer {
             JFileChooser fileDialogue = new JFileChooser("./Input");
             fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
             try {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            	
             } catch (ClassNotFoundException e2) {
                 // TODO Auto-generated catch block
                 e2.printStackTrace();
@@ -225,8 +226,7 @@ public class ExampleFrame extends JFrame implements Observer {
                 // TODO Auto-generated catch block
                 e2.printStackTrace();
             } catch (UnsupportedLookAndFeelException e2) {
-                // TODO Auto-generated catch block
-                e2.printStackTrace();
+
             }
             fileDialogue.showOpenDialog(null);
             
