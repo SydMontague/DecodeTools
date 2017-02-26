@@ -213,21 +213,6 @@ public class ExampleFrame extends JFrame implements Observer {
         public void actionPerformed(ActionEvent e) {
             JFileChooser fileDialogue = new JFileChooser("./Input");
             fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            try {
-            	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            	
-            } catch (ClassNotFoundException e2) {
-                // TODO Auto-generated catch block
-                e2.printStackTrace();
-            } catch (InstantiationException e2) {
-                // TODO Auto-generated catch block
-                e2.printStackTrace();
-            } catch (IllegalAccessException e2) {
-                // TODO Auto-generated catch block
-                e2.printStackTrace();
-            } catch (UnsupportedLookAndFeelException e2) {
-
-            }
             fileDialogue.showOpenDialog(null);
             
             if (fileDialogue.getSelectedFile() == null)
