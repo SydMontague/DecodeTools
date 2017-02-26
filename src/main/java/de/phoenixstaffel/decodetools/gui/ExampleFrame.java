@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -35,6 +36,7 @@ public class ExampleFrame extends JFrame implements Observer {
     private EditorModel model = new EditorModel();
     
     private JPanel contentPane;
+    private JMenu mnStyle = new JMenu("Style");
     
     public ExampleFrame() {
         model.addObserver(this);
@@ -68,6 +70,8 @@ public class ExampleFrame extends JFrame implements Observer {
         mntmRebuildArcv.setAction(new RebuildAction());
         mnArcv.add(mntmRebuildArcv);
         
+        menuBar.add(mnStyle);
+        
         contentPane = new JPanel();
         contentPane.setBorder(null);
         setContentPane(contentPane);
@@ -92,8 +96,35 @@ public class ExampleFrame extends JFrame implements Observer {
         //@formatter:on
         
         contentPane.setLayout(contentPaneLayout);
+        
+        addLookAndFeelOptions();
     }
     
+    private void addLookAndFeelOptions() {
+        LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
+        
+        for(LookAndFeelInfo style : info) {
+            mnStyle.add(new JMenuItem(new AbstractAction(style.getName()) {
+                private static final long serialVersionUID = -7199990221476393001L;
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        UIManager.setLookAndFeel(style.getClassName());
+                        SwingUtilities.updateComponentTreeUI(ExampleFrame.this);
+                    }
+                    catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                }
+            }));
+        }
+
+        // TODO Auto-generated method stub
+        
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         //nothing to implement yet
@@ -197,7 +228,6 @@ public class ExampleFrame extends JFrame implements Observer {
                 // TODO Auto-generated catch block
                 e2.printStackTrace();
             }
-            SwingUtilities.updateComponentTreeUI(fileDialogue);
             fileDialogue.showOpenDialog(null);
             
             if (fileDialogue.getSelectedFile() == null)
