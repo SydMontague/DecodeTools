@@ -36,7 +36,7 @@ public class ImageViewerPanel extends EditorPanel {
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.addListSelectionListener(a -> {
             GMIOFile selected = list.getSelectedValue();
-            image.setImage(selected.getImage());
+            image.setImage(selected != null ? selected.getImage() : null);
         });
         
         btnExport.setAction(new ExportAction());
