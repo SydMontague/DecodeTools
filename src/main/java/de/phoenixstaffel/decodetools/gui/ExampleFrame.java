@@ -69,8 +69,12 @@ public class ExampleFrame extends JFrame implements Observer {
         menuBar.add(mnArcv);
         
         JMenuItem mntmRebuildArcv = new JMenuItem("Rebuild ARCV");
-        mntmRebuildArcv.setAction(new RebuildAction());
+        mntmRebuildArcv.setAction(new RebuildAction(true));
         mnArcv.add(mntmRebuildArcv);
+        
+        JMenuItem mntmRebuildUncompressedArcv = new JMenuItem("Rebuild Uncompressed ARCV");
+        mntmRebuildUncompressedArcv.setAction(new RebuildAction(true));
+        mnArcv.add(mntmRebuildUncompressedArcv);
         
         menuBar.add(mnStyle);
         
@@ -184,9 +188,11 @@ public class ExampleFrame extends JFrame implements Observer {
     
     class RebuildAction extends AbstractAction {
         private static final long serialVersionUID = -5886136864566743305L;
+        private boolean compressed;
         
-        public RebuildAction() {
+        public RebuildAction(boolean compressed) {
             super("Rebuild ARCV");
+            this.compressed = compressed;
         }
         
         @Override
@@ -208,7 +214,7 @@ public class ExampleFrame extends JFrame implements Observer {
                 return;
             
             try {
-                new ARCVFile(inputFileDialogue.getSelectedFile()).saveFiles(outputFileDialogue.getSelectedFile());
+                new ARCVFile(inputFileDialogue.getSelectedFile(), compressed).saveFiles(outputFileDialogue.getSelectedFile());
             }
             catch (IOException e1) {
                 log.log(Level.WARNING, "Error while rebuilding ARCV files!", e1);

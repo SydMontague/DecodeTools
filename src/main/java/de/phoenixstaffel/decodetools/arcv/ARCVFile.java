@@ -23,6 +23,7 @@ public class ARCVFile {
     private static final Logger log = Logger.getLogger("DataMiner");
     
     private File inputDir;
+    private boolean compressed;
     
     private Access destination;
     private int sectorCount = 0;
@@ -32,12 +33,17 @@ public class ARCVFile {
     private long resLoadTime = 0;
     private long resDataTime = 0;
     
-    public ARCVFile(File inputDir) {
+    public ARCVFile(File inputDir, boolean compressed) {
         if (!inputDir.isDirectory())
             throw new IllegalArgumentException("Given File has to be an directory!");
         
         this.inputDir = inputDir;
+        this.compressed = compressed;
         this.arcvinfo = new VCRAFile();
+    }
+    
+    public ARCVFile(File inputDir) {
+        this(inputDir, true);
     }
     
     public void saveFiles(File outputDir) throws IOException {
@@ -82,7 +88,7 @@ public class ARCVFile {
         
         byte[] input = Files.readAllBytes(a);
         
-        if (input.length > 0x1000) {
+        if (input.length > 0x1000 && compressed) {
             Deflater compresser = new Deflater(Deflater.DEFAULT_COMPRESSION);
             compresser.setInput(input);
             compresser.finish();
