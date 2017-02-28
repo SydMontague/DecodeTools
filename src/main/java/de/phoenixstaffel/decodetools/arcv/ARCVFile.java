@@ -52,7 +52,7 @@ public class ARCVFile {
         
         List<File> list = Utils.fileOrder(inputDir);
         
-        list.forEach(t -> {
+        list.stream().filter(a -> !a.getName().endsWith(".bak")).forEach(t -> {
             if (t.isDirectory())
                 return;
             
