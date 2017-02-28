@@ -1,6 +1,7 @@
 package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
@@ -24,14 +25,11 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import de.phoenixstaffel.decodetools.arcv.ARCVFile;
-import de.phoenixstaffel.decodetools.dataminer.Access;
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
-import de.phoenixstaffel.decodetools.res.ResFile;
 
 public class ExampleFrame extends JFrame implements Observer {
     private static final long serialVersionUID = -8269477952146086450L;
     
-    static final Logger log = Logger.getLogger("DataMiner");
+    static final Logger log = Logger.getLogger("Decode Tool");
     
     private EditorModel model = new EditorModel();
     
@@ -54,13 +52,17 @@ public class ExampleFrame extends JFrame implements Observer {
         mntmLoadFile.setAction(new LoadAction());
         
         JMenuItem mntmSaveFile = new JMenuItem("Save File");
-        mntmSaveFile.setAction(new SaveAction("Save File"));
+        mntmSaveFile.setAction(new SaveAsAction());
         
         JMenuItem mntmExit = new JMenuItem("Exit");
-        mntmExit.setAction(new ExitAction("Exit"));
+        mntmExit.setAction(new ExitAction());
+
+        JMenuItem mntmSave = new JMenuItem("Save");
+        mntmSave.setAction(new SaveAction());
         
         mnFile.add(mntmLoadFile);
         mnFile.add(mntmSaveFile);
+        mnFile.add(mntmSave);
         mnFile.add(mntmExit);
         
         JMenu mnArcv = new JMenu("ARCV");
@@ -137,8 +139,8 @@ public class ExampleFrame extends JFrame implements Observer {
     class ExitAction extends AbstractAction {
         private static final long serialVersionUID = -3954749987113215617L;
         
-        public ExitAction(String name) {
-            super(name);
+        public ExitAction() {
+            super("Exit");
         }
         
         @Override
@@ -147,11 +149,11 @@ public class ExampleFrame extends JFrame implements Observer {
         }
     }
     
-    class SaveAction extends AbstractAction {
+    class SaveAsAction extends AbstractAction {
         private static final long serialVersionUID = -6551617661779370568L;
         
-        public SaveAction(String name) {
-            super(name);
+        public SaveAsAction() {
+            super("Save As");
         }
         
         @Override
@@ -163,7 +165,20 @@ public class ExampleFrame extends JFrame implements Observer {
             if (fileDialogue.getSelectedFile() == null)
                 return;
             
-            getModel().getSelectedFile().repack(fileDialogue.getSelectedFile());
+            getModel().getSelectedResource().repack(fileDialogue.getSelectedFile());
+        }
+    }
+    
+    class SaveAction extends AbstractAction {
+        private static final long serialVersionUID = -6551617661779370568L;
+        
+        public SaveAction() {
+            super("Save");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            getModel().getSelectedResource().repack(getModel().getSelectedFile());
         }
     }
     
@@ -218,14 +233,9 @@ public class ExampleFrame extends JFrame implements Observer {
             if (fileDialogue.getSelectedFile() == null)
                 return;
             
-            try (Access access = new FileAccess(fileDialogue.getSelectedFile())) {
-                setTitle(fileDialogue.getSelectedFile().getName());
-                ResFile file = new ResFile(access);
-                getModel().setSelectedFile(file);
-            }
-            catch (IOException e1) {
-                log.log(Level.WARNING, "Error while loading file!", e1);
-            }
+            File file = fileDialogue.getSelectedFile();
+            setTitle(file.getName());
+            getModel().setSelectedFile(file);
         }
     }
 }
