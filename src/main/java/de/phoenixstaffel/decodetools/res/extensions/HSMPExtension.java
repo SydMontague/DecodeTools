@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
 
 public class HSMPExtension implements HeaderExtension {
-    private int unknown1;
+    private int unknown1; //must be 0x100
     private float unknown2;
     private float unknown3;
     private float unknown4;
@@ -15,7 +15,7 @@ public class HSMPExtension implements HeaderExtension {
     private float unknown6;
     private float unknown7;
     private float unknown8;
-    private float unknown9;
+    private float scale;
     private int unknown10; // padding?
     
     private String name;
@@ -30,7 +30,7 @@ public class HSMPExtension implements HeaderExtension {
         unknown6 = source.readFloat();
         unknown7 = source.readFloat();
         unknown8 = source.readFloat();
-        unknown9 = source.readFloat();
+        scale = source.readFloat();
         unknown10 = source.readInteger();
         
         name = source.readASCIIString();
@@ -65,7 +65,7 @@ public class HSMPExtension implements HeaderExtension {
         dest.writeFloat(unknown6);
         dest.writeFloat(unknown7);
         dest.writeFloat(unknown8);
-        dest.writeFloat(unknown9);
+        dest.writeFloat(scale);
         dest.writeInteger(unknown10);
         
         dest.writeString(name, "ASCII");
