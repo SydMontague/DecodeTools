@@ -5,20 +5,42 @@ import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
 
 public class LRTMPayload extends KCAPPayload {
-    private int[] data;
+    private int index;
+    private short unknown1; //shading type? 4 = unshaded?
+    private short unknown2; //???
+    private int colorFilter; //?
+    private short unknown4; //lighting size
+    private short unknown5; //lighting point
+    
+    private short unknown6; //??? size
+    private short unknown7; //??? pointer
+    
+    private byte[] data1; //more lighting  diffuse - specular - constant?
+    private byte[] data2; //???
     
     public LRTMPayload(Access source, int dataStart, KCAPFile parent, int size) {
         super(parent);
         
-        data = new int[size / 4];
+        index = source.readInteger();
+        unknown1 = source.readShort();
+        unknown2 = source.readShort();
+        colorFilter = source.readInteger();
+        unknown4 = source.readShort();
+        unknown5 = source.readShort();
         
-        for (int i = 0; i < data.length; i++)
-            data[i] = source.readInteger();
+        unknown6 = source.readShort();
+        unknown7 = source.readShort();
+        source.readInteger(); // padding
+        source.readInteger(); // padding
+        source.readInteger(); // padding
+        
+        data1 = source.readByteArray(unknown4);
+        data2 = source.readByteArray(unknown6);
     }
     
     @Override
     public int getSize() {
-        return data.length * 4;
+        return 0x20 + data1.length + data2.length;
     }
     
     @Override
@@ -33,7 +55,20 @@ public class LRTMPayload extends KCAPPayload {
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
-        for (int i : data)
-            dest.writeInteger(i);
+        dest.writeInteger(index);
+        dest.writeShort(unknown1);
+        dest.writeShort(unknown2);
+        dest.writeInteger(colorFilter);
+        dest.writeShort(unknown4);
+        dest.writeShort(unknown5);
+        
+        dest.writeShort(unknown6);
+        dest.writeShort(unknown7);
+        dest.writeInteger(0); // padding
+        dest.writeInteger(0); // padding
+        dest.writeInteger(0); // padding
+        
+        dest.writeByteArray(data1);
+        dest.writeByteArray(data2);
     }
 }
