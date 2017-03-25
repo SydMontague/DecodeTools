@@ -6,14 +6,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 
 public class PixelFormatEncoder {
-    private static final Logger log = Logger.getLogger("DataMiner");
     private static final String ENCODER_PATH = "./3dstex";
     private static final String TMP_SOURCE = "tmp.png";
     private static final String TMP_TARGET = "tmp.etc1";
@@ -239,15 +237,15 @@ public class PixelFormatEncoder {
             }
             finally {
                 if(!(new File(TMP_SOURCE).delete() && new File(TMP_TARGET).delete()))
-                    log.warning("Could not delete temporary files after converting to ETC1.");
+                    Main.LOGGER.warning("Could not delete temporary files after converting to ETC1.");
             }
         }
         catch (InterruptedException e) {
-            log.log(Level.SEVERE, "An interrupt happened while execution the process.", e);
+            Main.LOGGER.log(Level.SEVERE, "An interrupt happened while execution the process.", e);
             Thread.currentThread().interrupt();
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, "An IO error occured while converting to ETC1", e);
+            Main.LOGGER.log(Level.SEVERE, "An IO error occured while converting to ETC1", e);
         }
         
         return new byte[0];
@@ -265,15 +263,15 @@ public class PixelFormatEncoder {
             }
             finally {
                 if(!(new File(TMP_SOURCE).delete() && new File(TMP_TARGET).delete()))
-                    log.warning("Could not delete temporary files after converting to ETC1A4.");
+                    Main.LOGGER.warning("Could not delete temporary files after converting to ETC1A4.");
             }
         }
         catch (InterruptedException e) {
-            log.log(Level.SEVERE, "An interrupt happened while execution the process.", e);
+            Main.LOGGER.log(Level.SEVERE, "An interrupt happened while execution the process.", e);
             Thread.currentThread().interrupt();
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, "An IO error occured while converting to ETC1A4", e);
+            Main.LOGGER.log(Level.SEVERE, "An IO error occured while converting to ETC1A4", e);
         }
         
         return new byte[0];

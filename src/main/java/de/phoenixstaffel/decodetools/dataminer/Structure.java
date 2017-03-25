@@ -10,13 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.yaml.snakeyaml.Yaml;
 
+import de.phoenixstaffel.decodetools.Main;
+
 public class Structure {
-    private static final Logger log = Logger.getLogger("DataMiner");
-    
     private long offset;
     private int numEntries;
     private String structureClass;
@@ -31,7 +30,7 @@ public class Structure {
             map = yaml.loadAs(reader, Map.class);
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, "Failed to read file: " + file + "Stacktrace: " + e);
+            Main.LOGGER.log(Level.SEVERE, "Failed to read file: " + file + "Stacktrace: " + e);
             return;
         }
         

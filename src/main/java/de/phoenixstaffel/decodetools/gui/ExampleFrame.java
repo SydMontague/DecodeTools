@@ -5,13 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -19,17 +18,17 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.arcv.ARCVFile;
 
 public class ExampleFrame extends JFrame implements Observer {
     private static final long serialVersionUID = -8269477952146086450L;
-    
-    static final Logger log = Logger.getLogger("Decode Tool");
     
     private EditorModel model = new EditorModel();
     
@@ -56,7 +55,7 @@ public class ExampleFrame extends JFrame implements Observer {
         
         JMenuItem mntmExit = new JMenuItem("Exit");
         mntmExit.setAction(new ExitAction());
-
+        
         JMenuItem mntmSave = new JMenuItem("Save");
         mntmSave.setAction(new SaveAction());
         
@@ -69,11 +68,11 @@ public class ExampleFrame extends JFrame implements Observer {
         menuBar.add(mnArcv);
         
         JMenuItem mntmRebuildArcv = new JMenuItem("Rebuild ARCV");
-        mntmRebuildArcv.setAction(new RebuildAction(true));
+        mntmRebuildArcv.setAction(new RebuildAction("Rebuild ARCV", true));
         mnArcv.add(mntmRebuildArcv);
         
         JMenuItem mntmRebuildUncompressedArcv = new JMenuItem("Rebuild Uncompressed ARCV");
-        mntmRebuildUncompressedArcv.setAction(new RebuildAction(true));
+        mntmRebuildUncompressedArcv.setAction(new RebuildAction("Rebuild Uncompressed ARCV", false));
         mnArcv.add(mntmRebuildUncompressedArcv);
         
         menuBar.add(mnStyle);
@@ -109,10 +108,10 @@ public class ExampleFrame extends JFrame implements Observer {
     private void addLookAndFeelOptions() {
         LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
         
-        for(LookAndFeelInfo style : info) {
+        for (LookAndFeelInfo style : info) {
             mnStyle.add(new JMenuItem(new AbstractAction(style.getName()) {
                 private static final long serialVersionUID = -7199990221476393001L;
-
+                
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -120,20 +119,16 @@ public class ExampleFrame extends JFrame implements Observer {
                         SwingUtilities.updateComponentTreeUI(ExampleFrame.this);
                     }
                     catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
+                        Main.LOGGER.log(Level.SEVERE, "Error while setting Look & Feel!" , e1);
                     }
                 }
             }));
         }
-
-        // TODO Auto-generated method stub
-        
     }
-
+    
     @Override
     public void update(Observable o, Object arg) {
-        //nothing to implement yet
+        // nothing to implement yet
     }
     
     public EditorModel getModel() {
@@ -188,15 +183,16 @@ public class ExampleFrame extends JFrame implements Observer {
     
     class RebuildAction extends AbstractAction {
         private static final long serialVersionUID = -5886136864566743305L;
-        private boolean compressed;
+        boolean compressed;
         
-        public RebuildAction(boolean compressed) {
-            super("Rebuild ARCV");
+        public RebuildAction(String name, boolean compressed) {
+            super(name);
             this.compressed = compressed;
         }
         
         @Override
         public void actionPerformed(ActionEvent e) {
+            
             JFileChooser inputFileDialogue = new JFileChooser("./");
             inputFileDialogue.setDialogTitle("Please select the directory with the extracted ARCV contents.");
             inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -213,12 +209,28 @@ public class ExampleFrame extends JFrame implements Observer {
             if (outputFileDialogue.getSelectedFile() == null)
                 return;
             
-            try {
-                new ARCVFile(inputFileDialogue.getSelectedFile(), compressed).saveFiles(outputFileDialogue.getSelectedFile());
-            }
-            catch (IOException e1) {
-                log.log(Level.WARNING, "Error while rebuilding ARCV files!", e1);
-            }
+            //TODO add work queue, to make sure only one task is executed at a time
+            ExampleFrame.this.setEnabled(false);
+            SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    try {
+                        new ARCVFile(inputFileDialogue.getSelectedFile(), compressed).saveFiles(outputFileDialogue.getSelectedFile());
+                        //TODO add progressbar
+                    }
+                    catch (IOException e1) {
+                        Main.LOGGER.log(Level.WARNING, "Error while rebuilding ARCV files!", e1);
+                    }
+                    return null;
+                }
+                
+                @Override
+                protected void done() {
+                    ExampleFrame.this.setEnabled(true);
+                }
+                
+            };
+            worker.execute();
             
         }
     }

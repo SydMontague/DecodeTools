@@ -4,22 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 
-import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
 import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
 
 public class EditorModel extends Observable {
-    static final Logger log = Logger.getLogger("Decode Tool");
-    
     private ResFile selectedRes;
     private File selectedFile;
     
@@ -41,10 +39,9 @@ public class EditorModel extends Observable {
             
             setChanged();
             notifyObservers();
-            
         }
         catch (IOException e1) {
-            log.log(Level.WARNING, "Error while loading file!", e1);
+            Main.LOGGER.log(Level.WARNING, "Error while loading file!", e1);
             return;
         }
     }

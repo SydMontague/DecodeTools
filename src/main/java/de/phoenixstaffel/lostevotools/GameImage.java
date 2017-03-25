@@ -41,7 +41,6 @@ public class GameImage {
             ImageIO.write(image, "PNG", output);
         }
         catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         
@@ -69,7 +68,6 @@ public class GameImage {
             ImageIO.write(image, "PNG", output);
         }
         catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         

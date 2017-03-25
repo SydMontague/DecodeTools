@@ -4,18 +4,16 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.logging.Logger;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.jna.Kernel32;
 
 public class MemoryAccess implements Access {
-    private static final Logger log = Logger.getLogger("DataMiner");
-    
     private static final int PROCESS_VM_READ = 0x0010;
     private static final int PROCESS_VM_WRITE = 0x0020;
     private static final int PROCESS_VM_OPERATION = 0x0008;
@@ -298,7 +296,7 @@ public class MemoryAccess implements Access {
             return Charset.forName(charset);
         }
         catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
-            log.severe("Invalid Charset given, falling back to default: " + charset + " Stacktrace: " + e);
+            Main.LOGGER.severe("Invalid Charset given, falling back to default: " + charset + " Stacktrace: " + e);
             return Charset.defaultCharset();
         }
     }

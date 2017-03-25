@@ -7,9 +7,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.Deflater;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
@@ -20,8 +20,6 @@ import de.phoenixstaffel.decodetools.res.ResFile;
 
 //this is crap, but it works...
 public class ARCVFile {
-    private static final Logger log = Logger.getLogger("DataMiner");
-    
     private File inputDir;
     private boolean compressed;
     
@@ -63,18 +61,18 @@ public class ARCVFile {
                 return;
             
             try {
-                log.info("Adding " + inputDir.toPath().relativize(t.toPath()));
+                Main.LOGGER.info("Adding " + inputDir.toPath().relativize(t.toPath()));
                 addFile(t.toPath(), inputDir.toPath().relativize(t.toPath()).toString().replaceAll("\\\\", "/")); // fuck windows
             }
             catch (IOException e) {
-                log.log(Level.WARNING, "Exception while adding file to ARCVFile.", e);
+                Main.LOGGER.log(Level.WARNING, "Exception while adding file to ARCVFile.", e);
             }
         });
         
         destination.close();
         arcvinfo.repack(new File(outputDir, "/ARCVINFO.BIN"));
         
-        System.out.println("ZIP: " + zipTime + " | Res Load: " + resLoadTime + " | Res Data: " + resDataTime);
+        Main.LOGGER.info("ZIP: " + (zipTime / 1000000) + " | Res Load: " + (resLoadTime / 1000000) + " | Res Data: " + (resDataTime / 1000000));
     }
     
     private void addFile(Path a, String name) throws IOException {

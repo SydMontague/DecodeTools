@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 
@@ -26,8 +26,6 @@ import de.phoenixstaffel.decodetools.dataminer.FileAccess;
  * int - unknown
  */
 public class VCRAFile {
-    private static final Logger log = Logger.getLogger("DataMiner");
-    
     private static final String MAGIC_VALUE = "VCRA";
     private static final int VERSION = 0x00000102; // ?
     
@@ -69,7 +67,7 @@ public class VCRAFile {
                 return;
         }
         catch (IOException e1) {
-            log.log(Level.WARNING, "Exception while creating new ARCVINFO.BIN.", e1);
+            Main.LOGGER.log(Level.WARNING, "Exception while creating new ARCVINFO.BIN.", e1);
         }
         
         try (Access access = new FileAccess(file)) {
@@ -113,7 +111,7 @@ public class VCRAFile {
             }
         }
         catch (IOException e) {
-            log.log(Level.WARNING, "Exception while writing new ARCVINFO.BIN.", e);
+            Main.LOGGER.log(Level.WARNING, "Exception while writing new ARCVINFO.BIN.", e);
         }
     }
     

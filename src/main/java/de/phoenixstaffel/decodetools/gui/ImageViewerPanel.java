@@ -17,10 +17,11 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.filechooser.FileFilter;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
-import javax.swing.ScrollPaneConstants;
 
 public class ImageViewerPanel extends EditorPanel {
     private static final long serialVersionUID = 4301317831427884206L;
@@ -121,14 +122,10 @@ public class ImageViewerPanel extends EditorPanel {
                 else
                     file = new File(fileDialogue.getSelectedFile().getPath() + ".png");
                 
-                ImageIO.write(selected.getImage(),
-                              "PNG",
-                              file);
+                ImageIO.write(selected.getImage(), "PNG", file);
             }
             catch (IOException ex) {
-                log.log(Level.WARNING,
-                        "Could not read image file, not an image?",
-                        ex);
+                Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
             }
         }
     }
@@ -160,9 +157,7 @@ public class ImageViewerPanel extends EditorPanel {
                 image.setImage(selected.getImage());
             }
             catch (IOException ex) {
-                log.log(Level.WARNING,
-                        "Could not read image file, not an image?",
-                        ex);
+                Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
             }
         }
     }

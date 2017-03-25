@@ -10,10 +10,10 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import de.phoenixstaffel.decodetools.Main;
 
 public class FileAccess implements Access {
-    private static final Logger log = Logger.getLogger("DataMiner");
     private static final String ERROR_READ = "FileAccess: failed to read a from FileChannel";
     private static final String ERROR_WRITE = "FileAccess: failed to write into a FileChannel";
     
@@ -329,7 +329,7 @@ public class FileAccess implements Access {
             return chan.position();
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, ERROR_READ, e);
+            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
             return -1;
         }
     }
@@ -340,7 +340,7 @@ public class FileAccess implements Access {
             chan.position(address);
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, ERROR_READ, e);
+            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
         }
     }
     
@@ -350,7 +350,7 @@ public class FileAccess implements Access {
             chan.read(buff);
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, ERROR_READ, e);
+            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
         }
         buff.flip();
     }
@@ -361,7 +361,7 @@ public class FileAccess implements Access {
             chan.read(buff, address);
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, ERROR_READ, e);
+            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
         }
         buff.flip();
     }
@@ -372,7 +372,7 @@ public class FileAccess implements Access {
             chan.write(buff);
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, ERROR_WRITE, e);
+            Main.LOGGER.log(Level.SEVERE, ERROR_WRITE, e);
         }
     }
     
@@ -382,7 +382,7 @@ public class FileAccess implements Access {
             chan.write(buff, address);
         }
         catch (IOException e) {
-            log.log(Level.SEVERE, ERROR_WRITE, e);
+            Main.LOGGER.log(Level.SEVERE, ERROR_WRITE, e);
         }
     }
     
@@ -391,7 +391,7 @@ public class FileAccess implements Access {
             return Charset.forName(charset);
         }
         catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
-            log.severe("Invalid Charset given, falling back to default: " + charset + " Stacktrace: " + e);
+            Main.LOGGER.severe("Invalid Charset given, falling back to default: " + charset + " Stacktrace: " + e);
             return Charset.defaultCharset();
         }
     }
@@ -407,7 +407,7 @@ public class FileAccess implements Access {
             return chan.size();
         }
         catch (IOException e) {
-            log.log(Level.WARNING, "Could not get size of FileChannel", e);
+            Main.LOGGER.log(Level.WARNING, "Could not get size of FileChannel", e);
             return -1;
         }
     }

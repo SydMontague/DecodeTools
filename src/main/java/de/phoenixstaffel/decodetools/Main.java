@@ -1,17 +1,10 @@
 package de.phoenixstaffel.decodetools;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.logging.Logger;
 
-import de.phoenixstaffel.decodetools.arcv.ARCVFile;
-import de.phoenixstaffel.decodetools.arcv.VCRAFile;
-import de.phoenixstaffel.decodetools.dataminer.Access;
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 import de.phoenixstaffel.decodetools.gui.ExampleFrame;
-import de.phoenixstaffel.decodetools.res.ResFile;
+import de.phoenixstaffel.decodetools.gui.JLogWindow;
 
 /*
  * 
@@ -19,19 +12,20 @@ import de.phoenixstaffel.decodetools.res.ResFile;
  * 
  */
 public class Main {
-    private static final Logger log = Logger.getLogger("DataMiner");
+    public static final Logger LOGGER = Logger.getLogger("Decode Tool");
     
     private Main() {
         // no implementation
     }
     
     public static void main(String[] args) throws IOException {
+        new JLogWindow(LOGGER).setVisible(true);
         new ExampleFrame().setVisible(true);
-        
+
         /*try (Access b = new FileAccess(new File("./Input/Map/life01.res"))) {
             ResFile f = new ResFile(b);
             f.getRoot().getSize();
-            System.out.println("Packing");
+            LOGGER.info("Packing");
             f.repack(new File("Output/life01.res"));
             
         }
@@ -45,15 +39,15 @@ public class Main {
             if(!f.isFile())
                 return;
             
-            System.out.println(f.getPath());
+            LOGGER.info(f.getPath());
             
             try (Access b = new FileAccess(f)) {
-                new ResFile(b).getRoot().getSize();
+                new ResFile(b);//.getRoot().getSize();
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
-        });*/
+        });
         //new ARCVFile(new File("./Input"));
         
         /*try(Access source = new FileAccess(new File("./Inputa/ARCVINFO.BIN"))) {

@@ -5,7 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import de.phoenixstaffel.decodetools.Main;
 
 /*
  * TYPE: LIST
@@ -24,8 +25,6 @@ import java.util.logging.Logger;
  * int - Unknown
  */
 public class ListMiner extends Miner {
-    private static final Logger log = Logger.getLogger("DataMiner");
-    
     private int magicValue;
     private int unknown1;
     private int size;
@@ -67,7 +66,7 @@ public class ListMiner extends Miner {
                 entries.add(c.newInstance(source, structure.getOffset(), entry));
         }
         catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            log.log(Level.INFO, "Error while loading structure", e);
+            Main.LOGGER.log(Level.INFO, "Error while loading structure", e);
         }
         
     }

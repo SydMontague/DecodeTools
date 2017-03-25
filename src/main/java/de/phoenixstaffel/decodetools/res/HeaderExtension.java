@@ -2,8 +2,8 @@ package de.phoenixstaffel.decodetools.res;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.extensions.CTPPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.GMIPExtension;
@@ -53,8 +53,6 @@ public interface HeaderExtension {
         KPTF(0x4654504B, KPTFExtension.class),
         VOID(0x00000000, VoidExtension.class); // no extension
         
-        private static final Logger log = Logger.getLogger("DataMiner");
-        
         private final int magicValue;
         private final Class<? extends HeaderExtension> clazz;
         
@@ -78,7 +76,7 @@ public interface HeaderExtension {
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException
                     | SecurityException e) {
-                log.log(Level.WARNING, "Failed to instantiate HeaderExtension " + this, e);
+                Main.LOGGER.log(Level.WARNING, "Failed to instantiate HeaderExtension " + this, e);
                 throw new IllegalArgumentException();
             }
             catch (IllegalArgumentException e) {

@@ -1,14 +1,11 @@
 package de.phoenixstaffel.decodetools.gui;
 
 import java.util.Observer;
-import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
 public abstract class EditorPanel extends JPanel implements Observer {
     private static final long serialVersionUID = -4112706371340135417L;
-    
-    static final Logger log = Logger.getLogger("DecodeTool");
     
     private EditorModel model;
     

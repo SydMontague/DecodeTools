@@ -5,14 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
-import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.BTXFile;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
@@ -83,10 +82,7 @@ public abstract class KCAPPayload {
     public abstract void writeKCAP(Access dest, IResData dataStream);
     
     public static KCAPPayload craft(Access source, int dataStart, KCAPFile parent, int size) {
-        return Payload.valueOf(parent, source.readInteger(source.getPosition())).newInstance(source,
-                                                                                             dataStart,
-                                                                                             parent,
-                                                                                             size);
+        return Payload.valueOf(parent, source.readLong(source.getPosition())).newInstance(source, dataStart, parent, size);
     }
     
     @Override
@@ -117,8 +113,6 @@ public abstract class KCAPPayload {
         TREP(0, TREPPayload.class),
         TNOJ(0, TNOJPayload.class),;
         
-        private static final Logger log = Logger.getLogger("DataMiner");
-        
         private final int magicValue;
         private final Class<? extends KCAPPayload> clazz;
         private Function<Access, Integer> method;
@@ -137,14 +131,20 @@ public abstract class KCAPPayload {
             return magicValue;
         }
         
-        public static Payload valueOf(KCAPFile parent, int value) {
+        public static Payload valueOf(KCAPFile parent, long value) {
+            int left = (int) (value >>> 32);
+            int right = (int) (value & 0xFFFFFFFF);
+            
             for (Payload extension : values()) {
                 if (extension.magicValue == 0)
                     continue;
                 
-                if (extension.magicValue == value)
+                if (extension.magicValue == right)
                     return extension;
             }
+            
+            if (left == BTX.getMagicValue())
+                return BTX;
             
             if (parent == null || parent.getExtension() == null)
                 return GENERIC;
@@ -181,16 +181,14 @@ public abstract class KCAPPayload {
         
         public KCAPPayload newInstance(Access source, int dataStart, KCAPFile parent, int size) {
             try {
-                return clazz.getConstructor(Access.class, int.class, KCAPFile.class, int.class)
-                            .newInstance(source, dataStart, parent, size);
+                return clazz.getConstructor(Access.class, int.class, KCAPFile.class, int.class).newInstance(source, dataStart, parent, size);
             }
-            catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException
-                    | SecurityException e) {
-                log.log(Level.WARNING, "Failed to instantiate HeaderExtension " + this, e);
+            catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                Main.LOGGER.log(Level.WARNING, "Failed to instantiate HeaderExtension " + this, e);
                 throw new IllegalArgumentException();
             }
             catch (IllegalArgumentException e) {
-                log.log(Level.WARNING, this.name());
+                Main.LOGGER.log(Level.WARNING, this.name());
                 throw e;
             }
         }
@@ -202,12 +200,11 @@ public abstract class KCAPPayload {
     
     public void fillDummyResData(DummyResData data) {
     }
-
-
+    
     public List<KCAPPayload> getElementsWithType(Payload type) {
         List<KCAPPayload> list = new ArrayList<>();
         
-        if(getType() == type)
+        if (getType() == type)
             list.add(this);
         
         return list;

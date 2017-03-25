@@ -24,11 +24,12 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
 
 public class KCAPPanel extends EditorPanel {
     private static final long serialVersionUID = -8718473237761608043L;
-
+    
     private JScrollPane scrollPane = new JScrollPane();
     private JTree tree = new JTree((TreeModel) null);
     
@@ -47,16 +48,15 @@ public class KCAPPanel extends EditorPanel {
         image.setMinimumSize(new Dimension(100, 100));
         image.setBackground(Color.LIGHT_GRAY);
         
-
         tree.setShowsRootHandles(true);
         tree.addTreeSelectionListener(a -> {
-                //TODO modularise the file viewer
-                Object selected = ((DefaultMutableTreeNode) a.getPath().getLastPathComponent()).getUserObject();
-                
-                if (selected instanceof GMIOFile) {
-                    image.setImage(((GMIOFile) selected).getImage());
-                }
-            });
+            // TODO modularise the file viewer
+            Object selected = ((DefaultMutableTreeNode) a.getPath().getLastPathComponent()).getUserObject();
+            
+            if (selected instanceof GMIOFile) {
+                image.setImage(((GMIOFile) selected).getImage());
+            }
+        });
         
         scrollPane.setViewportView(tree);
         
@@ -104,11 +104,11 @@ public class KCAPPanel extends EditorPanel {
         
         setLayout(groupLayout);
     }
-
+    
     @Override
     public void update(Observable o, Object arg) {
-        if(tree.getModel() != getModel().getTreeModel())
-            tree.setModel(getModel().getTreeModel()); 
+        if (tree.getModel() != getModel().getTreeModel())
+            tree.setModel(getModel().getTreeModel());
     }
     
     public JTree getTree() {
@@ -121,21 +121,21 @@ public class KCAPPanel extends EditorPanel {
     
     class ExportAction extends AbstractAction {
         private static final long serialVersionUID = 7773708520423706131L;
-
+        
         public ExportAction() {
-            super("Export"); 
-            }
+            super("Export");
+        }
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(getTree().getModel() == null)
+            if (getTree().getModel() == null)
                 return;
             
             Object selected = ((DefaultMutableTreeNode) getTree().getSelectionPath().getLastPathComponent()).getUserObject();
             
-            if (!(selected instanceof GMIOFile)) 
+            if (!(selected instanceof GMIOFile))
                 return;
-
+            
             JFileChooser fileDialogue = new JFileChooser("./Output");
             fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
             fileDialogue.setFileFilter(new FileFilter() {
@@ -144,7 +144,7 @@ public class KCAPPanel extends EditorPanel {
                 public boolean accept(File pathname) {
                     return !pathname.isDirectory();
                 }
-
+                
                 @Override
                 public String getDescription() {
                     return "PNG Image File (.png)";
@@ -152,46 +152,46 @@ public class KCAPPanel extends EditorPanel {
             });
             fileDialogue.showSaveDialog(null);
             
-            if(fileDialogue.getSelectedFile() == null)
+            if (fileDialogue.getSelectedFile() == null)
                 return;
             
             try {
                 File file;
-                if(fileDialogue.getSelectedFile().getName().endsWith(".png"))
+                if (fileDialogue.getSelectedFile().getName().endsWith(".png"))
                     file = fileDialogue.getSelectedFile();
                 else
                     file = new File(fileDialogue.getSelectedFile().getPath() + ".png");
                 
                 ImageIO.write(((GMIOFile) selected).getImage(), "PNG", file);
             }
-            catch(IOException ex) {
-                log.log(Level.WARNING, "Could not read image file, not an image?", ex);
+            catch (IOException ex) {
+                Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
             }
         }
     }
     
     class ImportAction extends AbstractAction {
         private static final long serialVersionUID = 7376798961551919059L;
-
+        
         public ImportAction() {
             super("Import");
         }
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(getTree().getModel() == null)
+            if (getTree().getModel() == null)
                 return;
             
             Object selected = ((DefaultMutableTreeNode) getTree().getSelectionPath().getLastPathComponent()).getUserObject();
             
-            if (!(selected instanceof GMIOFile)) 
+            if (!(selected instanceof GMIOFile))
                 return;
-
+            
             JFileChooser fileDialogue = new JFileChooser("./Input");
             fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
             fileDialogue.showOpenDialog(null);
             
-            if(fileDialogue.getSelectedFile() == null)
+            if (fileDialogue.getSelectedFile() == null)
                 return;
             
             try {
@@ -199,11 +199,9 @@ public class KCAPPanel extends EditorPanel {
                 ((GMIOFile) selected).setImage(localImage);
                 getImagePanel().setImage(((GMIOFile) selected).getImage());
             }
-            catch(IOException ex) {
-                log.log(Level.WARNING, "Could not read image file, not an image?", ex);
+            catch (IOException ex) {
+                Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
             }
         }
     }
 }
-
-
