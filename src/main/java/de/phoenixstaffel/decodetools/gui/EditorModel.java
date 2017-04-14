@@ -32,6 +32,7 @@ public class EditorModel extends Observable {
         try (Access access = new FileAccess(selectedFile)) {
             ResFile file = new ResFile(access);
             
+            this.selectedFile = selectedFile;
             this.selectedRes = file;
             this.treeModel = new DefaultTreeModel(selectedRes.getRoot().getTreeNode());
             this.imageListModel = new DefaultListModel<>();

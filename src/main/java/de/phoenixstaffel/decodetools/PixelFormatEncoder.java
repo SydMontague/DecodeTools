@@ -94,7 +94,7 @@ public class PixelFormatEncoder {
         
         for(int i : pixels) {
             short value = 0;
-            value |= (i >>> 19) & 0x1F << 11;
+            value |= ((i >>> 19) & 0x1F) << 11;
             value |= ((i >>> 10) & 0x3F) << 5;
             value |= ((i >>> 3) & 0x1F);
             buffer.putShort(value);
