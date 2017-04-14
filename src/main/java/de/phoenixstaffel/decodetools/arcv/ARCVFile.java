@@ -126,7 +126,7 @@ public class ARCVFile {
         resDataTime += System.nanoTime() - t;
         
         MARVEntry marv = new MARVEntry(structureSize, dataSize, dataEntries);
-        if (res.getType() == Payload.GENERIC)
+        if (res.getType() == Payload.GENERIC || res.getType() == Payload.BTX)
             marv = null;
         
         arcvinfo.addEntry(new VCRAEntry(compressedSize, input.length, name, startSector, marv));

@@ -4,14 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.Tuple;
+import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
@@ -52,7 +51,7 @@ public class BTXFile extends KCAPPayload {
             pointers.add(new Tuple<>(id, source.readInteger() + pos));
         }
         
-        Map<Integer, String> strings = new LinkedHashMap<>();
+        List<String> strings = new LinkedList<>();
         
         for (Tuple<Integer, Long> entry : pointers) {
             long pointer = entry.getValue();
@@ -72,20 +71,22 @@ public class BTXFile extends KCAPPayload {
             } while (val != 0);
             
             ByteBuffer b = ByteBuffer.wrap(stream.toByteArray());
-            strings.put(entry.getKey(), cset.decode(b).toString());
+            strings.add(cset.decode(b).toString());
         }
         
-        Map<Integer, BTXMeta> metas = new LinkedHashMap<>();
+        List<BTXMeta> metas = new LinkedList<>();
         if (postStart != 0) {
             source.setPosition(postStart + start);
             
             for (int i = 0; i < numEntries; i++) {
                 BTXMeta meta = new BTXMeta(source);
-                metas.put(meta.getId(), meta);
+                metas.add(meta);
             }
         }
         
-        pointers.stream().map(Tuple::getKey).forEach(a -> entries.add(new Tuple<>(a, new BTXEntry(strings.get(a), metas.get(a)))));
+        for(int i = 0; i < pointers.size(); i++) {
+            entries.add(new Tuple<>(pointers.get(i).getKey(), new BTXEntry(strings.get(i), metas.contains(i) ? metas.get(i) : null)));
+        }
     }
     
     @Override
@@ -93,10 +94,14 @@ public class BTXFile extends KCAPPayload {
         int size = 0x18 + entries.size() * 8;
         
         for (Tuple<Integer, BTXEntry> a : entries) {
-            size += 2 + (a.getValue().getString().length() * 2);
+            size += (a.getValue().getString().length() * 2);
             
-            if (a.getValue().getMeta() != null)
+            if (a.getValue().getMeta() != null) {
                 size += 0x30;
+                size = Utils.getPadded(size, 4);
+            }
+            else 
+                size += 2;
         }
         
         return size;
@@ -130,10 +135,21 @@ public class BTXFile extends KCAPPayload {
         
         for (Tuple<Integer, BTXEntry> a : entries) {
             dest.writeInteger(a.getKey());
-            dest.writeInteger((int) (pointer - dest.getPosition() + 4));
+            
+            int lPointer = (int) (pointer - dest.getPosition() + 2);
+            if(a.getValue().getMeta() != null)
+                lPointer = Utils.getPadded(lPointer, 4);
+            else
+                lPointer += 2;
+            
+            dest.writeInteger(lPointer);
             
             dest.writeString(a.getValue().getString(), WRITE_ENCODING, pointer);
-            pointer += 2 + a.getValue().getString().length() * 2;
+            pointer += a.getValue().getString().length() * 2;
+            if(a.getValue().getMeta() != null)
+                pointer = Utils.getPadded(pointer, 4);
+            else 
+                pointer += 2;
         }
         
         dest.setPosition(pointer);
