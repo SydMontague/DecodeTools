@@ -199,15 +199,16 @@ public class PixelFormatDecoder {
         
         return data;
     }
-    
+
+    //FIXME something is seriously wrong with LA8
     public static int[] convertFromLA8(byte[] a, int width, int height) {
         int[] data = new int[a.length / 2];
         
         for (int i = 0; i < data.length; i++) {
             data[i] += (Byte.toUnsignedInt(a[i * 2 + 1])) << 24;
-            data[i] += (Byte.toUnsignedInt(a[i * 2]));
-            data[i] += (Byte.toUnsignedInt(a[i * 2])) << 8;
-            data[i] += (Byte.toUnsignedInt(a[i * 2])) << 16;
+            data[i] += (Byte.toUnsignedInt(a[i * 2 + 0])) << 16;
+            data[i] += (Byte.toUnsignedInt(a[i * 2 + 0])) << 8;
+            data[i] += (Byte.toUnsignedInt(a[i * 2 + 0]));
         }
         
         return data;
