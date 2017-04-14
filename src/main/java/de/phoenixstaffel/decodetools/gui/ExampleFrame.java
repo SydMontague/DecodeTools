@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;

@@ -243,15 +243,15 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length * 2];
         
         for (int i = 0; i < a.length; i++) {
-            data[i * 2] += 255 << 24;
-            data[i * 2] += PixelFormatDecoder.extend4To8(a[i] >>> 4);
-            data[i * 2] += PixelFormatDecoder.extend4To8(a[i] >>> 4) << 8;
-            data[i * 2] += PixelFormatDecoder.extend4To8(a[i] >>> 4) << 16;
-            
             data[i * 2 + 1] += 255 << 24;
-            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] & 0xF);
-            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] & 0xF) << 8;
-            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] & 0xF) << 16;
+            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] >>> 4);
+            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] >>> 4) << 8;
+            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] >>> 4) << 16;
+            
+            data[i * 2 + 0] += 255 << 24;
+            data[i * 2 + 0] += PixelFormatDecoder.extend4To8(a[i] & 0xF);
+            data[i * 2 + 0] += PixelFormatDecoder.extend4To8(a[i] & 0xF) << 8;
+            data[i * 2 + 0] += PixelFormatDecoder.extend4To8(a[i] & 0xF) << 16;
         }
         
         return data;
@@ -261,15 +261,15 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length * 2];
         
         for (int i = 0; i < a.length; i++) {
-            data[i * 2] += PixelFormatDecoder.extend4To8(a[i] >>> 4) << 24;
-            data[i * 2] += 255;
-            data[i * 2] += 255 << 8;
-            data[i * 2] += 255 << 16;
-            
-            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] & 0xF) << 24;
+            data[i * 2 + 1] += PixelFormatDecoder.extend4To8(a[i] >>> 4) << 24;
             data[i * 2 + 1] += 255;
             data[i * 2 + 1] += 255 << 8;
             data[i * 2 + 1] += 255 << 16;
+            
+            data[i * 2 + 0] += PixelFormatDecoder.extend4To8(a[i] & 0xF) << 24;
+            data[i * 2 + 0] += 255;
+            data[i * 2 + 0] += 255 << 8;
+            data[i * 2 + 0] += 255 << 16;
         }
         
         return data;

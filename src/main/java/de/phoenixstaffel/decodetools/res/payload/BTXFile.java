@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import de.phoenixstaffel.decodetools.Main;
+import de.phoenixstaffel.decodetools.Tuple;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.KCAPPayload;
@@ -18,9 +21,9 @@ public class BTXFile extends KCAPPayload {
     private static final String WRITE_ENCODING = "UTF-16LE";
     private static final Charset cset = Charset.forName(READ_ENCODING);
     
-    private Map<Integer, BTXEntry> entries = new LinkedHashMap<>();
+    private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
     
-    //TODO make cleaner/nicer
+    // TODO make cleaner/nicer
     public BTXFile(Access source, int dataStart, KCAPFile parent, int size) {
         super(parent);
         long start = source.getPosition();
@@ -40,20 +43,18 @@ public class BTXFile extends KCAPPayload {
         source.readInteger(); // always 1
         int numEntries = source.readInteger();
         
-        Map<Integer, Long> pointers = new LinkedHashMap<>();
+        List<Tuple<Integer, Long>> pointers = new LinkedList<>();
         
         for (int i = 0; i < numEntries; i++) {
             long pos = source.getPosition();
             int id = source.readInteger();
             
-            //FIXME ignores Collisions, causing inconsistencies – compromised data or bug?
-            if (pointers.put(id, source.readInteger() + pos) != null)
-                Main.LOGGER.warning("Collision: " + id);
+            pointers.add(new Tuple<>(id, source.readInteger() + pos));
         }
         
         Map<Integer, String> strings = new LinkedHashMap<>();
         
-        for (Entry<Integer, Long> entry : pointers.entrySet()) {
+        for (Tuple<Integer, Long> entry : pointers) {
             long pointer = entry.getValue();
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             source.setPosition(pointer);
@@ -66,7 +67,7 @@ public class BTXFile extends KCAPPayload {
                     stream.write(arr);
                 }
                 catch (IOException e) {
-                    e.printStackTrace();
+                    Main.LOGGER.log(Level.WARNING, "Exception while writing into char buffer.", e);
                 }
             } while (val != 0);
             
@@ -84,16 +85,14 @@ public class BTXFile extends KCAPPayload {
             }
         }
         
-        for (int entry : pointers.keySet()){
-            entries.put(entry, new BTXEntry(strings.get(entry), metas.get(entry)));
-        }
+        pointers.stream().map(Tuple::getKey).forEach(a -> entries.add(new Tuple<>(a, new BTXEntry(strings.get(a), metas.get(a)))));
     }
     
     @Override
     public int getSize() {
         int size = 0x18 + entries.size() * 8;
         
-        for (Entry<Integer, BTXEntry> a : entries.entrySet()) {
+        for (Tuple<Integer, BTXEntry> a : entries) {
             size += 2 + (a.getValue().getString().length() * 2);
             
             if (a.getValue().getMeta() != null)
@@ -115,13 +114,13 @@ public class BTXFile extends KCAPPayload {
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
-        if (entries.entrySet().stream().anyMatch(a -> a.getValue().getMeta() != null))
-            dest.writeInteger((int) (getSize() - entries.entrySet().stream().filter(a -> a.getValue().getMeta() != null).count() * 0x30));
+        if (entries.stream().anyMatch(a -> a.getValue().getMeta() != null))
+            dest.writeInteger((int) (getSize() - entries.stream().filter(a -> a.getValue().getMeta() != null).count() * 0x30));
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(1); // version
-        dest.writeInteger(entries.entrySet().stream().anyMatch(a -> a.getValue().getMeta() != null) ? 0xC : 0x10);
-        if (entries.entrySet().stream().noneMatch(a -> a.getValue().getMeta() != null))
+        dest.writeInteger(entries.stream().anyMatch(a -> a.getValue().getMeta() != null) ? 0xC : 0x10);
+        if (entries.stream().noneMatch(a -> a.getValue().getMeta() != null))
             dest.writeInteger(0); // padding
             
         dest.writeInteger(1);
@@ -129,7 +128,7 @@ public class BTXFile extends KCAPPayload {
         
         long pointer = dest.getPosition() + entries.size() * 8;
         
-        for (Entry<Integer, BTXEntry> a : entries.entrySet()) {
+        for (Tuple<Integer, BTXEntry> a : entries) {
             dest.writeInteger(a.getKey());
             dest.writeInteger((int) (pointer - dest.getPosition() + 4));
             
@@ -139,14 +138,14 @@ public class BTXFile extends KCAPPayload {
         
         dest.setPosition(pointer);
         
-        entries.entrySet().stream().filter(a -> a.getValue().getMeta() != null).forEach(a -> a.getValue().getMeta().writeKCAP(dest));
+        entries.stream().filter(a -> a.getValue().getMeta() != null).forEach(a -> a.getValue().getMeta().writeKCAP(dest));
     }
     
     static class BTXMeta {
-        //for textboxes
+        // for textboxes
         
-        private int id; //???
-        private int unknown1; //actor sprite
+        private int id; // ???
+        private int unknown1; // actor sprite
         private int unknown2;
         private int unknown3;
         

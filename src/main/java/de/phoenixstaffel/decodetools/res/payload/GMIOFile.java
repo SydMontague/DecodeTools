@@ -98,6 +98,10 @@ public class GMIOFile extends KCAPPayload {
         BufferedImage i = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         i.setRGB(0, 0, width, height, convertedPixels, 0, width);
         
+        //flip image to make them logical for humans
+        if(format != PixelFormat.ETC1 && format != PixelFormat.ETC1A4)
+            i = Utils.flipImage(i);
+        
         image = i;
     }
     
@@ -192,8 +196,8 @@ public class GMIOFile extends KCAPPayload {
         }
         
         public byte[] convertToFormat(BufferedImage image) {
-            return encoder.apply(this == PixelFormat.ETC1 || this == PixelFormat.ETC1A4 ? Utils.flipImage(image)
-                    : image);
+            //unflip images to make them applicable for the conversion process
+            return encoder.apply(Utils.flipImage(image));
         }
         
         public static PixelFormat valueOf(int id) {
