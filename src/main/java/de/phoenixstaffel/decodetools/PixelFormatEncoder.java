@@ -19,22 +19,6 @@ public class PixelFormatEncoder {
     private PixelFormatEncoder() {
     }
     
-    /*
-     * ARGB to ETC1 conversion
-     * 
-     * - split image into 4x4 blocks
-     * - decide flip mode           2
-     * - decide differential mode   2
-     * - decide offset table        8
-     * -> 32 possible variations
-     * --> not optimal to brute force
-     * 
-     * 
-     * 
-     * 
-     * 
-     */
-    
     public static byte[] convertToRGBA8(BufferedImage image) {
         byte[] data = new byte[image.getWidth() * image.getHeight() * 4];
         ByteBuffer buffer = ByteBuffer.wrap(data);
@@ -202,8 +186,8 @@ public class PixelFormatEncoder {
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         for(int i = 0; i < pixels.length / 2; i++) {
             byte value = 0;
-            value |= (pixels[i * 2]) & 0xF0;
-            value |= (pixels[i * 2 + 1] >>> 4) & 0xF;
+            value |= (pixels[i * 2 + 1]) & 0xF0;
+            value |= (pixels[i * 2 + 0] >>> 4) & 0xF;
             buffer.put(value);
         }
         
@@ -217,8 +201,8 @@ public class PixelFormatEncoder {
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         for(int i = 0; i < pixels.length / 2; i++) {
             byte value = 0;
-            value |= pixels[i * 2] >>> 24 & 0xF0;
-            value |= (pixels[i * 2 + 1] >>> 28) & 0xF;
+            value |= pixels[i * 2 + 1] >>> 24 & 0xF0;
+            value |= (pixels[i * 2 + 0] >>> 28) & 0xF;
             buffer.put(value);
         }
         
