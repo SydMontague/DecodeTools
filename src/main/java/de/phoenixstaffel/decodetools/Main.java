@@ -3,7 +3,7 @@ package de.phoenixstaffel.decodetools;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import de.phoenixstaffel.decodetools.gui.ExampleFrame;
+import de.phoenixstaffel.decodetools.gui.MainWindow;
 import de.phoenixstaffel.decodetools.gui.JLogWindow;
 
 /*
@@ -20,7 +20,7 @@ public class Main {
     
     public static void main(String[] args) throws IOException {
         new JLogWindow(LOGGER).setVisible(true);
-        new ExampleFrame().setVisible(true);
+        new MainWindow().setVisible(true);
 
         /*try (Access b = new FileAccess(new File("./Input/Map/life01.res"))) {
             ResFile f = new ResFile(b);

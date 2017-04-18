@@ -26,7 +26,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.arcv.ARCVFile;
 
-public class ExampleFrame extends JFrame implements Observer {
+public class MainWindow extends JFrame implements Observer {
     private static final long serialVersionUID = -8269477952146086450L;
     
     private EditorModel model = new EditorModel();
@@ -34,7 +34,7 @@ public class ExampleFrame extends JFrame implements Observer {
     private JPanel contentPane;
     private JMenu mnStyle = new JMenu("Style");
     
-    public ExampleFrame() {
+    public MainWindow() {
         model.addObserver(this);
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -115,7 +115,7 @@ public class ExampleFrame extends JFrame implements Observer {
                 public void actionPerformed(ActionEvent e) {
                     try {
                         UIManager.setLookAndFeel(style.getClassName());
-                        SwingUtilities.updateComponentTreeUI(ExampleFrame.this);
+                        SwingUtilities.updateComponentTreeUI(MainWindow.this);
                     }
                     catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {
                         Main.LOGGER.log(Level.SEVERE, "Error while setting Look & Feel!" , e1);
@@ -209,7 +209,7 @@ public class ExampleFrame extends JFrame implements Observer {
                 return;
             
             //TODO add work queue, to make sure only one task is executed at a time
-            ExampleFrame.this.setEnabled(false);
+            MainWindow.this.setEnabled(false);
             SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {
                 @Override
                 protected Void doInBackground() throws Exception {
@@ -225,7 +225,7 @@ public class ExampleFrame extends JFrame implements Observer {
                 
                 @Override
                 protected void done() {
-                    ExampleFrame.this.setEnabled(true);
+                    MainWindow.this.setEnabled(true);
                 }
                 
             };
