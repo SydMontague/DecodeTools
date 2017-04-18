@@ -1,7 +1,5 @@
 package de.phoenixstaffel.decodetools;
 
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -63,53 +61,48 @@ public class Utils {
     private static int mortonInterleave(int x, int y) {
         int i = (x & 7) | ((y & 7) << 8);
         i = (i ^ (i << 2)) & 0x1313;
-        i = (i ^ (i << 1)) & 0x1515; // ---2 -1-0
+        i = (i ^ (i << 1)) & 0x1515;
         i = (i | (i >>> 7)) & 0x3F;
         return i;
     }
     
     public static BufferedImage flipImage(BufferedImage image) {
-        AffineTransform at = new AffineTransform();
-        at.concatenate(AffineTransform.getScaleInstance(1, -1));
-        at.concatenate(AffineTransform.getTranslateInstance(0, -image.getHeight()));
-        return createTransformed(image, at);
+        int[] original = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        int[] flipped = new int[image.getWidth() * image.getHeight()];
+        
+        for (int x = 0; x < image.getWidth(); x++)
+            for (int y = 0; y < image.getHeight(); y++)
+                flipped[x + y * image.getWidth()] = original[x + (image.getHeight() - y - 1) * image.getWidth()];
+            
+        image.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
+        return image;
     }
     
     public static BufferedImage flipImageVertically(BufferedImage image) {
-        AffineTransform at = new AffineTransform();
-        at.concatenate(AffineTransform.getScaleInstance(-1, 1));
-        at.concatenate(AffineTransform.getTranslateInstance(-image.getWidth(), 0));
-        return createTransformed(image, at);
+        int[] original = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+        int[] flipped = new int[image.getWidth() * image.getHeight()];
+        
+        for (int x = 0; x < image.getWidth(); x++)
+            for (int y = 0; y < image.getHeight(); y++)
+                flipped[x + y * image.getWidth()] = original[(image.getWidth() - x - 1) + y * image.getWidth()];
+            
+        image.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
+        return image;
     }
     
-    private static BufferedImage createTransformed(BufferedImage image, AffineTransform at) {
-        BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = newImage.createGraphics();
-        g.transform(at);
-        g.drawImage(image, 0, 0, null);
-        g.dispose();
-        return newImage;
-    }
-
     public static List<File> fileOrder(File file) {
         List<File> files = new ArrayList<>();
         
-        for(File f : file.listFiles()) {
-            if(f.isFile())
+        for (File f : file.listFiles()) {
+            if (f.isFile())
                 files.add(f);
         }
         
-        for(File f : file.listFiles()) {
-            if(f.isDirectory())
+        for (File f : file.listFiles()) {
+            if (f.isDirectory())
                 files.addAll(fileOrder(f));
         }
         
         return files;
-    }
-
-    public static BufferedImage rotateImage(BufferedImage image, byte rotation) {
-        AffineTransform at = new AffineTransform();
-        at.rotate(rotation * Math.PI / 2, image.getWidth() / 2D, image.getHeight() / 2D);
-        return createTransformed(image, at);
     }
 }

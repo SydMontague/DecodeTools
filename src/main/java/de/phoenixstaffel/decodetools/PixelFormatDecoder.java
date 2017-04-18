@@ -200,7 +200,6 @@ public class PixelFormatDecoder {
         return data;
     }
 
-    //FIXME something is seriously wrong with LA8
     public static int[] convertFromLA8(byte[] a, int width, int height) {
         int[] data = new int[a.length / 2];
         
