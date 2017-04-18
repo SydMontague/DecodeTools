@@ -15,6 +15,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.text.DefaultCaret;
 
 public class JLogWindow extends JFrame {
+    private static final long serialVersionUID = 166721964687279818L;
+
     static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     
     private Logger log;

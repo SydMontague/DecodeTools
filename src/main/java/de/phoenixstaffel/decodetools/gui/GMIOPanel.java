@@ -22,7 +22,7 @@ import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
 
 public class GMIOPanel extends PayloadPanel {
     private static final long serialVersionUID = -4042970327489697448L;
-
+    
     private GMIOFile selectedGMIO = null;
     
     private final JButton exportButton = new JButton("Export");
@@ -31,12 +31,14 @@ public class GMIOPanel extends PayloadPanel {
     
     public GMIOPanel(Object selected) {
         setSelectedFile(selected);
-
+        
         exportButton.setAction(new ExportAction());
         importButton.setAction(new ImportAction());
         
         image.setMinimumSize(new Dimension(100, 100));
         image.setBackground(Color.LIGHT_GRAY);
+        
+        //@formatter:off
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
@@ -62,12 +64,13 @@ public class GMIOPanel extends PayloadPanel {
                     .addContainerGap())
         );
         setLayout(groupLayout);
+        //@formatter:on
     }
     
     @Override
     public void setSelectedFile(Object file) {
         this.selectedGMIO = null;
-        if(file instanceof GMIOFile)
+        if (file instanceof GMIOFile)
             this.selectedGMIO = (GMIOFile) file;
         
         image.setImage(selectedGMIO == null ? null : selectedGMIO.getImage());
@@ -90,7 +93,7 @@ public class GMIOPanel extends PayloadPanel {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(getSelectedFile() == null)
+            if (getSelectedFile() == null)
                 return;
             
             JFileChooser fileDialogue = new JFileChooser("./Output");
@@ -136,7 +139,7 @@ public class GMIOPanel extends PayloadPanel {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(getSelectedFile() == null)
+            if (getSelectedFile() == null)
                 return;
             
             JFileChooser fileDialogue = new JFileChooser("./Input");

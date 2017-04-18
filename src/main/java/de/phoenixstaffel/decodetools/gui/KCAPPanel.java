@@ -1,9 +1,12 @@
 package de.phoenixstaffel.decodetools.gui;
 
+import java.awt.CardLayout;
+import java.util.Map;
 import java.util.Observable;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JLayeredPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -11,13 +14,18 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
+import de.phoenixstaffel.decodetools.res.KCAPPayload;
+
 public class KCAPPanel extends EditorPanel {
     private static final long serialVersionUID = -8718473237761608043L;
     
     private JScrollPane scrollPane = new JScrollPane();
     private JTree tree = new JTree((TreeModel) null);
     
-    private PayloadPanel panel = new GMIOPanel(null);
+    private JLayeredPane panel = new JLayeredPane();
+    private PayloadPanel activePanel = PayloadPanel.NULL_PANEL;
+    
+    private Map<KCAPPayload.Payload, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
     
     public KCAPPanel(EditorModel model) {
         super(model);
@@ -26,15 +34,24 @@ public class KCAPPanel extends EditorPanel {
         
         tree.setShowsRootHandles(true);
         tree.addTreeSelectionListener(a -> {
-            // TODO modularise the file viewer
             Object selected = ((DefaultMutableTreeNode) a.getPath().getLastPathComponent()).getUserObject();
-            
-            panel.setSelectedFile(selected);
+
+            if (selected instanceof KCAPPayload) {
+                setPanel(panels.getOrDefault(((KCAPPayload) selected).getType(), PayloadPanel.NULL_PANEL));
+                getPanel().setSelectedFile(selected);
+            }
+            else
+                setPanel(PayloadPanel.NULL_PANEL);
         });
         
         scrollPane.setViewportView(tree);
+
+        panel.add(PayloadPanel.NULL_PANEL);
+        panels.forEach((a, b) -> panel.add(b));
         
-        //@formatter:off       
+        //@formatter:off
+        panel.setLayout(new CardLayout(0, 0));
+        
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
@@ -51,6 +68,16 @@ public class KCAPPanel extends EditorPanel {
         //@formatter:on
         
         setLayout(groupLayout);
+    }
+    
+    private PayloadPanel getPanel() {
+        return activePanel;
+    }
+    
+    private void setPanel(PayloadPanel panel) {
+        this.panel.moveToBack(this.activePanel);
+        this.activePanel = panel;
+        this.panel.moveToFront(this.activePanel);
     }
     
     @Override
