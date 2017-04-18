@@ -1,6 +1,6 @@
 package de.phoenixstaffel.decodetools.gui;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -23,7 +23,7 @@ public abstract class PayloadPanel extends JPanel {
     public abstract void setSelectedFile(Object file);
 
     public static Map<Payload, PayloadPanel> generatePayloadPanels() {
-        Map<KCAPPayload.Payload, PayloadPanel> tempPanels = new HashMap<>();
+        Map<Payload, PayloadPanel> tempPanels = new EnumMap<>(Payload.class);
         
         tempPanels.put(Payload.GMIO, new GMIOPanel(null));
         

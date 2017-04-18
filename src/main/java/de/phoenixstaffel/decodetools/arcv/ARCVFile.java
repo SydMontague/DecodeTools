@@ -70,13 +70,13 @@ public class ARCVFile {
         });
         
         destination.close();
-        arcvinfo.repack(new File(outputDir, "/ARCVINFO.BIN"));
+        arcvinfo.repack(new File(outputDir, "ARCVINFO.BIN"));
         
-        Main.LOGGER.info("ZIP: " + (zipTime / 1000000) + " | Res Load: " + (resLoadTime / 1000000) + " | Res Data: " + (resDataTime / 1000000));
+        Main.LOGGER.info(() -> String.format("ZIP: %d | Res Load: %d | Res Data: %d", (zipTime / 1000000), (resLoadTime / 1000000), (resDataTime / 1000000)));
     }
     
     private void addFile(Path a, String name) throws IOException {
-        if (Files.isDirectory(a))
+        if (a.toFile().isDirectory())
             return;
         
         int startSector = sectorCount;

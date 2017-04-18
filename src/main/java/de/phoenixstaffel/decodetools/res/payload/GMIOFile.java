@@ -90,7 +90,7 @@ public class GMIOFile extends KCAPPayload {
         uvWidth = (float) uvSizeX / width;
         uvHeight = (float) uvSizeY / height;
         
-        byte[] pixelData = source.readByteArray((width * height * format.getBPP()) / 8, dataPointer + dataStart);
+        byte[] pixelData = source.readByteArray((width * height * format.getBPP()) / 8, (long) dataPointer + dataStart);
         
         int[] convertedPixels = format.convertToRGBA(pixelData, width, height);
         convertedPixels = format.isTiled() ? Utils.untile(width, height, convertedPixels) : convertedPixels;

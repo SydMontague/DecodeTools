@@ -78,14 +78,12 @@ public class BTXFile extends KCAPPayload {
         if (postStart != 0) {
             source.setPosition(postStart + start);
             
-            for (int i = 0; i < numEntries; i++) {
-                BTXMeta meta = new BTXMeta(source);
-                metas.add(meta);
-            }
+            for (int i = 0; i < numEntries; i++)
+                metas.add(new BTXMeta(source));
         }
         
-        for(int i = 0; i < pointers.size(); i++) {
-            entries.add(new Tuple<>(pointers.get(i).getKey(), new BTXEntry(strings.get(i), metas.contains(i) ? metas.get(i) : null)));
+        for (int i = 0; i < pointers.size(); i++) {
+            entries.add(new Tuple<>(pointers.get(i).getKey(), new BTXEntry(strings.get(i), metas.size() >= i ? metas.get(i) : null)));
         }
     }
     
@@ -100,7 +98,7 @@ public class BTXFile extends KCAPPayload {
                 size += 0x30;
                 size = Utils.getPadded(size, 4);
             }
-            else 
+            else
                 size += 2;
         }
         
@@ -137,7 +135,7 @@ public class BTXFile extends KCAPPayload {
             dest.writeInteger(a.getKey());
             
             int lPointer = (int) (pointer - dest.getPosition() + 2);
-            if(a.getValue().getMeta() != null)
+            if (a.getValue().getMeta() != null)
                 lPointer = Utils.getPadded(lPointer, 4);
             else
                 lPointer += 2;
@@ -146,9 +144,9 @@ public class BTXFile extends KCAPPayload {
             
             dest.writeString(a.getValue().getString(), WRITE_ENCODING, pointer);
             pointer += a.getValue().getString().length() * 2;
-            if(a.getValue().getMeta() != null)
+            if (a.getValue().getMeta() != null)
                 pointer = Utils.getPadded(pointer, 4);
-            else 
+            else
                 pointer += 2;
         }
         
