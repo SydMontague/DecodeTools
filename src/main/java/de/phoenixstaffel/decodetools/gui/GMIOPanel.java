@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.gui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +50,12 @@ public class GMIOPanel extends PayloadPanel {
         image.setMinimumSize(new Dimension(100, 100));
         image.setBackground(Color.LIGHT_GRAY);
         comboBox.setModel(new DefaultComboBoxModel<>(PixelFormat.values()));
+        comboBox.addItemListener(a -> {
+           if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
+               return;
+           
+           selectedGMIO.setFormat((PixelFormat) a.getItem());
+        });
         
         //@formatter:off
         panel.setBorder(new MatteBorder(0, 1, 0, 0, new Color(0, 0, 0)));
@@ -119,6 +126,7 @@ public class GMIOPanel extends PayloadPanel {
             this.selectedGMIO = (GMIOPayload) file;
         
         image.setImage(selectedGMIO == null ? null : selectedGMIO.getImage());
+        comboBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getFormat());
     }
     
     public GMIOPayload getSelectedFile() {

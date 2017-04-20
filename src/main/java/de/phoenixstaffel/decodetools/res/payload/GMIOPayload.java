@@ -186,4 +186,12 @@ public class GMIOPayload extends ResPayload {
         
         data.add(pixelData, size, true, getParent());
     }
+
+    public PixelFormat getFormat() {
+        return format;
+    }
+    
+    public void setFormat(PixelFormat format) {
+        this.format = format;
+    }
 }
