@@ -14,32 +14,32 @@ import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.payload.BTXFile;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
-import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
+import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 import de.phoenixstaffel.decodetools.res.payload.GenericPayload;
 import de.phoenixstaffel.decodetools.res.payload.HSEMPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 import de.phoenixstaffel.decodetools.res.payload.LDMPPayload;
 import de.phoenixstaffel.decodetools.res.payload.LRTMPayload;
 import de.phoenixstaffel.decodetools.res.payload.LTMPPayload;
 import de.phoenixstaffel.decodetools.res.payload.MFTPPayload;
 import de.phoenixstaffel.decodetools.res.payload.PADHPayload;
 import de.phoenixstaffel.decodetools.res.payload.PRGMPayload;
-import de.phoenixstaffel.decodetools.res.payload.QSTMFile;
+import de.phoenixstaffel.decodetools.res.payload.QSTMPayload;
 import de.phoenixstaffel.decodetools.res.payload.RTCLPayload;
 import de.phoenixstaffel.decodetools.res.payload.TMEPPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNOJPayload;
 import de.phoenixstaffel.decodetools.res.payload.TREPPayload;
-import de.phoenixstaffel.decodetools.res.payload.VCTMFile;
-import de.phoenixstaffel.decodetools.res.payload.XDIOFile;
-import de.phoenixstaffel.decodetools.res.payload.XTVOFile;
+import de.phoenixstaffel.decodetools.res.payload.VCTMPayload;
+import de.phoenixstaffel.decodetools.res.payload.XDIOPayload;
+import de.phoenixstaffel.decodetools.res.payload.XTVOPayload;
 
-public abstract class KCAPPayload {
+public abstract class ResPayload {
     private static final int DEFAULT_ALIGNMENT = 1;
     
-    private KCAPFile parent = null;
+    private KCAPPayload parent = null;
     
-    public KCAPPayload(KCAPFile parent) {
+    public ResPayload(KCAPPayload parent) {
         this.parent = parent;
     }
     
@@ -47,7 +47,7 @@ public abstract class KCAPPayload {
         return parent != null;
     }
     
-    public KCAPFile getParent() {
+    public KCAPPayload getParent() {
         return parent;
     }
     
@@ -81,7 +81,7 @@ public abstract class KCAPPayload {
     
     public abstract void writeKCAP(Access dest, IResData dataStream);
     
-    public static KCAPPayload craft(Access source, int dataStart, KCAPFile parent, int size) {
+    public static ResPayload craft(Access source, int dataStart, KCAPPayload parent, int size) {
         return Payload.valueOf(parent, source.readLong(source.getPosition())).newInstance(source, dataStart, parent, size);
     }
     
@@ -92,12 +92,12 @@ public abstract class KCAPPayload {
     
     public enum Payload {
         GENERIC(0, GenericPayload.class),
-        GMIO(0x4F494D47, GMIOFile.class, a -> 0x40 + a.readInteger(0x3C)),
-        KCAP(0x5041434B, KCAPFile.class, a -> a.readInteger(0x08)),
-        XTVO(0x4F565458, XTVOFile.class),
-        XDIO(0x4F494458, XDIOFile.class),
-        VCTM(0x4D544356, VCTMFile.class),
-        QSTM(0x4D545351, QSTMFile.class),
+        GMIO(0x4F494D47, GMIOPayload.class, a -> 0x40 + a.readInteger(0x3C)),
+        KCAP(0x5041434B, KCAPPayload.class, a -> a.readInteger(0x08)),
+        XTVO(0x4F565458, XTVOPayload.class),
+        XDIO(0x4F494458, XDIOPayload.class),
+        VCTM(0x4D544356, VCTMPayload.class),
+        QSTM(0x4D545351, QSTMPayload.class),
         BTX(0x20585442, BTXFile.class),
         PADH(0x48444150, PADHPayload.class),
         HSEM(0, HSEMPayload.class),
@@ -114,14 +114,14 @@ public abstract class KCAPPayload {
         TNOJ(0, TNOJPayload.class),;
         
         private final int magicValue;
-        private final Class<? extends KCAPPayload> clazz;
+        private final Class<? extends ResPayload> clazz;
         private Function<Access, Integer> method;
         
-        private Payload(int magicValue, Class<? extends KCAPPayload> clazz) {
+        private Payload(int magicValue, Class<? extends ResPayload> clazz) {
             this(magicValue, clazz, a -> 0);
         }
         
-        private Payload(int magicValue, Class<? extends KCAPPayload> clazz, Function<Access, Integer> method) {
+        private Payload(int magicValue, Class<? extends ResPayload> clazz, Function<Access, Integer> method) {
             this.magicValue = magicValue;
             this.clazz = clazz;
             this.method = method;
@@ -131,7 +131,7 @@ public abstract class KCAPPayload {
             return magicValue;
         }
         
-        public static Payload valueOf(KCAPFile parent, long value) {
+        public static Payload valueOf(KCAPPayload parent, long value) {
             int left = (int) (value >>> 32);
             int right = (int) (value & 0xFFFFFFFF);
             
@@ -179,9 +179,9 @@ public abstract class KCAPPayload {
             }
         }
         
-        public KCAPPayload newInstance(Access source, int dataStart, KCAPFile parent, int size) {
+        public ResPayload newInstance(Access source, int dataStart, KCAPPayload parent, int size) {
             try {
-                return clazz.getConstructor(Access.class, int.class, KCAPFile.class, int.class).newInstance(source, dataStart, parent, size);
+                return clazz.getConstructor(Access.class, int.class, KCAPPayload.class, int.class).newInstance(source, dataStart, parent, size);
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 Main.LOGGER.log(Level.WARNING, "Failed to instantiate HeaderExtension " + this, e);
@@ -201,8 +201,8 @@ public abstract class KCAPPayload {
     public void fillDummyResData(DummyResData data) {
     }
     
-    public List<KCAPPayload> getElementsWithType(Payload type) {
-        List<KCAPPayload> list = new ArrayList<>();
+    public List<ResPayload> getElementsWithType(Payload type) {
+        List<ResPayload> list = new ArrayList<>();
         
         if (getType() == type)
             list.add(this);

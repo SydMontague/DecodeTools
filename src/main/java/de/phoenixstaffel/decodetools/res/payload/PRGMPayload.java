@@ -2,15 +2,15 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class PRGMPayload extends KCAPPayload {
+public class PRGMPayload extends ResPayload {
     private int unknown1;
     private int unknown2;
     private int unknown3;
     private int unknown4;
     
-    public PRGMPayload(Access source, int dataStart, KCAPFile parent, int size) {
+    public PRGMPayload(Access source, int dataStart, KCAPPayload parent, int size) {
         super(parent);
         
         unknown1 = source.readInteger();

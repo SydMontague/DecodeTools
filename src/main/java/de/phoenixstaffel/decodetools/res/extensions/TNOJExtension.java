@@ -3,7 +3,7 @@ package de.phoenixstaffel.decodetools.res.extensions;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class TNOJExtension implements HeaderExtension {
     private int padding1;
@@ -40,7 +40,7 @@ public class TNOJExtension implements HeaderExtension {
     }
     
     @Override
-    public int getContentAlignment(KCAPFile parent) {
+    public int getContentAlignment(KCAPPayload parent) {
         return 0x10;
     }
 }

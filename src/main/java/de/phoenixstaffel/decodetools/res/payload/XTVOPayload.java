@@ -3,9 +3,9 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class XTVOFile extends KCAPPayload {
+public class XTVOPayload extends ResPayload {
     private int unknown1;
     private int unknown2;
     private int dataPointer;
@@ -24,11 +24,11 @@ public class XTVOFile extends KCAPPayload {
     
     private byte[] data;
     
-    public XTVOFile(Access source, int dataStart, KCAPFile parent, int size) {
+    public XTVOPayload(Access source, int dataStart, KCAPPayload parent, int size) {
         this(source, dataStart, parent);
     }
     
-    private XTVOFile(Access source, int dataStart, KCAPFile parent) {
+    private XTVOPayload(Access source, int dataStart, KCAPPayload parent) {
         super(parent);
         
         source.readInteger(); // magic value

@@ -5,8 +5,8 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 
 public abstract class PayloadPanel extends JPanel {
     private static final long serialVersionUID = -889159315719439977L;

@@ -13,16 +13,16 @@ import javax.swing.tree.TreeModel;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
-import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
+import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.ResFile;
-import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
+import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 
 public class EditorModel extends Observable {
     private ResFile selectedRes;
     private File selectedFile;
     
     private TreeModel treeModel;
-    private DefaultListModel<GMIOFile> imageListModel;
+    private DefaultListModel<GMIOPayload> imageListModel;
     
     public ResFile getSelectedResource() {
         return selectedRes;
@@ -36,7 +36,7 @@ public class EditorModel extends Observable {
             this.selectedRes = file;
             this.treeModel = new DefaultTreeModel(selectedRes.getRoot().getTreeNode());
             this.imageListModel = new DefaultListModel<>();
-            selectedRes.getRoot().getElementsWithType(Payload.GMIO).forEach(a -> imageListModel.addElement((GMIOFile) a));
+            selectedRes.getRoot().getElementsWithType(Payload.GMIO).forEach(a -> imageListModel.addElement((GMIOPayload) a));
             
             setChanged();
             notifyObservers();
@@ -51,7 +51,7 @@ public class EditorModel extends Observable {
         return treeModel;
     }
     
-    public ListModel<GMIOFile> getImageListModel() {
+    public ListModel<GMIOPayload> getImageListModel() {
         return imageListModel;
     }
     

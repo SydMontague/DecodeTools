@@ -6,7 +6,7 @@ import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class VoidExtension implements HeaderExtension {
     public VoidExtension() {
@@ -39,7 +39,7 @@ public class VoidExtension implements HeaderExtension {
     }
     
     @Override
-    public int getContentAlignment(KCAPFile parent) {
+    public int getContentAlignment(KCAPPayload parent) {
         if (parent.hasParent() && parent.getParent().getExtension().getType() == Extensions.TDTM)
             return 0x10;
         

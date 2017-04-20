@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class ResData implements IResData {
     private ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -16,7 +16,7 @@ public class ResData implements IResData {
     private int count = 0;
     
     @Override
-    public int add(byte[] data, boolean onlyOnce, KCAPFile parent) {
+    public int add(byte[] data, boolean onlyOnce, KCAPPayload parent) {
         Optional<ResDataEntry> entry = list.stream().filter(a -> onlyOnce && a.isEqual(data, parent)).findFirst();
         
         if (entry.isPresent()) {

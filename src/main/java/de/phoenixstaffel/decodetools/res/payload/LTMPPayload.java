@@ -2,12 +2,12 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class LTMPPayload extends KCAPPayload {
+public class LTMPPayload extends ResPayload {
     private int[] data;
     
-    public LTMPPayload(Access source, int dataStart, KCAPFile parent, int size) {
+    public LTMPPayload(Access source, int dataStart, KCAPPayload parent, int size) {
         super(parent);
         
         data = new int[size / 4];

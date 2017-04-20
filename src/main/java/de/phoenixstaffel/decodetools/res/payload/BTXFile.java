@@ -13,9 +13,9 @@ import de.phoenixstaffel.decodetools.Tuple;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class BTXFile extends KCAPPayload {
+public class BTXFile extends ResPayload {
     private static final String READ_ENCODING = "UTF-16BE";
     private static final String WRITE_ENCODING = "UTF-16LE";
     private static final Charset cset = Charset.forName(READ_ENCODING);
@@ -23,7 +23,7 @@ public class BTXFile extends KCAPPayload {
     private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
     
     // TODO make cleaner/nicer
-    public BTXFile(Access source, int dataStart, KCAPFile parent, int size) {
+    public BTXFile(Access source, int dataStart, KCAPPayload parent, int size) {
         super(parent);
         long start = source.getPosition();
         int postStart = 0;
@@ -111,7 +111,7 @@ public class BTXFile extends KCAPPayload {
     }
     
     @Override
-    public KCAPPayload.Payload getType() {
+    public ResPayload.Payload getType() {
         return Payload.BTX;
     }
     

@@ -24,7 +24,7 @@ import de.phoenixstaffel.decodetools.res.extensions.VoidExtension;
 import de.phoenixstaffel.decodetools.res.extensions.XDIPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.XFEPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.XTVPExtension;
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public interface HeaderExtension {
     
@@ -121,7 +121,7 @@ public interface HeaderExtension {
     
     public Extensions getType();
     
-    public int getContentAlignment(KCAPFile parent);
+    public int getContentAlignment(KCAPPayload parent);
     
     public int getSize();
     

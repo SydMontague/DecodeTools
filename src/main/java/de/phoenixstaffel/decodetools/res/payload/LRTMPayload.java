@@ -2,9 +2,9 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class LRTMPayload extends KCAPPayload {
+public class LRTMPayload extends ResPayload {
     private int index;
     private short unknown1; //shading type? 4 = unshaded?
     private short unknown2; //???
@@ -18,7 +18,7 @@ public class LRTMPayload extends KCAPPayload {
     private byte[] data1; //more lighting  diffuse - specular - constant?
     private byte[] data2; //???
     
-    public LRTMPayload(Access source, int dataStart, KCAPFile parent, int size) {
+    public LRTMPayload(Access source, int dataStart, KCAPPayload parent, int size) {
         super(parent);
         
         index = source.readInteger();

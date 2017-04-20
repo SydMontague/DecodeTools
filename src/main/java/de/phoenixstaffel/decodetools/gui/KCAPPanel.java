@@ -6,7 +6,7 @@ import java.util.Observable;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -14,7 +14,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 
 public class KCAPPanel extends EditorPanel {
     private static final long serialVersionUID = -8718473237761608043L;
@@ -22,10 +23,9 @@ public class KCAPPanel extends EditorPanel {
     private JScrollPane scrollPane = new JScrollPane();
     private JTree tree = new JTree((TreeModel) null);
     
-    private JLayeredPane panel = new JLayeredPane();
-    private PayloadPanel activePanel = PayloadPanel.NULL_PANEL;
-    
-    private Map<KCAPPayload.Payload, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
+    private Map<ResPayload.Payload, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
+    private final JPanel panel = new JPanel();
+    private CardLayout cardLayout = new CardLayout(0, 0);
     
     public KCAPPanel(EditorModel model) {
         super(model);
@@ -35,49 +35,45 @@ public class KCAPPanel extends EditorPanel {
         tree.setShowsRootHandles(true);
         tree.addTreeSelectionListener(a -> {
             Object selected = ((DefaultMutableTreeNode) a.getPath().getLastPathComponent()).getUserObject();
-
-            if (selected instanceof KCAPPayload) {
-                setPanel(panels.getOrDefault(((KCAPPayload) selected).getType(), PayloadPanel.NULL_PANEL));
-                getPanel().setSelectedFile(selected);
+            
+            if (selected instanceof ResPayload && panels.containsKey(((ResPayload) selected).getType())) {
+                Payload type = ((ResPayload) selected).getType();
+                cardLayout.show(panel, type.name());
+                panels.get(type).setSelectedFile(selected);
             }
             else
-                setPanel(PayloadPanel.NULL_PANEL);
+                cardLayout.show(panel, "NULL");
         });
         
         scrollPane.setViewportView(tree);
-
-        panel.add(PayloadPanel.NULL_PANEL);
-        panels.forEach((a, b) -> panel.add(b));
         
         //@formatter:off
-        panel.setLayout(new CardLayout(0, 0));
+        panel.setLayout(cardLayout);
+
+        panel.add(PayloadPanel.NULL_PANEL, "NULL");
+        panels.forEach((a, b) -> panel.add(b, a.name()));
         
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
-            groupLayout.createParallelGroup(Alignment.LEADING)
-                .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+            groupLayout.createParallelGroup(Alignment.TRAILING)
+                .addGroup(groupLayout.createSequentialGroup()
                     .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 231, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(panel, GroupLayout.DEFAULT_SIZE, 830, Short.MAX_VALUE))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(panel))
         );
         groupLayout.setVerticalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addComponent(panel, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
                 .addComponent(scrollPane, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
+                .addGroup(groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addContainerGap(621, Short.MAX_VALUE))
         );
+        //panel_1.setLayout(new CardLayout(0, 0));
         //@formatter:on
         
         setLayout(groupLayout);
-    }
-    
-    private PayloadPanel getPanel() {
-        return activePanel;
-    }
-    
-    private void setPanel(PayloadPanel panel) {
-        this.panel.moveToBack(this.activePanel);
-        this.activePanel = panel;
-        this.panel.moveToFront(this.activePanel);
     }
     
     @Override

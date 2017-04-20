@@ -3,9 +3,9 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class VCTMFile extends KCAPPayload {
+public class VCTMPayload extends ResPayload {
     private int numEntries;
     private int coordStart;
     private int entriesStart;
@@ -21,11 +21,11 @@ public class VCTMFile extends KCAPPayload {
     
     // 1 byte per numEntries array
     // 8 byte per numEntries array
-    public VCTMFile(Access source, int dataStart, KCAPFile parent, int size) {
+    public VCTMPayload(Access source, int dataStart, KCAPPayload parent, int size) {
         this(source, dataStart, parent);
     }
     
-    public VCTMFile(Access source, int dataStart, KCAPFile parent) {
+    public VCTMPayload(Access source, int dataStart, KCAPPayload parent) {
         super(parent);
         long start = source.getPosition();
         

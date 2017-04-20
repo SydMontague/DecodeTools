@@ -10,14 +10,14 @@ import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 
 public class ResFile {
-    private KCAPPayload root;
+    private ResPayload root;
     
     public ResFile(Access source) {
-        int dataStart = KCAPPayload.Payload.valueOf(null, source.readLong(0)).getDataStart(source);
-        root = KCAPPayload.craft(source, dataStart, null, -1);
+        int dataStart = ResPayload.Payload.valueOf(null, source.readLong(0)).getDataStart(source);
+        root = ResPayload.craft(source, dataStart, null, -1);
     }
     
-    public KCAPPayload getRoot() {
+    public ResPayload getRoot() {
         return root;
     }
     

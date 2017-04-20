@@ -14,8 +14,8 @@ import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.dataminer.FileAccess;
 import de.phoenixstaffel.decodetools.res.DummyResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
-import de.phoenixstaffel.decodetools.res.KCAPPayload.Payload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.ResFile;
 
 //this is crap, but it works...
@@ -110,7 +110,7 @@ public class ARCVFile {
         t = System.nanoTime();
         
         Access access = new FileAccess(a.toFile());
-        KCAPPayload res = new ResFile(access).getRoot();
+        ResPayload res = new ResFile(access).getRoot();
         access.close();
         
         resLoadTime += System.nanoTime() - t;

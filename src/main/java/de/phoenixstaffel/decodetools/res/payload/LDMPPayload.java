@@ -2,9 +2,9 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class LDMPPayload extends KCAPPayload {
+public class LDMPPayload extends ResPayload {
     private int unknown1;
     private int unknown2;
     private int unknown3;
@@ -14,7 +14,7 @@ public class LDMPPayload extends KCAPPayload {
     private int unknown7;
     private int unknown8;
     
-    public LDMPPayload(Access source, int dataStart, KCAPFile parent, int size) {
+    public LDMPPayload(Access source, int dataStart, KCAPPayload parent, int size) {
         super(parent);
         
         unknown1 = source.readInteger();

@@ -4,7 +4,7 @@ import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class XFEPExtension implements HeaderExtension {
     private int unknown1;
@@ -80,7 +80,7 @@ public class XFEPExtension implements HeaderExtension {
     }
     
     @Override
-    public int getContentAlignment(KCAPFile parent) {
+    public int getContentAlignment(KCAPPayload parent) {
         return 0x10;
     }
 }

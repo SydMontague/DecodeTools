@@ -2,11 +2,11 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class VoidPayload extends KCAPPayload {
+public class VoidPayload extends ResPayload {
     
-    public VoidPayload(KCAPFile parent) {
+    public VoidPayload(KCAPPayload parent) {
         super(parent);
     }
     

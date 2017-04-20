@@ -4,11 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.util.Arrays;
 
-import de.phoenixstaffel.decodetools.res.payload.KCAPFile;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public interface IResData extends Closeable {
     
-    public int add(byte[] data, boolean onlyOnce, KCAPFile parent);
+    public int add(byte[] data, boolean onlyOnce, KCAPPayload parent);
     
     public ByteArrayOutputStream getStream();
     
@@ -19,9 +19,9 @@ public interface IResData extends Closeable {
     public class ResDataEntry {
         private int address;
         private byte[] data;
-        private KCAPFile parent;
+        private KCAPPayload parent;
         
-        public ResDataEntry(byte[] data, int address, KCAPFile parent) {
+        public ResDataEntry(byte[] data, int address, KCAPPayload parent) {
             this.data = data;
             this.address = address;
             this.parent = parent;
@@ -31,7 +31,7 @@ public interface IResData extends Closeable {
             return address;
         }
         
-        public boolean isEqual(byte[] data2, KCAPFile parent2) {
+        public boolean isEqual(byte[] data2, KCAPPayload parent2) {
             if (parent != parent2)
                 return false;
             

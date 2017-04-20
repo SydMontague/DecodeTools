@@ -12,10 +12,10 @@ import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.extensions.VoidExtension;
 
-public class KCAPFile extends KCAPPayload {
+public class KCAPPayload extends ResPayload {
     private static final int VERSION = 1;
     
     private long startAddress;
@@ -31,15 +31,15 @@ public class KCAPFile extends KCAPPayload {
     private List<KCAPPointer> pointer = new ArrayList<>();
     private HeaderExtensionPayload extensionPayload = extension.loadPayload(null, 0);
     
-    private List<KCAPPayload> entries = new ArrayList<>();
+    private List<ResPayload> entries = new ArrayList<>();
     
     private boolean genericAligned;
     
-    public KCAPFile(Access source, int dataStart, KCAPFile parent, int size) {
+    public KCAPPayload(Access source, int dataStart, KCAPPayload parent, int size) {
         this(source, dataStart, parent);
     }
     
-    public KCAPFile(Access source, int dataStart, KCAPFile parent) {
+    public KCAPPayload(Access source, int dataStart, KCAPPayload parent) {
         super(parent);
         startAddress = source.getPosition();
         
@@ -73,7 +73,7 @@ public class KCAPFile extends KCAPPayload {
             if (entry.getOffset() == 0 && entry.getLength() == 0)
                 entries.add(new VoidPayload(parent));
             else
-                entries.add(KCAPPayload.craft(source, dataStart, this, entry.getLength()));
+                entries.add(ResPayload.craft(source, dataStart, this, entry.getLength()));
         }
         
         source.setPosition(Utils.getPadded(source.getPosition(), 0x10));
@@ -99,7 +99,7 @@ public class KCAPFile extends KCAPPayload {
         value = Utils.getPadded(value, extension.getContentAlignment(this));
         
         //
-        for (KCAPPayload entry : entries) {
+        for (ResPayload entry : entries) {
             if (entry.getType() == null)
                 continue;
             
@@ -179,7 +179,7 @@ public class KCAPFile extends KCAPPayload {
         int tmp = fileStart;
         
         // pointer table
-        for (KCAPPayload entry : entries) {
+        for (ResPayload entry : entries) {
             if (entry.getType() != null)
                 fileStart = Utils.getPadded(fileStart, extension.getContentAlignment(this));
             
@@ -217,8 +217,8 @@ public class KCAPFile extends KCAPPayload {
     }
     
     @Override
-    public List<KCAPPayload> getElementsWithType(Payload type) {
-        List<KCAPPayload> list = super.getElementsWithType(type);
+    public List<ResPayload> getElementsWithType(Payload type) {
+        List<ResPayload> list = super.getElementsWithType(type);
         
         entries.forEach(a -> list.addAll(a.getElementsWithType(type)));
         

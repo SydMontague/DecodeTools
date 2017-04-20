@@ -10,20 +10,20 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
-import de.phoenixstaffel.decodetools.res.payload.GMIOFile;
+import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 
 public class ImageViewerPanel extends EditorPanel {
     private static final long serialVersionUID = 4301317831427884206L;
     
     private final JScrollPane scrollPane = new JScrollPane();
-    private final JList<GMIOFile> list = new JList<>();
+    private final JList<GMIOPayload> list = new JList<>();
     private PayloadPanel payload = new GMIOPanel(null);
     
     public ImageViewerPanel(EditorModel model) {
         super(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.addListSelectionListener(a -> {
-            GMIOFile selected = list.getSelectedValue();
+            GMIOPayload selected = list.getSelectedValue();
             payload.setSelectedFile(selected);
         });
         
