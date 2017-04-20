@@ -10,7 +10,7 @@ public enum PixelFormat {
     RGB565(3, 16, true, PixelFormatDecoder::convertFromRGB565, PixelFormatEncoder::convertToRGB565),
     RGBA4(4, 16, true, PixelFormatDecoder::convertFromRGBA4, PixelFormatEncoder::convertToRGBA4),
     LA8(5, 16, true, PixelFormatDecoder::convertFromLA8, PixelFormatEncoder::convertToLA8),
-    HILO8(6, 16, true, null, null),
+    //HILO8(6, 16, true, null, null),
     L8(7, 8, true, PixelFormatDecoder::convertFromL8, PixelFormatEncoder::convertToL8),
     A8(8, 8, true, PixelFormatDecoder::convertFromA8, PixelFormatEncoder::convertToA8),
     LA4(9, 8, true, PixelFormatDecoder::convertFromLA4, PixelFormatEncoder::convertToLA4),
