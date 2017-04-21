@@ -83,7 +83,7 @@ public class BTXFile extends ResPayload {
         }
         
         for (int i = 0; i < pointers.size(); i++) {
-            entries.add(new Tuple<>(pointers.get(i).getKey(), new BTXEntry(strings.get(i), metas.size() >= i ? metas.get(i) : null)));
+            entries.add(new Tuple<>(pointers.get(i).getKey(), new BTXEntry(strings.get(i), metas.size() > i ? metas.get(i) : null)));
         }
     }
     
