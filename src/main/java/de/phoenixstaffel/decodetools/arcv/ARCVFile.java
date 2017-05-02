@@ -125,6 +125,9 @@ public class ARCVFile {
         
         resDataTime += System.nanoTime() - t;
         
+        if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0)
+            Main.LOGGER.log(Level.WARNING, () -> name + " calculated size and actual size differs. It's format might be invalid, please check and re-export.");
+        
         MARVEntry marv = new MARVEntry(structureSize, dataSize, dataEntries);
         if (res.getType() == Payload.GENERIC || res.getType() == Payload.BTX)
             marv = null;
