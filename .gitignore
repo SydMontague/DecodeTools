@@ -1,11 +1,7 @@
+# Maven work folder
 /target/
+
+# Eclipse Workspace
 /.settings/
 .classpath
 .project
-
-#garbage folders
-/Output/
-/Input/
-/MinerDefinitions/
-/LostEvoInput
-/Inputa
