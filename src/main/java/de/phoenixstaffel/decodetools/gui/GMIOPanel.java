@@ -40,6 +40,7 @@ public class GMIOPanel extends PayloadPanel {
     private final JSeparator separator = new JSeparator();
     private final JComboBox<PixelFormat> comboBox = new JComboBox<>();
     private final JLabel lblFormat = new JLabel("Format");
+    private final JLabel resolution = new JLabel("0x0");
     
     public GMIOPanel(Object selected) {
         setSelectedFile(selected);
@@ -99,18 +100,24 @@ public class GMIOPanel extends PayloadPanel {
                 .addGroup(gl_panel.createSequentialGroup()
                     .addGap(10)
                     .addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-                        .addComponent(lblFormat)
-                        .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(87, Short.MAX_VALUE))
+                        .addGroup(gl_panel.createSequentialGroup()
+                            .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE)
+                            .addGap(10)
+                            .addComponent(resolution, GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE)
+                            .addGap(4))
+                        .addGroup(gl_panel.createSequentialGroup()
+                            .addComponent(lblFormat)
+                            .addContainerGap(125, Short.MAX_VALUE))))
         );
-        
         gl_panel.setVerticalGroup(
             gl_panel.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblFormat)
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(resolution))
                     .addContainerGap(399, Short.MAX_VALUE))
         );
         
@@ -127,6 +134,7 @@ public class GMIOPanel extends PayloadPanel {
         
         image.setImage(selectedGMIO == null ? null : selectedGMIO.getImage());
         comboBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getFormat());
+        resolution.setText(selectedGMIO == null ? null : selectedGMIO.getImage().getWidth() + "x" + selectedGMIO.getImage().getHeight());
     }
     
     public GMIOPayload getSelectedFile() {
@@ -205,7 +213,7 @@ public class GMIOPanel extends PayloadPanel {
             try {
                 BufferedImage localImage = ImageIO.read(fileDialogue.getSelectedFile());
                 getSelectedFile().setImage(localImage);
-                getImage().setImage(getSelectedFile().getImage());
+                setSelectedFile(getSelectedFile());
             }
             catch (IOException ex) {
                 Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
