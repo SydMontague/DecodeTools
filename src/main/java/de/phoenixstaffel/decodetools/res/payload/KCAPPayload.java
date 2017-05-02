@@ -35,7 +35,8 @@ public class KCAPPayload extends ResPayload {
     
     private boolean genericAligned;
     
-    public KCAPPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public KCAPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+        // ignore size and name
         this(source, dataStart, parent);
     }
     
@@ -67,13 +68,14 @@ public class KCAPPayload extends ResPayload {
         
         genericAligned = !pointer.stream().anyMatch(a -> (a.getOffset() % 0x10) != 0);
         
-        for (KCAPPointer entry : pointer) {
+        for (int i = 0; i < numEntries; i++) {
+            KCAPPointer entry = pointer.get(i);
             source.setPosition(entry.getOffset() + startAddress);
             
             if (entry.getOffset() == 0 && entry.getLength() == 0)
                 entries.add(new VoidPayload(parent));
             else
-                entries.add(ResPayload.craft(source, dataStart, this, entry.getLength()));
+                entries.add(ResPayload.craft(source, dataStart, this, entry.getLength(), extensionPayload.get(i)));
         }
         
         source.setPosition(Utils.getPadded(source.getPosition(), 0x10));
@@ -148,11 +150,16 @@ public class KCAPPayload extends ResPayload {
         return node;
     }
     
+    public HeaderExtensionPayload getExtensionPayload() {
+        return extensionPayload;
+    }
+    
     @Override
     public Payload getType() {
         return Payload.KCAP;
     }
     
+    //FIXME generate extension payload during runtime
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
         long start = dest.getPosition();

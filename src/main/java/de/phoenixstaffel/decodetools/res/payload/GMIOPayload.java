@@ -13,7 +13,11 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class GMIOPayload extends ResPayload {
     private static final int VERSION = 6;
     
-    private int unknown1;
+    private String name;
+    
+    private short unknown1;
+    private byte unknown1_1;
+    private byte unknown1_2;
     private int dataPointer;
     
     private int unknown2;
@@ -40,16 +44,20 @@ public class GMIOPayload extends ResPayload {
     private float uvHeight;
     private BufferedImage image;
     
-    public GMIOPayload(Access source, int dataStart, KCAPPayload parent, int size) {
-        this(source, dataStart, parent);
+    public GMIOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+        this(source, dataStart, parent, name);
     }
     
-    private GMIOPayload(Access source, int dataStart, KCAPPayload parent) {
+    private GMIOPayload(Access source, int dataStart, KCAPPayload parent, String name) {
         super(parent);
+        
+        this.name = name;
         
         source.readInteger(); // magic value
         int version = source.readInteger();
-        unknown1 = source.readInteger();
+        unknown1 = source.readShort(); //always 0x3001
+        unknown1_1 = source.readByte();
+        unknown1_2 = source.readByte();
         dataPointer = source.readInteger();
         
         unknown2 = source.readInteger();
@@ -117,12 +125,14 @@ public class GMIOPayload extends ResPayload {
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
             byte[] pixelData = format.convertToFormat(image);
-            dataAddress = dataStream.add(pixelData, true, getParent());
+            dataAddress = dataStream.add(pixelData, name != null, getParent());
         }
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(VERSION);
-        dest.writeInteger(unknown1);
+        dest.writeShort(unknown1);
+        dest.writeByte(unknown1_1);
+        dest.writeByte(unknown1_2);
         dest.writeInteger(dataAddress);
         
         dest.writeInteger(unknown2);
@@ -156,7 +166,7 @@ public class GMIOPayload extends ResPayload {
     
     @Override
     public String toString() {
-        return "GMIO " + " " + format + " " + width + " " + height;
+        return name != null ? name : "GMIO " + " " + format + " " + width + " " + height;
     }
     
     public void setImage(BufferedImage image) {
@@ -184,7 +194,7 @@ public class GMIOPayload extends ResPayload {
             size = pixelData.length;
         }
         
-        data.add(pixelData, size, true, getParent());
+        data.add(pixelData, size, name != null, getParent());
     }
 
     public PixelFormat getFormat() {

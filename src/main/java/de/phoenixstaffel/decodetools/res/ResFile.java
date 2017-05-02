@@ -14,7 +14,7 @@ public class ResFile {
     
     public ResFile(Access source) {
         int dataStart = ResPayload.Payload.valueOf(null, source.readLong(0)).getDataStart(source);
-        root = ResPayload.craft(source, dataStart, null, -1);
+        root = ResPayload.craft(source, dataStart, null, -1, null);
     }
     
     public ResPayload getRoot() {

@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class TNFOPayload extends ResPayload {
     private byte[] data;
     
-    public TNFOPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public TNFOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         
         data = source.readByteArray(size);

@@ -14,7 +14,7 @@ public class LDMPPayload extends ResPayload {
     private int unknown7;
     private int unknown8;
     
-    public LDMPPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public LDMPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         
         unknown1 = source.readInteger();

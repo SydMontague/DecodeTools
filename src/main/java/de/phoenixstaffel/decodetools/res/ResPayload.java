@@ -81,8 +81,8 @@ public abstract class ResPayload {
     
     public abstract void writeKCAP(Access dest, IResData dataStream);
     
-    public static ResPayload craft(Access source, int dataStart, KCAPPayload parent, int size) {
-        return Payload.valueOf(parent, source.readLong(source.getPosition())).newInstance(source, dataStart, parent, size);
+    public static ResPayload craft(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+        return Payload.valueOf(parent, source.readLong(source.getPosition())).newInstance(source, dataStart, parent, size, name);
     }
     
     @Override
@@ -179,9 +179,9 @@ public abstract class ResPayload {
             }
         }
         
-        public ResPayload newInstance(Access source, int dataStart, KCAPPayload parent, int size) {
+        public ResPayload newInstance(Access source, int dataStart, KCAPPayload parent, int size, String name) {
             try {
-                return clazz.getConstructor(Access.class, int.class, KCAPPayload.class, int.class).newInstance(source, dataStart, parent, size);
+                return clazz.getConstructor(Access.class, int.class, KCAPPayload.class, int.class, String.class).newInstance(source, dataStart, parent, size, name);
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 Main.LOGGER.log(Level.WARNING, "Failed to instantiate HeaderExtension " + this, e);

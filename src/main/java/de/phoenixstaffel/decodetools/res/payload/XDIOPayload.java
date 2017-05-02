@@ -17,7 +17,7 @@ public class XDIOPayload extends ResPayload {
     
     private byte[] data;
     
-    public XDIOPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public XDIOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         this(source, dataStart, parent);
     }
     

@@ -14,4 +14,8 @@ public interface HeaderExtensionPayload {
     public default void writeKCAP(Access dest, int start) {
         // nothing to write
     }
+
+    public default String get(int i) {
+        return null;
+    }
 }

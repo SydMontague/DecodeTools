@@ -5,10 +5,13 @@ import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
 public class TNOJPayload extends ResPayload {
+    private String name;
+    
     private int[] data;
     
-    public TNOJPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public TNOJPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
+        this.name = name;
         
         data = new int[size / 4];
         

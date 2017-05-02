@@ -21,7 +21,7 @@ public class VCTMPayload extends ResPayload {
     
     // 1 byte per numEntries array
     // 8 byte per numEntries array
-    public VCTMPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public VCTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         this(source, dataStart, parent);
     }
     

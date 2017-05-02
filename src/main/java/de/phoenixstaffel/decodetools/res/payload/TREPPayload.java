@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class TREPPayload extends ResPayload {
     private int[] data;
     
-    public TREPPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public TREPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         
         data = new int[size / 4];

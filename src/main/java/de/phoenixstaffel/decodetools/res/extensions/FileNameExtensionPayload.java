@@ -9,7 +9,7 @@ import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension.NamePointer;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 
-class FileNameExtensionPayload implements HeaderExtensionPayload {
+public class FileNameExtensionPayload implements HeaderExtensionPayload {
     private Map<Integer, String> nameMap = new HashMap<>();
     
     public FileNameExtensionPayload(int entryCount, Access source) {
@@ -59,5 +59,10 @@ class FileNameExtensionPayload implements HeaderExtensionPayload {
     @Override
     public int getEntryNumber() {
         return nameMap.size();
+    }
+    
+    @Override
+    public String get(int i) {
+        return nameMap.getOrDefault(i, null);
     }
 }

@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class HSEMPayload extends ResPayload {
     private int[] data;
     
-    public HSEMPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public HSEMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         
         data = new int[size / 4];

@@ -5,6 +5,8 @@ import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
 public class LRTMPayload extends ResPayload {
+    private String name;
+    
     private int index;
     private short unknown1; //shading type? 4 = unshaded?
     private short unknown2; //???
@@ -18,8 +20,9 @@ public class LRTMPayload extends ResPayload {
     private byte[] data1; //more lighting  diffuse - specular - constant?
     private byte[] data2; //???
     
-    public LRTMPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public LRTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
+        this.name = name;
         
         index = source.readInteger();
         unknown1 = source.readShort();

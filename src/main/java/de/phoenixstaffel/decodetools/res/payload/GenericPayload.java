@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class GenericPayload extends ResPayload {
     private int[] data;
     
-    public GenericPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public GenericPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         
         data = new int[(int) ((size == -1 ? source.getSize() : size) / 4)];

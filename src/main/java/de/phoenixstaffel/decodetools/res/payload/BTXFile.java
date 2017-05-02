@@ -23,7 +23,7 @@ public class BTXFile extends ResPayload {
     private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
     
     // TODO make cleaner/nicer
-    public BTXFile(Access source, int dataStart, KCAPPayload parent, int size) {
+    public BTXFile(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         long start = source.getPosition();
         int postStart = 0;

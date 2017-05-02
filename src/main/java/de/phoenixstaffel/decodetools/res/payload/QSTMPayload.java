@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class QSTMPayload extends ResPayload {
     private int[] data;
     
-    public QSTMPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public QSTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         data = new int[size / 4];
         

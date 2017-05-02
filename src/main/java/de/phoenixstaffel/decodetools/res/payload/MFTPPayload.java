@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class MFTPPayload extends ResPayload {
     private int[] data;
     
-    public MFTPPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public MFTPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         
         data = new int[size / 4];

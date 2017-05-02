@@ -7,7 +7,7 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class PADHPayload extends ResPayload {
     private int[] data;
     
-    public PADHPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public PADHPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         
         data = new int[size / 4];

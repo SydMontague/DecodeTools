@@ -24,7 +24,7 @@ public class XTVOPayload extends ResPayload {
     
     private byte[] data;
     
-    public XTVOPayload(Access source, int dataStart, KCAPPayload parent, int size) {
+    public XTVOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         this(source, dataStart, parent);
     }
     
