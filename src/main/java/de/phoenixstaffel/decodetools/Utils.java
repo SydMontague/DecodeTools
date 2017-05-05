@@ -81,7 +81,7 @@ public class Utils {
                 flipped[x + y * image.getWidth()] = original[x + (image.getHeight() - y - 1) * image.getWidth()];
             
         target.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
-        return image;
+        return target;
     }
     
     public static BufferedImage flipImageVertically(BufferedImage image) {
