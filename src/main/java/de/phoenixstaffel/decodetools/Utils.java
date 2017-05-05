@@ -65,8 +65,14 @@ public class Utils {
         i = (i | (i >>> 7)) & 0x3F;
         return i;
     }
-    
+
     public static BufferedImage flipImage(BufferedImage image) {
+        return flipImage(image, false);
+    }
+    
+    public static BufferedImage flipImage(BufferedImage image, boolean newImage) {
+        BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType()) : image;
+        
         int[] original = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
         int[] flipped = new int[image.getWidth() * image.getHeight()];
         
@@ -74,7 +80,7 @@ public class Utils {
             for (int y = 0; y < image.getHeight(); y++)
                 flipped[x + y * image.getWidth()] = original[x + (image.getHeight() - y - 1) * image.getWidth()];
             
-        image.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
+        target.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
         return image;
     }
     
