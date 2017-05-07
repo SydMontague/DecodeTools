@@ -104,7 +104,7 @@ public abstract class ResPayload {
         LRTM(0, LRTMPayload.class),
         CTPP(0, CTPPPayload.class),
         LTMP(0, LTMPPayload.class),
-        TNFO(0, TNFOPayload.class),
+        TNFO(0x4F464E54, TNFOPayload.class),
         LDMP(0, LDMPPayload.class),
         MFTP(0, MFTPPayload.class),
         PRGM(0, PRGMPayload.class),
@@ -158,8 +158,6 @@ public abstract class ResPayload {
                     return CTPP;
                 case LTMP:
                     return LTMP;
-                case KPTF:
-                    return TNFO;
                 case LDMP:
                     return LDMP;
                 case MFTP:
