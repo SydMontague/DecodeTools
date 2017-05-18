@@ -2,6 +2,7 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -231,7 +232,7 @@ public class TNFOPayload extends ResPayload {
      * - 2 byte y upper left
      * - 2 byte y lower right
      */
-    class TNFOEntry {
+    public class TNFOEntry {
         private short gmioId;
         private byte xTranslation;
         private byte yTranslation;
@@ -240,11 +241,11 @@ public class TNFOPayload extends ResPayload {
         private byte height;
         private byte textWidth;
         private byte unused;
-        // replace with floats?
-        private short x1;
-        private short x2;
-        private short y1;
-        private short y2;
+        //FIXME replace with floats?
+        private double x1;
+        private double x2;
+        private double y1;
+        private double y2;
         
         public TNFOEntry(Access source) {
             gmioId = source.readShort();
@@ -256,10 +257,10 @@ public class TNFOPayload extends ResPayload {
             textWidth = source.readByte();
             unused = source.readByte();
             
-            x1 = source.readShort();
-            x2 = source.readShort();
-            y1 = source.readShort();
-            y2 = source.readShort();
+            x1 = source.readShort() / (double) Short.MAX_VALUE;
+            x2 = source.readShort() / (double) Short.MAX_VALUE;
+            y1 = source.readShort() / (double) Short.MAX_VALUE;
+            y2 = source.readShort() / (double) Short.MAX_VALUE;
         }
         
         public void writeKCAP(Access dest) {
@@ -270,10 +271,159 @@ public class TNFOPayload extends ResPayload {
             dest.writeByte(height);
             dest.writeByte(textWidth);
             dest.writeByte(unused);
-            dest.writeShort(x1);
-            dest.writeShort(x2);
-            dest.writeShort(y1);
-            dest.writeShort(y2);
+            dest.writeShort((short) (x1 * Short.MAX_VALUE));
+            dest.writeShort((short) (x2 * Short.MAX_VALUE));
+            dest.writeShort((short) (y1 * Short.MAX_VALUE));
+            dest.writeShort((short) (y2 * Short.MAX_VALUE));
         }
+
+        public short getGmioId() {
+            return gmioId;
+        }
+
+        public void setGmioId(short gmioId) {
+            this.gmioId = gmioId;
+        }
+
+        public byte getXTranslation() {
+            return xTranslation;
+        }
+
+        public void setXTranslation(byte xTranslation) {
+            this.xTranslation = xTranslation;
+        }
+
+        public byte getYTranslation() {
+            return yTranslation;
+        }
+
+        public void setYTranslation(byte yTranslation) {
+            this.yTranslation = yTranslation;
+        }
+
+        public byte getWidth() {
+            return width;
+        }
+
+        public void setWidth(byte width) {
+            this.width = width;
+        }
+
+        public byte getHeight() {
+            return height;
+        }
+
+        public void setHeight(byte height) {
+            this.height = height;
+        }
+
+        public byte getTextWidth() {
+            return textWidth;
+        }
+
+        public void setTextWidth(byte textWidth) {
+            this.textWidth = textWidth;
+        }
+
+        public double getX1() {
+            return x1;
+        }
+
+        public void setX1(double x1) {
+            this.x1 = x1;
+        }
+
+        public double getX2() {
+            return x2;
+        }
+
+        public void setX2(double x2) {
+            this.x2 = x2;
+        }
+
+        public double getY1() {
+            return y1;
+        }
+
+        public void setY1(double y1) {
+            this.y1 = y1;
+        }
+
+        public double getY2() {
+            return y2;
+        }
+
+        public void setY2(double y2) {
+            this.y2 = y2;
+        }
+        
+        
     }
+
+    public Map<Integer, TNFOEntry> getAssignments() {
+        return assignments;
+    }
+
+    public void removeAssignment(int character) {
+        TNFOEntry entry = assignments.remove(character);
+        
+        if(entry == null)
+            return;
+        
+        if(assignments.containsValue(entry))
+            entries.remove(entry);
+    }
+
+    public short getUnknown1() {
+        return unknown1;
+    }
+
+    public void setUnknown1(short unknown1) {
+        this.unknown1 = unknown1;
+    }
+
+    public short getYOffset() {
+        return yOffset;
+    }
+
+    public void setYOffset(short yOffset) {
+        this.yOffset = yOffset;
+    }
+
+    public short getSpaceWidth() {
+        return spaceWidth;
+    }
+
+    public void setSpaceWidth(short spaceWidth) {
+        this.spaceWidth = spaceWidth;
+    }
+
+    public short getUnknown2() {
+        return unknown2;
+    }
+
+    public void setUnknown2(short unknown2) {
+        this.unknown2 = unknown2;
+    }
+
+    public short getReferenceSize() {
+        return referenceSize;
+    }
+
+    public void setReferenceSize(short referenceSize) {
+        this.referenceSize = referenceSize;
+    }
+
+    public short getUnknown3() {
+        return unknown3;
+    }
+
+    public void setUnknown3(short unknown3) {
+        this.unknown3 = unknown3;
+    }
+
+    public TNFOEntry getDefaultEntry() {
+        return defaultEntry;
+    }
+
 }
