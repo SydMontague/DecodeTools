@@ -241,4 +241,8 @@ public class KCAPPayload extends ResPayload {
     public String toString() {
         return getType().name() + " " + (getExtension() != null ? getExtension().getType().name() : "");
     }
+
+    public Object get(int i) {
+        return entries.get(i);
+    }
 }
