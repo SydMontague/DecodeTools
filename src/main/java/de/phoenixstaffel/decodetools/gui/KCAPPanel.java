@@ -15,7 +15,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
 import de.phoenixstaffel.decodetools.res.ResPayload;
-import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
+import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class KCAPPanel extends EditorPanel {
     private static final long serialVersionUID = -8718473237761608043L;
@@ -23,7 +23,7 @@ public class KCAPPanel extends EditorPanel {
     private JScrollPane scrollPane = new JScrollPane();
     private JTree tree = new JTree((TreeModel) null);
     
-    private Map<ResPayload.Payload, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
+    private Map<Enum<?>, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
     private final JPanel panel = new JPanel();
     private CardLayout cardLayout = new CardLayout(0, 0);
     
@@ -35,9 +35,14 @@ public class KCAPPanel extends EditorPanel {
         tree.setShowsRootHandles(true);
         tree.addTreeSelectionListener(a -> {
             Object selected = ((DefaultMutableTreeNode) a.getPath().getLastPathComponent()).getUserObject();
+            Enum<?> type = null;
             
-            if (selected instanceof ResPayload && panels.containsKey(((ResPayload) selected).getType())) {
-                Payload type = ((ResPayload) selected).getType();
+            if (selected instanceof ResPayload && panels.containsKey(((ResPayload) selected).getType()))
+                type = ((ResPayload) selected).getType();
+            else if (selected instanceof KCAPPayload && panels.containsKey(((KCAPPayload) selected).getExtension().getType()))
+                type = ((KCAPPayload) selected).getExtension().getType();
+            
+            if (type != null) {
                 cardLayout.show(panel, type.name());
                 panels.get(type).setSelectedFile(selected);
             }

@@ -1,11 +1,11 @@
 package de.phoenixstaffel.decodetools.gui;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
 
-import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.HeaderExtension.Extensions;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 
 public abstract class PayloadPanel extends JPanel {
@@ -13,19 +13,20 @@ public abstract class PayloadPanel extends JPanel {
     
     public static final PayloadPanel NULL_PANEL = new PayloadPanel() {
         private static final long serialVersionUID = -1637343165773635969L;
-
+        
         @Override
         public void setSelectedFile(Object file) {
-            //no implementation
+            // no implementation
         }
     };
-
+    
     public abstract void setSelectedFile(Object file);
-
-    public static Map<Payload, PayloadPanel> generatePayloadPanels() {
-        Map<Payload, PayloadPanel> tempPanels = new EnumMap<>(Payload.class);
+    
+    public static Map<Enum<?>, PayloadPanel> generatePayloadPanels() {
+        Map<Enum<?>, PayloadPanel> tempPanels = new HashMap<>();
         
         tempPanels.put(Payload.GMIO, new GMIOPanel(null));
+        tempPanels.put(Extensions.KPTF, new KPTFPanel(null));
         
         return tempPanels;
     }
