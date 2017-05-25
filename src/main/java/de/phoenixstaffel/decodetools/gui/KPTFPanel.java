@@ -4,14 +4,12 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -19,6 +17,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -50,7 +49,7 @@ public class KPTFPanel extends PayloadPanel {
     private final JButton btnAdd = new JButton("Add");
     private final JButton btnRemove = new JButton("Remove");
     private final JList<Integer> list = new JList<>();
-    private DefaultListModel<Integer> model;
+    private DefaultListModel<Integer> model = new DefaultListModel<>();
     
     private final JPanel tnfoEntryPanel = new JPanel();
     private final JPanel tnfoHeaderPanel = new JPanel();
@@ -96,36 +95,41 @@ public class KPTFPanel extends PayloadPanel {
         xTransLabel.setLabelFor(xTransField);
         lblSearch.setFont(new Font("Tahoma", Font.PLAIN, 14));
         lblSearch.setLabelFor(searchField);
+        searchField.setEditable(false);
         searchField.setColumns(10);
         setSelectedFile(selected);
         tnfoEntryPanel.setVisible(false);
         
         resize = new JResizeDialogue(new ArrayList<>());
-        resize.addPropertyChangeListener("selected", a -> {
-            entry.setGmioId(((Integer) a.getNewValue()).shortValue());
-        });
+        resize.addPropertyChangeListener("selected", a -> entry.setGmioId(((Integer) a.getNewValue()).shortValue()));
         
-        btnRemove.setAction(new AbstractAction("Remove") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (list.getSelectedValue() == -1)
-                    return;
-                
-                int character = list.getSelectedValue();
-                tnfo.removeAssignment(character);
-                model.removeElement(character);
-            }
-        });
-        
-        btnChange.setAction(new AbstractAction("Change") {
+        btnRemove.setAction(new FunctionAction("Remove", a -> {
+            if (list.getSelectedValue() == -1)
+                return;
             
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                resize.setVisible(true);
-            }
-        });
+            int character = list.getSelectedValue();
+            tnfo.removeAssignment(character);
+            model.removeElement(character);
+        }));
         
-
+        btnAdd.setAction(new FunctionAction("Add", a -> {
+            String input = JOptionPane.showInputDialog(null, "Insert character to add: ", "Add character to KPTF", JOptionPane.PLAIN_MESSAGE);
+            if (input == null || input.length() > 1) {
+                JOptionPane.showMessageDialog(null, "You have to enter exactly one character.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            int i = input.charAt(0);
+            if (i > 0xFFFF) {
+                JOptionPane.showMessageDialog(null, "This character is not within UTF-16.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            tnfo.getAssignments().putIfAbsent(i, new TNFOEntry());
+            regenerateListModel();
+        }));
+        
+        btnChange.setAction(new FunctionAction("Resize", a -> resize.setVisible(true)));
+        
         resize.imageSelector.addPropertyChangeListener("selection", a -> {
             Rectangle selection = (Rectangle) a.getNewValue();
             BufferedImage i = gmios.get(entry.getGmioId()).getImage();
@@ -133,14 +137,15 @@ public class KPTFPanel extends PayloadPanel {
             double y1 = selection.getMinY() / i.getHeight();
             double x2 = selection.getMaxX() / i.getWidth();
             double y2 = selection.getMaxY() / i.getHeight();
-
+            
             entry.setX1(x1);
             entry.setX2(x2);
-            entry.setY1(1-y1);
-            entry.setY2(1-y2);
+            entry.setY1(1 - y1);
+            entry.setY2(1 - y2);
         });
         
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.setModel(model);
         
         list.addListSelectionListener(a -> {
             if (list.getSelectedIndex() == -1)
@@ -165,15 +170,90 @@ public class KPTFPanel extends PayloadPanel {
             int y2 = (int) Math.round(entry.getY2() * i.getHeight());
             
             resize.setSelectedImage(entry.getGmioId());
-            resize.imageSelector.setSelection(new Rectangle(x1, i.getHeight() - y1, x2-x1, y1-y2));
-
+            resize.imageSelector.setSelection(new Rectangle(x1, i.getHeight() - y1, x2 - x1, y1 - y2));
+            
             if (x2 - x1 != 0 && y1 - y2 != 0)
                 image.setImage(i.getSubimage(x1, i.getHeight() - y1, x2 - x1, y1 - y2));
             else
                 image.setImage(null);
         });
         
-        //@formatter:off
+        list.setCellRenderer(new GenericListCellRenderer<Integer>(a -> {
+            if (a == -1)
+                return "DEFAULT";
+            
+            return ((char) a.intValue()) + String.format(" (0x%04X) ", a) + Character.getName(a);
+        }));
+        
+        unk1Field.addChangeListener(a -> tnfo.setUnknown1((short) unk1Field.getValue()));
+        unk2Field.addChangeListener(a -> tnfo.setUnknown2((short) unk2Field.getValue()));
+        unk3Field.addChangeListener(a -> tnfo.setUnknown3((short) unk3Field.getValue()));
+        spaceWidthField.addChangeListener(a -> tnfo.setSpaceWidth((short) spaceWidthField.getValue()));
+        refSizeField.addChangeListener(a -> tnfo.setReferenceSize((short) refSizeField.getValue()));
+        yOffsetField.addChangeListener(a -> tnfo.setYOffset((short) yOffsetField.getValue()));
+        
+        xTransField.addChangeListener(a -> entry.setXTranslation((byte) xTransField.getValue()));
+        yTransField.addChangeListener(a -> entry.setYTranslation((byte) yTransField.getValue()));
+        heightField.addChangeListener(a -> entry.setHeight((byte) heightField.getValue()));
+        widthField.addChangeListener(a -> entry.setWidth((byte) widthField.getValue()));
+        textWidthField.addChangeListener(a -> entry.setTextWidth((byte) textWidthField.getValue()));
+    }
+    
+    private void regenerateListModel() {
+        model.clear();
+        model.addElement(-1); // Default element
+        tnfo.getAssignments().forEach((a, b) -> {
+            if (b != null)
+                model.addElement(a);
+        });
+    }
+    
+    @Override
+    public void setSelectedFile(Object file) {
+        if (file == null)
+            return;
+        
+        if (!(file instanceof KCAPPayload)) {
+            Main.LOGGER.warning("Tried to select non-KCAP File in KPTFPanel.");
+            return;
+        }
+        
+        if (((KCAPPayload) file).getExtension().getType() != Extensions.KPTF) {
+            Main.LOGGER.warning("Tried to select non-KPTF KCAP File in KPTFPanel.");
+            return;
+        }
+        
+        kptf = (KCAPPayload) file;
+        tnfo = (TNFOPayload) kptf.get(0);
+        entry = null;
+        tnfoEntryPanel.setVisible(false);
+        Object gmio = kptf.get(1);
+        
+        if (gmio instanceof GMIOPayload)
+            gmios = Arrays.asList((GMIOPayload) gmio);
+        else if (gmio instanceof KCAPPayload && ((KCAPPayload) gmio).getExtension().getType() == Extensions.GMIP) {
+            gmios = new ArrayList<>();
+            ((KCAPPayload) gmio).getElementsWithType(Payload.GMIO).forEach(a -> gmios.add((GMIOPayload) a));
+        }
+        
+        List<Image> images = new ArrayList<>();
+        gmios.stream().map(GMIOPayload::getImage).forEach(images::add);
+        resize.setImages(images);
+        
+        regenerateListModel();
+        
+        setupLayout();
+        
+        unk1Field.setValue(tnfo.getUnknown1());
+        spaceWidthField.setValue(tnfo.getSpaceWidth());
+        yOffsetField.setValue(tnfo.getYOffset());
+        unk2Field.setValue(tnfo.getUnknown2());
+        refSizeField.setValue(tnfo.getReferenceSize());
+        unk3Field.setValue(tnfo.getUnknown3());
+    }
+    
+    private void setupLayout() {
+      //@formatter:off
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
@@ -343,89 +423,17 @@ public class KPTFPanel extends PayloadPanel {
         yTransField.setModel(new SpinnerNumberModel((byte) 0, null, null, (byte) 1));
         xTransField.setModel(new SpinnerNumberModel((byte) 0, null, null, (byte) 1));
         tnfoEntryPanel.setLayout(gl_tnfoEntryPanel);
-        btnAdd.setEnabled(false);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setViewportView(list);
         setLayout(groupLayout);
         //@formatter:on
-        
-        unk1Field.addChangeListener(a -> tnfo.setUnknown1((short) unk1Field.getValue()));
-        unk2Field.addChangeListener(a -> tnfo.setUnknown2((short) unk2Field.getValue()));
-        unk3Field.addChangeListener(a -> tnfo.setUnknown3((short) unk3Field.getValue()));
-        spaceWidthField.addChangeListener(a -> tnfo.setSpaceWidth((short) spaceWidthField.getValue()));
-        refSizeField.addChangeListener(a -> tnfo.setReferenceSize((short) refSizeField.getValue()));
-        yOffsetField.addChangeListener(a -> tnfo.setYOffset((short) yOffsetField.getValue()));
-        
-        xTransField.addChangeListener(a -> entry.setXTranslation((byte) xTransField.getValue()));
-        yTransField.addChangeListener(a -> entry.setYTranslation((byte) yTransField.getValue()));
-        heightField.addChangeListener(a -> entry.setHeight((byte) heightField.getValue()));
-        widthField.addChangeListener(a -> entry.setWidth((byte) widthField.getValue()));
-        textWidthField.addChangeListener(a -> entry.setTextWidth((byte) textWidthField.getValue()));
-        
-    }
-    
-    @Override
-    public void setSelectedFile(Object file) {
-        if (file == null)
-            return;
-        
-        if (!(file instanceof KCAPPayload)) {
-            Main.LOGGER.warning("Tried to select non-KCAP File in KPTFPanel.");
-            return;
-        }
-        
-        if (((KCAPPayload) file).getExtension().getType() != Extensions.KPTF) {
-            Main.LOGGER.warning("Tried to select non-KPTF KCAP File in KPTFPanel.");
-            return;
-        }
-        
-        kptf = (KCAPPayload) file;
-        tnfo = (TNFOPayload) kptf.get(0);
-        entry = null;
-        tnfoEntryPanel.setVisible(false);
-        Object gmio = kptf.get(1);
-        
-        if (gmio instanceof GMIOPayload)
-            gmios = Arrays.asList((GMIOPayload) gmio);
-        else if (gmio instanceof KCAPPayload && ((KCAPPayload) gmio).getExtension().getType() == Extensions.GMIP) {
-            gmios = new ArrayList<>();
-            ((KCAPPayload) gmio).getElementsWithType(Payload.GMIO).forEach(a -> gmios.add((GMIOPayload) a));
-        }
-        
-        List<Image> images = new ArrayList<>();
-        gmios.stream().map(GMIOPayload::getImage).forEach(images::add);
-        resize.setImages(images);
-        
-        model = new DefaultListModel<>();
-        
-        list.setCellRenderer(new GenericListCellRenderer<Integer>(a -> {
-            if (a == -1)
-                return "DEFAULT";
-            
-            return ((char) a.intValue()) + String.format(" (0x%04X) ", a) + Character.getName(a);
-        }));
-        
-        model.addElement(-1); // Default element
-        tnfo.getAssignments().forEach((a, b) -> {
-            if (b != null)
-                model.addElement(a);
-        });
-        
-        list.setModel(model);
-        
-        unk1Field.setValue(tnfo.getUnknown1());
-        spaceWidthField.setValue(tnfo.getSpaceWidth());
-        yOffsetField.setValue(tnfo.getYOffset());
-        unk2Field.setValue(tnfo.getUnknown2());
-        refSizeField.setValue(tnfo.getReferenceSize());
-        unk3Field.setValue(tnfo.getUnknown3());
     }
 }
 
 class GenericListCellRenderer<T> extends DefaultListCellRenderer {
     private static final long serialVersionUID = 8858323241227888747L;
     
-    private transient Function<T, String> function;
+    private Function<T, String> function;
     
     public GenericListCellRenderer(Function<T, String> function) {
         super();

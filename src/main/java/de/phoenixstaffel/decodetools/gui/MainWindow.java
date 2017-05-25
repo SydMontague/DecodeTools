@@ -3,6 +3,8 @@ package de.phoenixstaffel.decodetools.gui;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -24,7 +26,12 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import de.phoenixstaffel.decodetools.Main;
+import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.arcv.ARCVFile;
+import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.res.DummyResData;
+import de.phoenixstaffel.decodetools.res.ResFile;
 
 public class MainWindow extends JFrame implements Observer {
     private static final long serialVersionUID = -8269477952146086450L;
@@ -53,7 +60,7 @@ public class MainWindow extends JFrame implements Observer {
         mntmSaveFile.setAction(new SaveAsAction());
         
         JMenuItem mntmExit = new JMenuItem("Exit");
-        mntmExit.setAction(new ExitAction());
+        mntmExit.setAction(new FunctionAction("Exit", a -> dispose()));
         
         JMenuItem mntmSave = new JMenuItem("Save");
         mntmSave.setAction(new SaveAction());
@@ -75,6 +82,13 @@ public class MainWindow extends JFrame implements Observer {
         mnArcv.add(mntmRebuildUncompressedArcv);
         
         menuBar.add(mnStyle);
+        
+        JMenu mnTools = new JMenu("Tools");
+        menuBar.add(mnTools);
+        
+        JMenuItem mntmReexportMipmaps = new JMenuItem("Re-Export Malformatted Files");
+        mntmReexportMipmaps.setAction(new ReExportAction());
+        mnTools.add(mntmReexportMipmaps);
         
         contentPane = new JPanel();
         contentPane.setBorder(null);
@@ -118,7 +132,7 @@ public class MainWindow extends JFrame implements Observer {
                         SwingUtilities.updateComponentTreeUI(MainWindow.this);
                     }
                     catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {
-                        Main.LOGGER.log(Level.SEVERE, "Error while setting Look & Feel!" , e1);
+                        Main.LOGGER.log(Level.SEVERE, "Error while setting Look & Feel!", e1);
                     }
                 }
             }));
@@ -132,19 +146,6 @@ public class MainWindow extends JFrame implements Observer {
     
     public EditorModel getModel() {
         return model;
-    }
-    
-    class ExitAction extends AbstractAction {
-        private static final long serialVersionUID = -3954749987113215617L;
-        
-        public ExitAction() {
-            super("Exit");
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            dispose();
-        }
     }
     
     class SaveAsAction extends AbstractAction {
@@ -208,14 +209,14 @@ public class MainWindow extends JFrame implements Observer {
             if (outputFileDialogue.getSelectedFile() == null)
                 return;
             
-            //TODO add work queue, to make sure only one task is executed at a time
+            // TODO add work queue, to make sure only one task is executed at a time
             MainWindow.this.setEnabled(false);
             SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {
                 @Override
                 protected Void doInBackground() throws Exception {
                     try {
                         new ARCVFile(inputFileDialogue.getSelectedFile(), compressed).saveFiles(outputFileDialogue.getSelectedFile());
-                        //TODO add progressbar
+                        // TODO add progressbar
                     }
                     catch (IOException e1) {
                         Main.LOGGER.log(Level.WARNING, "Error while rebuilding ARCV files!", e1);
@@ -254,5 +255,58 @@ public class MainWindow extends JFrame implements Observer {
             setTitle(file.getName());
             getModel().setSelectedFile(file);
         }
+    }
+    
+    class ReExportAction extends AbstractAction {
+        private static final long serialVersionUID = -7894935184753933528L;
+
+        public ReExportAction() {
+            super("Re-Export Malformatted Files");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ee) {
+                JFileChooser inputFileDialogue = new JFileChooser("./");
+                inputFileDialogue.setDialogTitle("Please select the directory with the input files");
+                inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                inputFileDialogue.showOpenDialog(null);
+                
+                JFileChooser outputFileDialogue = new JFileChooser("./");
+                outputFileDialogue.setDialogTitle("Please select the directory in which the exported files will be saved.");
+                outputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                outputFileDialogue.showSaveDialog(null);
+                
+                String path = inputFileDialogue.getSelectedFile().getPath();
+                List<File> files = Utils.fileOrder(inputFileDialogue.getSelectedFile());
+                
+                for (File f : files) {
+                    try {
+                        String local = f.getPath().replace(path, "");
+                        
+                        byte[] input = Files.readAllBytes(f.toPath());
+                        
+                        Access access = new FileAccess(f);
+                        ResFile res = new ResFile(access);
+                        access.close();
+                        
+                        int structureSize = res.getRoot().getSizeOfRoot();
+                        DummyResData resData = new DummyResData();
+                        res.getRoot().fillDummyResData(resData);
+                        int dataSize = resData.getSize();
+                        resData.close();
+                        
+                        if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0) {
+                            Main.LOGGER.info(() -> "Re-Exporting " + local);
+                            File ff = new File(outputFileDialogue.getSelectedFile(), local);
+                            ff.getParentFile().mkdirs();
+                            res.repack(ff);
+                        }
+                    }
+                    catch (IOException e) {
+                        Main.LOGGER.log(Level.SEVERE, "IOException while trying to re-export " + f, e);
+                    }
+                }
+        }
+        
     }
 }

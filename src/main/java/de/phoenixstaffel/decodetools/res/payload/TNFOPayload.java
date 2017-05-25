@@ -232,7 +232,7 @@ public class TNFOPayload extends ResPayload {
      * - 2 byte y upper left
      * - 2 byte y lower right
      */
-    public class TNFOEntry {
+    public static class TNFOEntry {
         private short gmioId;
         private byte xTranslation;
         private byte yTranslation;
@@ -241,7 +241,7 @@ public class TNFOPayload extends ResPayload {
         private byte height;
         private byte textWidth;
         private byte unused;
-        //FIXME replace with floats?
+
         private double x1;
         private double x2;
         private double y1;
@@ -263,6 +263,10 @@ public class TNFOPayload extends ResPayload {
             y2 = source.readShort() / (double) Short.MAX_VALUE;
         }
         
+        public TNFOEntry() {
+            //everything 0, nothing to init
+        }
+
         public void writeKCAP(Access dest) {
             dest.writeShort(gmioId);
             dest.writeByte(xTranslation);
@@ -356,8 +360,6 @@ public class TNFOPayload extends ResPayload {
         public void setY2(double y2) {
             this.y2 = y2;
         }
-        
-        
     }
 
     public Map<Integer, TNFOEntry> getAssignments() {
