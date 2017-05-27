@@ -87,7 +87,7 @@ public class ARCVFile {
         byte[] input = Files.readAllBytes(a);
         
         if (input.length > 0x1000 && compressed) {
-            Deflater compresser = new Deflater(Deflater.DEFAULT_COMPRESSION);
+            Deflater compresser = new Deflater(Deflater.BEST_COMPRESSION);
             compresser.setInput(input);
             compresser.finish();
             
@@ -128,7 +128,7 @@ public class ARCVFile {
         if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0)
             Main.LOGGER.log(Level.WARNING, () -> name + " calculated size and actual size differs. It's format might be invalid, please check and re-export.");
         
-        MARVEntry marv = new MARVEntry(structureSize, dataSize, dataEntries);
+        MARVEntry marv = new MARVEntry(structureSize, dataSize, dataEntries, name.endsWith(".img"));
         if (res.getType() == Payload.GENERIC || res.getType() == Payload.BTX)
             marv = null;
         

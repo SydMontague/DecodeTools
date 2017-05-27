@@ -40,10 +40,10 @@ public class MARVEntry {
         unknown6 = buffer.getInt();
     }
     
-    public MARVEntry(int structureSize, int dataSize, int dataEntries) {
+    public MARVEntry(int structureSize, int dataSize, int dataEntries, boolean b) {
         this.unknown1 = 0x00000001;
         this.structureSize = structureSize;
-        this.unknown3 = 0x10;
+        this.unknown3 = b ? 0x4 : 0x10;
         this.dataSize = dataSize;
         this.unknown4 = dataSize == 0 ? 1 : 0x80;
         this.unknown5 = dataEntries;
@@ -68,5 +68,4 @@ public class MARVEntry {
         
         return data;
     }
-    
 }
