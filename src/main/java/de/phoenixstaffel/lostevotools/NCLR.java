@@ -118,9 +118,9 @@ public class NCLR {
     }
     
     class PaletteColor {
-        private byte red;
-        private byte green;
-        private byte blue;
+        byte red;
+        byte green;
+        byte blue;
         
         public PaletteColor(short color) {
             this.red = (byte) ((color >>> 10) & 0x1F);
