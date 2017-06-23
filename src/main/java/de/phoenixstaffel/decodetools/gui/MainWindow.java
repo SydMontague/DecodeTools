@@ -40,6 +40,18 @@ public class MainWindow extends JFrame implements Observer {
     
     private JPanel contentPane;
     private JMenu mnStyle = new JMenu("Style");
+    private JMenuBar menuBar = new JMenuBar();
+    private JMenu mnFile = new JMenu("File");
+    private JMenuItem mntmLoadFile = new JMenuItem("Load File");
+    private JMenuItem mntmSaveFile = new JMenuItem("Save File");
+    private JMenuItem mntmExit = new JMenuItem("Exit");
+    private JMenuItem mntmSave = new JMenuItem("Save");
+    private JMenu mnArcv = new JMenu("ARCV");
+    private JMenuItem mntmRebuildArcv = new JMenuItem("Rebuild ARCV");
+    private JMenuItem mntmRebuildUncompressedArcv = new JMenuItem("Rebuild Uncompressed ARCV");
+    private JMenu mnTools = new JMenu("Tools");
+    private JMenuItem mntmReexportMipmaps = new JMenuItem("Re-Export Malformatted Files");
+    private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
     
     public MainWindow() {
         model.addObserver(this);
@@ -47,22 +59,12 @@ public class MainWindow extends JFrame implements Observer {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 1127, 791);
         
-        JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
         
-        JMenu mnFile = new JMenu("File");
         menuBar.add(mnFile);
-        
-        JMenuItem mntmLoadFile = new JMenuItem("Load File");
         mntmLoadFile.setAction(new LoadAction());
-        
-        JMenuItem mntmSaveFile = new JMenuItem("Save File");
         mntmSaveFile.setAction(new SaveAsAction());
-        
-        JMenuItem mntmExit = new JMenuItem("Exit");
         mntmExit.setAction(new FunctionAction("Exit", a -> dispose()));
-        
-        JMenuItem mntmSave = new JMenuItem("Save");
         mntmSave.setAction(new SaveAction());
         
         mnFile.add(mntmLoadFile);
@@ -70,31 +72,23 @@ public class MainWindow extends JFrame implements Observer {
         mnFile.add(mntmSave);
         mnFile.add(mntmExit);
         
-        JMenu mnArcv = new JMenu("ARCV");
         menuBar.add(mnArcv);
         
-        JMenuItem mntmRebuildArcv = new JMenuItem("Rebuild ARCV");
         mntmRebuildArcv.setAction(new RebuildAction("Rebuild ARCV", true));
         mnArcv.add(mntmRebuildArcv);
         
-        JMenuItem mntmRebuildUncompressedArcv = new JMenuItem("Rebuild Uncompressed ARCV");
         mntmRebuildUncompressedArcv.setAction(new RebuildAction("Rebuild Uncompressed ARCV", false));
         mnArcv.add(mntmRebuildUncompressedArcv);
         
         menuBar.add(mnStyle);
-        
-        JMenu mnTools = new JMenu("Tools");
         menuBar.add(mnTools);
         
-        JMenuItem mntmReexportMipmaps = new JMenuItem("Re-Export Malformatted Files");
         mntmReexportMipmaps.setAction(new ReExportAction());
         mnTools.add(mntmReexportMipmaps);
         
         contentPane = new JPanel();
         contentPane.setBorder(null);
         setContentPane(contentPane);
-        
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         
         KCAPPanel kcapViewer = new KCAPPanel(model);
         tabbedPane.addTab("KCAP Viewer", null, kcapViewer, null);
@@ -259,53 +253,53 @@ public class MainWindow extends JFrame implements Observer {
     
     class ReExportAction extends AbstractAction {
         private static final long serialVersionUID = -7894935184753933528L;
-
+        
         public ReExportAction() {
             super("Re-Export Malformatted Files");
         }
         
         @Override
         public void actionPerformed(ActionEvent ee) {
-                JFileChooser inputFileDialogue = new JFileChooser("./");
-                inputFileDialogue.setDialogTitle("Please select the directory with the input files");
-                inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                inputFileDialogue.showOpenDialog(null);
-                
-                JFileChooser outputFileDialogue = new JFileChooser("./");
-                outputFileDialogue.setDialogTitle("Please select the directory in which the exported files will be saved.");
-                outputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                outputFileDialogue.showSaveDialog(null);
-                
-                String path = inputFileDialogue.getSelectedFile().getPath();
-                List<File> files = Utils.fileOrder(inputFileDialogue.getSelectedFile());
-                
-                for (File f : files) {
-                    try {
-                        String local = f.getPath().replace(path, "");
-                        
-                        byte[] input = Files.readAllBytes(f.toPath());
-                        
-                        Access access = new FileAccess(f);
-                        ResFile res = new ResFile(access);
-                        access.close();
-                        
-                        int structureSize = res.getRoot().getSizeOfRoot();
-                        DummyResData resData = new DummyResData();
-                        res.getRoot().fillDummyResData(resData);
-                        int dataSize = resData.getSize();
-                        resData.close();
-                        
-                        if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0) {
-                            Main.LOGGER.info(() -> "Re-Exporting " + local);
-                            File ff = new File(outputFileDialogue.getSelectedFile(), local);
-                            ff.getParentFile().mkdirs();
-                            res.repack(ff);
-                        }
-                    }
-                    catch (IOException e) {
-                        Main.LOGGER.log(Level.SEVERE, "IOException while trying to re-export " + f, e);
+            JFileChooser inputFileDialogue = new JFileChooser("./");
+            inputFileDialogue.setDialogTitle("Please select the directory with the input files");
+            inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            inputFileDialogue.showOpenDialog(null);
+            
+            JFileChooser outputFileDialogue = new JFileChooser("./");
+            outputFileDialogue.setDialogTitle("Please select the directory in which the exported files will be saved.");
+            outputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            outputFileDialogue.showSaveDialog(null);
+            
+            String path = inputFileDialogue.getSelectedFile().getPath();
+            List<File> files = Utils.fileOrder(inputFileDialogue.getSelectedFile());
+            
+            for (File f : files) {
+                try {
+                    String local = f.getPath().replace(path, "");
+                    
+                    byte[] input = Files.readAllBytes(f.toPath());
+                    
+                    Access access = new FileAccess(f);
+                    ResFile res = new ResFile(access);
+                    access.close();
+                    
+                    int structureSize = res.getRoot().getSizeOfRoot();
+                    DummyResData resData = new DummyResData();
+                    res.getRoot().fillDummyResData(resData);
+                    int dataSize = resData.getSize();
+                    resData.close();
+                    
+                    if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0) {
+                        Main.LOGGER.info(() -> "Re-Exporting " + local);
+                        File ff = new File(outputFileDialogue.getSelectedFile(), local);
+                        ff.getParentFile().mkdirs();
+                        res.repack(ff);
                     }
                 }
+                catch (IOException e) {
+                    Main.LOGGER.log(Level.SEVERE, "IOException while trying to re-export " + f, e);
+                }
+            }
         }
         
     }

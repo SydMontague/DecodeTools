@@ -10,6 +10,7 @@ import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
+//TODO add resolution check, to prevent invalid resolutions to slip through
 public class GMIOPayload extends ResPayload {
     private static final int VERSION = 6;
     

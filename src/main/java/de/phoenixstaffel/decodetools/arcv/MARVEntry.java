@@ -24,7 +24,7 @@ public class MARVEntry {
     
     private int dataSize;
     private int unknown4; // padding data?
-    private int unknown5; // number of data entries?
+    private int numEntries; // number of data entries
     private int unknown6; // structureSize increased till it ends with 0x20 or 0xA0?
     
     public MARVEntry(ByteBuffer buffer) {
@@ -34,9 +34,12 @@ public class MARVEntry {
         structureSize = buffer.getInt();
         unknown3 = buffer.getInt();
         
+        if(structureSize == 0x18CB3A)
+            System.out.println("kk");
+        
         dataSize = buffer.getInt();
         unknown4 = buffer.getInt();
-        unknown5 = buffer.getInt();
+        numEntries = buffer.getInt();
         unknown6 = buffer.getInt();
     }
     
@@ -46,9 +49,9 @@ public class MARVEntry {
         this.unknown3 = b ? 0x4 : 0x10;
         this.dataSize = dataSize;
         this.unknown4 = dataSize == 0 ? 1 : 0x80;
-        this.unknown5 = dataEntries;
+        this.numEntries = dataEntries;
         
-        this.unknown6 = unknown5 == 0 ? structureSize + 0x20 : Utils.getPadded(structureSize, 0x80) + 0x20;
+        this.unknown6 = this.numEntries == 0 ? structureSize + 0x20 : Utils.getPadded(structureSize, 0x80) + 0x20;
     }
     
     public byte[] getBytes() {
@@ -63,7 +66,7 @@ public class MARVEntry {
         
         buffer.putInt(dataSize);
         buffer.putInt(unknown4);
-        buffer.putInt(unknown5);
+        buffer.putInt(numEntries);
         buffer.putInt(unknown6);
         
         return data;
