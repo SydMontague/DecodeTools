@@ -12,14 +12,10 @@ public class LE5AInstruction extends LEInstruction {
         
         int b = source.readInteger();
         
-        if(b != 0)
-            System.out.println("B is " + b);
-        
         for(int i = 0; i < b; i++) {
             source.readInteger();
             source.readInteger();
         }
-        // TODO Auto-generated constructor stub
     }
     
 }

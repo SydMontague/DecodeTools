@@ -9,7 +9,7 @@ import de.phoenixstaffel.lostevotools.speakers.LEInstruction.Instruction;
 
 public class Script {
     public static void main(String[] args) throws IOException {
-        try (FileAccess file = new FileAccess(new File("F:\\Lost Evo Hacking\\garbage\\file_20.bin"))) {
+        try (FileAccess file = new FileAccess(new File("F:\\Lost Evo Hacking\\garbage\\file_14.bin"))) {
             new Script(file);
         }
     }
