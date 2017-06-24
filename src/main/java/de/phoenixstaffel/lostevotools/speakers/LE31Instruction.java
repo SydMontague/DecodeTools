@@ -2,20 +2,17 @@ package de.phoenixstaffel.lostevotools.speakers;
 
 import de.phoenixstaffel.decodetools.dataminer.Access;
 
-public class LE5AInstruction extends LEInstruction {
-
-    public LE5AInstruction(Access source) {
-        super(Instruction.U5A);
+public class LE31Instruction extends LEInstruction {
+    public LE31Instruction(Access source) {
+        super(Instruction.U31);
         
-        source.readInteger();
         source.readInteger();
         
         int b = source.readInteger();
         
-        if((b & 0x1) != 0) { //for(int i = 0; i < b; i++) {
+        for(int i = 0; i < b; i++) {
             source.readInteger();
             source.readInteger();
         }
     }
-    
 }
