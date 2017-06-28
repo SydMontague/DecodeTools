@@ -111,4 +111,8 @@ public class Utils {
         
         return files;
     }
+
+    public static boolean isPowOf2(int x) {
+        return (x & (x - 1)) == 0;
+    }
 }

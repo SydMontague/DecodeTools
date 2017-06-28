@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.PixelFormat;
 import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.dataminer.Access;
@@ -10,7 +11,6 @@ import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
-//TODO add resolution check, to prevent invalid resolutions to slip through
 public class GMIOPayload extends ResPayload {
     private static final int VERSION = 6;
     
@@ -22,8 +22,7 @@ public class GMIOPayload extends ResPayload {
     private int dataPointer;
     
     private int unknown2;
-    private short uvSizeX; // ?
-    private short uvSizeY; // ?
+    // uv height and width (4 byte)
     private int unknown3;
     private int unknown4;
     
@@ -56,31 +55,22 @@ public class GMIOPayload extends ResPayload {
         
         source.readInteger(); // magic value
         int version = source.readInteger();
-        unknown1 = source.readShort(); //always 0x3001
+        unknown1 = source.readShort(); // always 0x3001
         unknown1_1 = source.readByte();
         unknown1_2 = source.readByte();
         dataPointer = source.readInteger();
         
         unknown2 = source.readInteger();
-        uvSizeX = source.readShort();
-        uvSizeY = source.readShort();
+        short uvSizeX = source.readShort();
+        short uvSizeY = source.readShort();
         unknown3 = source.readInteger();
         unknown4 = source.readInteger();
         
         unknown5 = source.readInteger();
-        
-        if (version == 6) {
-            width = source.readShort();
-            height = source.readShort();
-            unknown6 = source.readInteger();
-            unknown7 = source.readInteger();
-        }
-        else {
-            width = uvSizeX;
-            height = uvSizeY;
-            unknown6 = 0;
-            unknown7 = 0;
-        }
+        width = version == VERSION ? source.readShort() : uvSizeX;
+        height = version == VERSION ? source.readShort() : uvSizeY;
+        unknown6 = version == VERSION ? source.readInteger() : 0;
+        unknown7 = version == VERSION ? source.readInteger() : 0;
         
         format = PixelFormat.valueOf(source.readInteger());
         
@@ -104,11 +94,56 @@ public class GMIOPayload extends ResPayload {
         BufferedImage i = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         i.setRGB(0, 0, width, height, convertedPixels, 0, width);
         
-        //flip image to make them logical for humans
-        if(format != PixelFormat.ETC1 && format != PixelFormat.ETC1A4)
+        // flip image to make them logical for humans
+        if (format != PixelFormat.ETC1 && format != PixelFormat.ETC1A4)
             i = Utils.flipImage(i);
         
         image = i;
+    }
+    
+    public double getUVHeight() {
+        return uvHeight;
+    }
+    
+    public double getUVWidth() {
+        return uvWidth;
+    }
+    
+    public void setUVWidth(float uvWidth) {
+        this.uvWidth = uvWidth;
+    }
+    
+    public void setUVWidthAbsolute(int uvWidth) {
+        this.uvWidth = (float) uvWidth / this.width;
+    }
+    
+    public void setUVHeight(float uvHeight) {
+        this.uvHeight = uvHeight;
+    }
+    
+    public void setUVHeightAbsolute(int uvHeight) {
+        this.uvHeight = (float) uvHeight / this.height;
+    }
+    
+    public BufferedImage getImage() {
+        return image;
+    }
+    
+    public void setImage(BufferedImage image) {
+        if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
+            Main.LOGGER.warning("Given image resolution are not powers of two, but they are required to be. \n"
+                    + "Resolution: " + image.getWidth() + "x" + image.getHeight()
+                    + " | Exporting this file will cause problems!");
+        
+        this.image = image;
+    }
+    
+    public PixelFormat getFormat() {
+        return format;
+    }
+    
+    public void setFormat(PixelFormat format) {
+        this.format = format;
     }
     
     @Override
@@ -123,6 +158,10 @@ public class GMIOPayload extends ResPayload {
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
+        if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
+            Main.LOGGER.warning("Saving image " + name + " with illegal resolution. \n" + "Resolution: "
+                    + image.getWidth() + "x" + image.getHeight() + " | This file will cause problems!");
+        
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
             byte[] pixelData = format.convertToFormat(image);
@@ -157,24 +196,6 @@ public class GMIOPayload extends ResPayload {
     }
     
     @Override
-    public int getAlignment() {
-        return 4;
-    }
-    
-    public BufferedImage getImage() {
-        return image;
-    }
-    
-    @Override
-    public String toString() {
-        return name != null ? name : "GMIO " + " " + format + " " + width + " " + height;
-    }
-    
-    public void setImage(BufferedImage image) {
-        this.image = image;
-    }
-    
-    @Override
     public void fillDummyResData(DummyResData data) {
         if (image == null)
             return;
@@ -197,12 +218,14 @@ public class GMIOPayload extends ResPayload {
         
         data.add(pixelData, size, name != null, getParent());
     }
-
-    public PixelFormat getFormat() {
-        return format;
+    
+    @Override
+    public int getAlignment() {
+        return 4;
     }
     
-    public void setFormat(PixelFormat format) {
-        this.format = format;
+    @Override
+    public String toString() {
+        return name != null ? name : "GMIO " + " " + format + " " + width + " " + height;
     }
 }
