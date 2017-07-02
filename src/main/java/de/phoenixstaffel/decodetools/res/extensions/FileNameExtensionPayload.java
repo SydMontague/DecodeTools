@@ -57,7 +57,7 @@ public class FileNameExtensionPayload implements HeaderExtensionPayload {
     }
     
     @Override
-    public int getEntryNumber() {
+    public int getEntryCount() {
         return nameMap.size();
     }
     

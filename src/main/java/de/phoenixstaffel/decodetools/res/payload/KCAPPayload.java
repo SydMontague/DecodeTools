@@ -22,11 +22,6 @@ public class KCAPPayload extends ResPayload {
     
     private int unknown2; // flags?
     
-    private int numEntries;
-    private int numPayloadEntries;
-    private int headerSize;
-    private int extensionPayloadStart;
-    
     private HeaderExtension extension = new VoidExtension();
     private List<KCAPPointer> pointer = new ArrayList<>();
     private HeaderExtensionPayload extensionPayload = extension.loadPayload(null, 0);
@@ -49,10 +44,10 @@ public class KCAPPayload extends ResPayload {
         source.readInteger(); // size
         
         unknown2 = source.readInteger();
-        numEntries = source.readInteger();
-        numPayloadEntries = source.readInteger();
-        headerSize = source.readInteger();
-        extensionPayloadStart = source.readInteger();
+        int numEntries = source.readInteger();
+        int numPayloadEntries = source.readInteger();
+        int headerSize = source.readInteger();
+        source.readInteger(); //extension payload start
         
         if (headerSize > 0x20)
             extension = HeaderExtension.craft(source);
@@ -89,7 +84,7 @@ public class KCAPPayload extends ResPayload {
         value += Utils.getPadded(extension.getSize(), 0x10);
         
         // pointer table
-        int payload = entries.size() * 8;
+        int payload = getNumEntries() * 8;
         
         // payload of the extension, so far only FileNameExtensionPayload
         payload += extensionPayload.getSize();
@@ -100,15 +95,17 @@ public class KCAPPayload extends ResPayload {
         value += payload;
         value = Utils.getPadded(value, extension.getContentAlignment(this));
         
-        //
+        // sub entries
         for (ResPayload entry : entries) {
             if (entry.getType() == null)
                 continue;
             
+            //make sure it's padded to the content specific padding before adding more
             value = Utils.getPadded(value, extension.getContentAlignment(this));
             value += entry.getSize();
         }
         
+        // make sure it's padded
         value = Utils.getPadded(value, 0x4);
         
         return value;
@@ -166,18 +163,17 @@ public class KCAPPayload extends ResPayload {
         
         dest.writeInteger(getType().getMagicValue()); // Header Indicator
         dest.writeInteger(VERSION); // Version
-        dest.writeInteger(0); // Size Dummy
-        dest.writeInteger(getSize(), start + 0x8); // Size
+        dest.writeInteger(getSize()); // Size
         dest.writeInteger(unknown2); // Flags
         
-        dest.writeInteger(entries.size()); // number of entries
-        dest.writeInteger(extensionPayload.getEntryNumber()); // number of extension payload entries
+        dest.writeInteger(getNumEntries()); // number of entries
+        dest.writeInteger(extensionPayload.getEntryCount()); // number of extension payload entries
         
         int pointerPointer = 0x20 + extension.getSize();
         dest.writeInteger(pointerPointer); // header size
         
         int extPayloadStart = pointerPointer + entries.size() * 8;
-        dest.writeInteger(extensionPayload.getEntryNumber() == 0 ? 0 : extPayloadStart);
+        dest.writeInteger(extensionPayload.getEntryCount() == 0 ? 0 : extPayloadStart);
         
         extension.writeKCAP(dest); // extension header
         
@@ -220,7 +216,7 @@ public class KCAPPayload extends ResPayload {
     }
     
     public int getNumEntries() {
-        return numEntries;
+        return entries.size();
     }
     
     @Override
@@ -242,7 +238,7 @@ public class KCAPPayload extends ResPayload {
         return getType().name() + " " + (getExtension() != null ? getExtension().getType().name() : "");
     }
 
-    public Object get(int i) {
+    public ResPayload get(int i) {
         return entries.get(i);
     }
 }

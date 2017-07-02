@@ -7,7 +7,7 @@ public interface HeaderExtensionPayload {
         return 0;
     }
     
-    public default int getEntryNumber() {
+    public default int getEntryCount() {
         return 0;
     }
     
