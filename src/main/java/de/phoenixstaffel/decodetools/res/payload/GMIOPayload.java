@@ -105,8 +105,16 @@ public class GMIOPayload extends ResPayload {
         return uvHeight;
     }
     
+    public int getUVHeightAbsolute() {
+        return (int) Math.round(getUVHeight() * this.height);
+    }
+    
     public double getUVWidth() {
         return uvWidth;
+    }
+    
+    public int getUVWidthAbsolute() {
+        return (int) Math.round(getUVWidth() * this.width);
     }
     
     public void setUVWidth(float uvWidth) {
@@ -131,9 +139,8 @@ public class GMIOPayload extends ResPayload {
     
     public void setImage(BufferedImage image) {
         if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
-            Main.LOGGER.warning("Given image resolution are not powers of two, but they are required to be. \n"
-                    + "Resolution: " + image.getWidth() + "x" + image.getHeight()
-                    + " | Exporting this file will cause problems!");
+            Main.LOGGER.warning("Given image resolution are not powers of two, but they are required to be. \n" + "Resolution: " + image.getWidth() + "x"
+                    + image.getHeight() + " | Exporting this file will cause problems!");
         
         this.image = image;
     }
@@ -159,8 +166,8 @@ public class GMIOPayload extends ResPayload {
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
         if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
-            Main.LOGGER.warning("Saving image " + name + " with illegal resolution. \n" + "Resolution: "
-                    + image.getWidth() + "x" + image.getHeight() + " | This file will cause problems!");
+            Main.LOGGER.warning("Saving image " + name + " with illegal resolution. \n" + "Resolution: " + image.getWidth() + "x" + image.getHeight()
+                    + " | This file will cause problems!");
         
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
