@@ -18,7 +18,6 @@ public class LE6EInstruction extends LEInstruction {
         
         if((b & 0x7C0) != 0)
         {
-            System.out.println("SPECIAL CASE!");
             source.readInteger();
             source.readInteger();
         }
