@@ -4,21 +4,27 @@ import de.phoenixstaffel.decodetools.dataminer.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
+//FIXME implements colors and shininess
 public class LRTMPayload extends ResPayload {
     private String name;
     
     private int index;
     private short unknown1; //shading type? 4 = unshaded?
-    private short unknown2; //???
+    private short unknown2; //??? type?
     private int colorFilter; //?
-    private short unknown4; //lighting size
-    private short unknown5; //lighting point
+    private short lightingSize; //lighting size
+    private short lightingPointer; //lighting point
     
-    private short unknown6; //??? size
-    private short unknown7; //??? pointer
+    private short unknownSize; //??? size
+    private short unknownPointer; //??? pointer
     
-    private byte[] data1; //more lighting  diffuse - specular - constant?
-    private byte[] data2; //???
+    private byte[] data1; //more lighting  diffuse - specular - constant? always 0xC
+    //ambient
+    //specular
+    //emit??
+    private byte[] data2; //??? always 0x8
+    //color
+    //shininess?
     
     public LRTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
@@ -28,17 +34,18 @@ public class LRTMPayload extends ResPayload {
         unknown1 = source.readShort();
         unknown2 = source.readShort();
         colorFilter = source.readInteger();
-        unknown4 = source.readShort();
-        unknown5 = source.readShort();
+        lightingSize = source.readShort();
+        lightingPointer = source.readShort();
         
-        unknown6 = source.readShort();
-        unknown7 = source.readShort();
+        unknownSize = source.readShort();
+        unknownPointer = source.readShort();
+        
         source.readInteger(); // padding
         source.readInteger(); // padding
         source.readInteger(); // padding
         
-        data1 = source.readByteArray(unknown4);
-        data2 = source.readByteArray(unknown6);
+        data1 = source.readByteArray(lightingSize);
+        data2 = source.readByteArray(unknownSize);
     }
     
     @Override
@@ -62,11 +69,11 @@ public class LRTMPayload extends ResPayload {
         dest.writeShort(unknown1);
         dest.writeShort(unknown2);
         dest.writeInteger(colorFilter);
-        dest.writeShort(unknown4);
-        dest.writeShort(unknown5);
+        dest.writeShort(lightingSize);
+        dest.writeShort(lightingPointer);
         
-        dest.writeShort(unknown6);
-        dest.writeShort(unknown7);
+        dest.writeShort(unknownSize);
+        dest.writeShort(unknownPointer);
         dest.writeInteger(0); // padding
         dest.writeInteger(0); // padding
         dest.writeInteger(0); // padding

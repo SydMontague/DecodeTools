@@ -1,14 +1,60 @@
 package de.phoenixstaffel.decodetools;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.junit.Assert.fail;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
 public class PixelFormatDecoderTests {
+    
+    private byte[] bla() throws IOException {
+        byte[] b = new byte[256*256*2];
+        ByteBuffer buff = ByteBuffer.wrap(b);
+        
+        for(int x = 0; x < 256; x++)
+            for(int y = 0; y < 256; y++)
+            {
+                buff.put((byte) x);
+                buff.put((byte) y);
+            }
+        
+        return buff.array();
+    }
+    
+    @Test
+    public void testLA8() throws IOException {
+        BufferedImage i = ImageIO.read(new File("src/test/resources/LAtest.png"));
+        Files.write(Paths.get("test.bin"), bla(), StandardOpenOption.CREATE);
+        byte[] b = PixelFormatEncoder.convertToLA8(i);
+        Files.write(Paths.get("test2.bin"), b, StandardOpenOption.CREATE);
+        
+        for (int j = 0; j < b.length; j+=2) {
+            System.out.println(b[j] + " " + b[j+1]);
+            
+        }
+        
+        int[] rgb = Utils.untile((short) i.getWidth(), (short) i.getHeight(), PixelFormatDecoder.convertFromLA8(b, i.getWidth(), i.getHeight()));
+        int[] rgb2 = i.getRGB(0, 0, i.getWidth(), i.getHeight(), null, 0, i.getWidth());
+        
+        BufferedImage i2 = new BufferedImage(i.getWidth(), i.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        i2.setRGB(0, 0, i2.getWidth(), i2.getHeight(), rgb, 0, i2.getWidth());
+        ImageIO.write(i2, "PNG", new File("LA8output.png"));
+        
+        assertArrayEquals(rgb, rgb2);
+    }
     
     @Test
     public void testExpand4To8() {

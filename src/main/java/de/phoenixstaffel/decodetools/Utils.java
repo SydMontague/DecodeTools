@@ -2,10 +2,27 @@ package de.phoenixstaffel.decodetools;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
+
+import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
+import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVORegisterType;
+import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 
 public class Utils {
+    public static final QuadConsumer<XTVOVertex, XTVORegisterType, String, PrintStream> VERTEX_TO_OBJ_FUNCTION = (a, r, v, out) -> {
+        Entry<XTVOAttribute, List<Number>> entry = a.getParameter(r);
+        if(entry == null)
+            return;
+        
+        StringBuilder b = new StringBuilder(v);
+        
+        entry.getValue().forEach(c -> b.append(entry.getKey().getValue(c)).append(" "));
+        out.println(b.toString());
+    };
+    
     private Utils() {
     }
     
