@@ -2,6 +2,7 @@ package de.phoenixstaffel.lostevotools.speakers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +19,9 @@ public class Script {
                 new Script(file);
             }
         
-        speakerMap.forEach((a, b) -> System.out.println(a + "," + b));
+        for(int i = 0; i < speakerMap.keySet().stream().max(Comparator.comparingInt(a -> (Integer) a)).orElse(0); i++) {
+            System.out.println(i + "," + speakerMap.getOrDefault(i, -1));
+        }
     }
     
     public Script(FileAccess file) throws IOException {
