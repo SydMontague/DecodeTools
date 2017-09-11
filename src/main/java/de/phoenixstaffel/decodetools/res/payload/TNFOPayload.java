@@ -428,4 +428,8 @@ public class TNFOPayload extends ResPayload {
         return defaultEntry;
     }
 
+    public TNFOEntry getEntry(char c) {
+        return assignments.getOrDefault((int) c, getDefaultEntry());
+    }
+
 }

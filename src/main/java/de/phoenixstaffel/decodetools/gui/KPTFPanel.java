@@ -80,6 +80,9 @@ public class KPTFPanel extends PayloadPanel {
     private final JImage image = new JImage();
     private final JButton btnChange = new JButton("Resize");
     private JResizeDialogue resize;
+    private final JButton btnPreview = new JButton("Preview");
+    
+    private FontPreviewDialogue previewWindow = new FontPreviewDialogue();
     
     public KPTFPanel(Object selected) {
         unk3Label.setLabelFor(unk3Field);
@@ -102,6 +105,10 @@ public class KPTFPanel extends PayloadPanel {
         
         resize = new JResizeDialogue(new ArrayList<>());
         resize.addPropertyChangeListener("selected", a -> entry.setGmioId(((Integer) a.getNewValue()).shortValue()));
+        
+        btnPreview.setAction(new FunctionAction("Preview", a -> {
+            previewWindow.setVisible(true);
+        }));
         
         btnRemove.setAction(new FunctionAction("Remove", a -> {
             if (list.getSelectedValue() == -1)
@@ -240,6 +247,8 @@ public class KPTFPanel extends PayloadPanel {
         gmios.stream().map(GMIOPayload::getImage).forEach(images::add);
         resize.setImages(images);
         
+        previewWindow.setTNFO(tnfo);
+        previewWindow.setGMIOs(gmios);
         regenerateListModel();
         
         setupLayout();
@@ -327,21 +336,11 @@ public class KPTFPanel extends PayloadPanel {
                             .addGap(12)
                             .addComponent(refSizeField, GroupLayout.PREFERRED_SIZE, 72, GroupLayout.PREFERRED_SIZE)
                             .addGap(12)
-                            .addComponent(unk3Field, GroupLayout.PREFERRED_SIZE, 72, GroupLayout.PREFERRED_SIZE)))
-                    .addGap(4))
+                            .addComponent(unk3Field, GroupLayout.PREFERRED_SIZE, 72, GroupLayout.PREFERRED_SIZE)
+                            .addGap(18)
+                            .addComponent(btnPreview)))
+                    .addGap(10))
         );
-        unk1Label.setHorizontalAlignment(SwingConstants.CENTER);
-        spaceWidthLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        yOffsetLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        unk2Label.setHorizontalAlignment(SwingConstants.CENTER);
-        refSizeLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        unk3Label.setHorizontalAlignment(SwingConstants.CENTER);
-        unk1Field.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
-        spaceWidthField.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
-        yOffsetField.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
-        unk2Field.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
-        refSizeField.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
-        unk3Field.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
         gl_tnfoHeaderPanel.setVerticalGroup(
             gl_tnfoHeaderPanel.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_tnfoHeaderPanel.createSequentialGroup()
@@ -361,7 +360,23 @@ public class KPTFPanel extends PayloadPanel {
                         .addComponent(unk2Field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(refSizeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(unk3Field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGroup(Alignment.TRAILING, gl_tnfoHeaderPanel.createSequentialGroup()
+                    .addContainerGap(21, Short.MAX_VALUE)
+                    .addComponent(btnPreview)
+                    .addContainerGap())
         );
+        unk1Label.setHorizontalAlignment(SwingConstants.CENTER);
+        spaceWidthLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        yOffsetLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        unk2Label.setHorizontalAlignment(SwingConstants.CENTER);
+        refSizeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        unk3Label.setHorizontalAlignment(SwingConstants.CENTER);
+        unk1Field.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
+        spaceWidthField.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
+        yOffsetField.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
+        unk2Field.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
+        refSizeField.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
+        unk3Field.setModel(new SpinnerNumberModel((short) 0, null, null, (short) 1));
         tnfoHeaderPanel.setLayout(gl_tnfoHeaderPanel);
         tnfoEntryPanel.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
         GroupLayout gl_tnfoEntryPanel = new GroupLayout(tnfoEntryPanel);
