@@ -2,6 +2,9 @@ package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -42,12 +45,22 @@ public class JKPTFText extends JComponent {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         
+        if(tnfo == null)
+            return;
+        
+        Graphics2D gg = (Graphics2D) g;
+        
+        //TODO font color
+        //TODO background color
+        
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, 500, 500);
         g.setColor(Color.WHITE);
         
-        int x = 0;
+        double x = 0;
         int y = lineHeight;
+        
+        double scale = fontSize / (double) tnfo.getReferenceSize();
 
         for(char c : text.toCharArray()) {
             switch(c) {
@@ -58,7 +71,7 @@ public class JKPTFText extends JComponent {
                     y += lineHeight;
                     break;
                 case ' ':
-                    x += tnfo.getSpaceWidth();
+                    x += tnfo.getSpaceWidth() * scale;
                     x += widespace;
                     break;
                 default:
@@ -70,26 +83,26 @@ public class JKPTFText extends JComponent {
                     int y1 = (int) Math.round(entry.getY1() * i.getHeight());
                     int y2 = (int) Math.round(entry.getY2() * i.getHeight());
 
+                    double localX = x + entry.getXTranslation() * scale;
+                    double localY = y - entry.getYTranslation() * scale - scale;
+                    
+                    AffineTransform t = new AffineTransform();
+                    t.translate(localX, localY);
+                    t.scale(scale, scale);
+                    
+                    AffineTransformOp op = new AffineTransformOp(t, AffineTransformOp.TYPE_BILINEAR);
+                    
                     if(x1 != x2 && y1 != y2) {
                         BufferedImage subImage = i.getSubimage(x1, i.getHeight() - y1, x2 - x1, y1 - y2);
-                        g.drawImage(subImage, x + entry.getXTranslation(), y - entry.getYTranslation(), null);
+                        //TODO respect TNFO width/height
+                        BufferedImage ii = op.filter(subImage, null);
+                        gg.drawImage(ii, null, null);
                     }
                     
-                    
-                    
-                    x += entry.getTextWidth();
+                    x += entry.getTextWidth() * scale;
                     x += widespace;
-                
             }
-            
-            
-            
-
-            
-            
-            
         }
-        
     }
 
     public void setFontSize(int fontSize) {

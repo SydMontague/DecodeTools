@@ -29,6 +29,7 @@ public class FontPreviewDialogue extends JFrame {
     private final JKPTFText text = new JKPTFText();
     
     public FontPreviewDialogue() {
+        setResizable(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         setBounds(0, 0, 600, 400);
         inputText.setFont(new Font("Monospaced", Font.PLAIN, 13));
