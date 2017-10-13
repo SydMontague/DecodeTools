@@ -83,18 +83,23 @@ public class JKPTFText extends JComponent {
                     int y1 = (int) Math.round(entry.getY1() * i.getHeight());
                     int y2 = (int) Math.round(entry.getY2() * i.getHeight());
 
-                    double localX = x + entry.getXTranslation() * scale;
-                    double localY = y - entry.getYTranslation() * scale - scale;
-                    
-                    AffineTransform t = new AffineTransform();
-                    t.translate(localX, localY);
-                    t.scale(scale, scale);
-                    
-                    AffineTransformOp op = new AffineTransformOp(t, AffineTransformOp.TYPE_BILINEAR);
                     
                     if(x1 != x2 && y1 != y2) {
                         BufferedImage subImage = i.getSubimage(x1, i.getHeight() - y1, x2 - x1, y1 - y2);
-                        //TODO respect TNFO width/height
+
+                        double localX = x + entry.getXTranslation() * scale;
+                        double localY = y - entry.getYTranslation() * scale - scale;
+                        
+                        double textureScaleX = (double) entry.getWidth() / (x2-x1);
+                        double textureScaleY = (double) entry.getHeight() / (y1-y2);
+
+                        AffineTransform t = new AffineTransform();
+                        t.translate(localX, localY);
+                        t.scale(scale, scale);
+                        t.scale(textureScaleX, textureScaleY);
+                        
+                        AffineTransformOp op = new AffineTransformOp(t, AffineTransformOp.TYPE_BILINEAR);
+
                         BufferedImage ii = op.filter(subImage, null);
                         gg.drawImage(ii, null, null);
                     }
