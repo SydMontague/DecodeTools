@@ -20,9 +20,9 @@ public enum XDIOModes {
     }
     
     public static XDIOModes getFittingMode(int max) {
-        if (max >= 0xFFFF || max < 0)
+        if (max > 0xFFFF || max < 0)
             return INT;
-        else if (max >= 0xFF)
+        else if (max > 0xFF)
             return SHORT;
         
         return BYTE;
