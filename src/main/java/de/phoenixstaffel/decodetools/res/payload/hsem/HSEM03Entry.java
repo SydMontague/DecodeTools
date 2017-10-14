@@ -34,7 +34,7 @@ public class HSEM03Entry implements HSEMEntryPayload {
     
     @Override
     public int getSize() {
-        return 0x08 + 0x04 * values.size();
+        return 0x04 + 0x04 * values.size();
     }
     
 }

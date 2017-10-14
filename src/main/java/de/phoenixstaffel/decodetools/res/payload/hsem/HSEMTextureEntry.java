@@ -22,7 +22,7 @@ public class HSEMTextureEntry implements HSEMEntryPayload {
     @Override
     public void writeKCAP(Access dest) {
         dest.writeShort(unkn1);
-        dest.writeShort((short) (0x08 + textureAssignment.size() * 4));
+        dest.writeShort((short) textureAssignment.size());
         
         textureAssignment.forEach((a, b) -> {
             dest.writeShort(a);
@@ -32,6 +32,6 @@ public class HSEMTextureEntry implements HSEMEntryPayload {
     
     @Override
     public int getSize() {
-        return 0x08 + textureAssignment.size() * 0x04;
+        return 0x04 + textureAssignment.size() * 0x04;
     }
 }
