@@ -1,8 +1,10 @@
 package de.phoenixstaffel.decodetools.gui;
 
 import javax.swing.GroupLayout;
+import javax.swing.InputVerifier;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
@@ -14,11 +16,19 @@ import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 
 import javax.swing.LayoutStyle.ComponentPlacement;
+
+import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.JMenuBar;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
+import javax.swing.JMenu;
 
 public class FontPreviewDialogue extends JFrame {
+    private static final String HEX_REGEX = "^#?[0-9a-fA-F]{6}$";
+    
     private TNFOPayload tnfo;
     private List<GMIOPayload> gmios;
     
@@ -39,8 +49,14 @@ public class FontPreviewDialogue extends JFrame {
     private final JSpinner scaleSpinner = new JSpinner();
     private final JSpinner startXSpinner = new JSpinner();
     private final JSpinner startYSpinner = new JSpinner();
-    private final JTextField fontColorField = new JTextField(); //TODO change into something with color
-    private final JTextField bgcolorField = new JTextField(); //TODO change into something with color
+    private final JTextField fontColorField = new JTextField();
+    private final JTextField bgColorField = new JTextField();
+    private final JMenuBar menu = new JMenuBar();
+    
+    private final JCheckBoxMenuItem chckbxmntmNewCheckItem = new JCheckBoxMenuItem("Show Textbox");
+    private final JMenuItem mntmNewMenuItem = new JMenuItem("Textbox");
+    private final JMenu mnSettings = new JMenu("Settings");
+    private final JMenu mnPresets = new JMenu("Presets");
     
     public FontPreviewDialogue() {
         setResizable(false);
@@ -54,6 +70,28 @@ public class FontPreviewDialogue extends JFrame {
         inputText.setLineWrap(true);
         inputText.setText("Praised be our one true lord Gabumon.\r\nMay his pelt protect those in need of protection \r\nand his horn hurt those, who mean others harm.");
         
+        setJMenuBar(menu);
+        
+        menu.add(mnSettings);
+        mnSettings.add(chckbxmntmNewCheckItem);
+        
+        menu.add(mnPresets);
+        mnPresets.add(mntmNewMenuItem);
+        
+        mntmNewMenuItem.setAction(new FunctionAction("Textbox", a -> {
+            fontSizeSpinner.setValue(10);
+            widespaceSpinner.setValue(0);
+            lineHeightSpinner.setValue(24);
+            fontSizeSpinner.setValue(10);
+            startXSpinner.setValue(72);
+            startYSpinner.setValue(171);
+            bgColorField.setText("#000000");
+            fontColorField.setText("#FFFFFF");
+        }));
+        
+        fontColorField.setText("#FFFFFF");
+        bgColorField.setText("#000000");
+        
         updateButton.setAction(new FunctionAction("Update", a -> {
             text.setText(inputText.getText());
             text.setFontSize((int) fontSizeSpinner.getValue());
@@ -64,13 +102,30 @@ public class FontPreviewDialogue extends JFrame {
             text.setStartY((int) startYSpinner.getValue());
             text.setTNFO(tnfo);
             text.setGMIOs(gmios);
+            text.setDisplayTextbox(chckbxmntmNewCheckItem.isSelected());
+            
+            Color bg = bgColorField.getText().matches(HEX_REGEX) ? Color.decode(bgColorField.getText()) : Color.BLACK;
+            Color font = fontColorField.getText().matches(HEX_REGEX) ? Color.decode(fontColorField.getText()) : Color.WHITE;
+            
+            text.setForeground(font);
+            text.setBackground(bg);
             text.update();
             
             pack();
         }));
         
+        InputVerifier hexVerifier = new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                return ((JTextField) input).getText().matches("^#?[0-9a-fA-F]{6}$");
+            }
+        };
+        
+        fontColorField.setInputVerifier(hexVerifier);
+        bgColorField.setInputVerifier(hexVerifier);
+        
         setFormat();
-
+        
         lblStartY.setLabelFor(startYSpinner);
         lblStartX.setLabelFor(startXSpinner);
         lblScale.setLabelFor(scaleSpinner);
@@ -115,7 +170,7 @@ public class FontPreviewDialogue extends JFrame {
                                     .addPreferredGap(ComponentPlacement.RELATED)
                                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                                         .addComponent(fontColorField, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(bgcolorField, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(bgColorField, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
                                         .addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
                                             .addComponent(fontSizeSpinner, GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
                                             .addComponent(lineHeightSpinner, GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
@@ -165,7 +220,7 @@ public class FontPreviewDialogue extends JFrame {
                                 .addComponent(lblFontColor))
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-                                .addComponent(bgcolorField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(bgColorField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(lblBgColor))
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(updateButton))
@@ -175,6 +230,11 @@ public class FontPreviewDialogue extends JFrame {
         getContentPane().setLayout(groupLayout);
         //@formatter:on
         
-        scaleSpinner.setModel(new SpinnerNumberModel(new Double(1), 0D, null, new Double(1)));
+        scaleSpinner.setModel(new SpinnerNumberModel(1D, 0D, null, 1D));
+        fontSizeSpinner.setModel(new SpinnerNumberModel(1, 1, null, 1));
+        widespaceSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
+        lineHeightSpinner.setModel(new SpinnerNumberModel(1, 1, null, 1));
+        startXSpinner.setModel(new SpinnerNumberModel(0, null, null, 1));
+        startYSpinner.setModel(new SpinnerNumberModel(0, null, null, 1));
     }
 }

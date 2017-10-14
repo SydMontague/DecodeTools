@@ -1,20 +1,20 @@
 package de.phoenixstaffel.decodetools.gui;
 
-import java.awt.Color;
+import java.awt.AlphaComposite;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload.TNFOEntry;
@@ -39,15 +39,6 @@ public class JKPTFText extends JComponent {
     
     private boolean showTextbox = true;
     
-    //space width in px
-    //FIXME linear scaling
-    //translation does what is says (translate the rendering, not the logic) //TODO verify X translation is working
-    //width and height are size of the rendering canvas (2D billboard)
-    
-    //text width -> how much it advances on the baseline
-    
-    //widespace -> extra space between characters, unscaled by font size!
-    
     public JKPTFText() {
         super();
         setPreferredSize(new Dimension((int) (WIDTH * resolutionScale), (int) (HEIGHT * resolutionScale)));
@@ -55,7 +46,7 @@ public class JKPTFText extends JComponent {
             textBoxImage = ImageIO.read(getClass().getClassLoader().getResource("textbox.png"));
         }
         catch (IOException e) {
-            e.printStackTrace();
+            Main.LOGGER.log(Level.WARNING, "Error while loading Textbox image.", e);
         }
     }
     
@@ -65,11 +56,12 @@ public class JKPTFText extends JComponent {
     
     @Override
     protected void paintComponent(Graphics g) {
+        //TODO cleanup
         super.paintComponent(g);
 
-        g.setColor(Color.BLACK);
+        g.setColor(getBackground());
         g.fillRect(0, 0, (int) (WIDTH * resolutionScale), (int) (HEIGHT * resolutionScale));
-        g.setColor(Color.WHITE);
+        g.setColor(getForeground());
         
         if(tnfo == null)
             return;
@@ -82,9 +74,6 @@ public class JKPTFText extends JComponent {
             t2.translate(61, 172);
             gg.drawImage(textBoxImage, t2, null);
         }
-        
-        //TODO font color
-        //TODO background color
         
         double x = startX * resolutionScale;
         int y = (int) ((lineHeight + startY) * resolutionScale);
@@ -110,6 +99,8 @@ public class JKPTFText extends JComponent {
                     TNFOEntry entry = tnfo.getEntry(c);
                     
                     BufferedImage i = gmios.get(entry.getGmioId()).getImage();
+
+
                     int x1 = (int) Math.round(entry.getX1() * i.getWidth());
                     int x2 = (int) Math.round(entry.getX2() * i.getWidth());
                     int y1 = (int) Math.round(entry.getY1() * i.getHeight());
@@ -118,6 +109,11 @@ public class JKPTFText extends JComponent {
                     
                     if(x1 != x2 && y1 != y2) {
                         BufferedImage subImage = i.getSubimage(x1, i.getHeight() - y1, x2 - x1, y1 - y2);
+                        Graphics2D b = subImage.createGraphics();
+                        b.setComposite(AlphaComposite.SrcAtop);
+                        b.setColor(getForeground());
+                        b.fillRect(0, 0, subImage.getWidth(), subImage.getHeight());
+                        b.dispose();
 
                         double localX = x + entry.getXTranslation() * scale;
                         double localY = y - entry.getYTranslation() * scale - scale;
@@ -180,5 +176,9 @@ public class JKPTFText extends JComponent {
     public void update() {
         repaint();
         setPreferredSize(new Dimension((int) (WIDTH * resolutionScale), (int) (HEIGHT * resolutionScale)));
+    }
+
+    public void setDisplayTextbox(boolean selected) {
+        this.showTextbox = selected;
     }
 }
