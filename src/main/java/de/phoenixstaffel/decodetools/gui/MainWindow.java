@@ -272,34 +272,48 @@ public class MainWindow extends JFrame implements Observer {
             
             String path = inputFileDialogue.getSelectedFile().getPath();
             List<File> files = Utils.fileOrder(inputFileDialogue.getSelectedFile());
-            
-            for (File f : files) {
-                try {
-                    String local = f.getPath().replace(path, "");
-                    
-                    byte[] input = Files.readAllBytes(f.toPath());
-                    
-                    Access access = new FileAccess(f);
-                    ResFile res = new ResFile(access);
-                    access.close();
-                    
-                    int structureSize = res.getRoot().getSizeOfRoot();
-                    DummyResData resData = new DummyResData();
-                    res.getRoot().fillDummyResData(resData);
-                    int dataSize = resData.getSize();
-                    resData.close();
-                    
-                    if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0) {
-                        Main.LOGGER.info(() -> "Re-Exporting " + local);
-                        File ff = new File(outputFileDialogue.getSelectedFile(), local);
-                        ff.getParentFile().mkdirs();
-                        res.repack(ff);
+
+            MainWindow.this.setEnabled(false);
+            SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    for (File f : files) {
+                        try {
+                            String local = f.getPath().replace(path, "");
+                            
+                            byte[] input = Files.readAllBytes(f.toPath());
+                            
+                            Access access = new FileAccess(f);
+                            ResFile res = new ResFile(access);
+                            access.close();
+                            
+                            int structureSize = res.getRoot().getSizeOfRoot();
+                            DummyResData resData = new DummyResData();
+                            res.getRoot().fillDummyResData(resData);
+                            int dataSize = resData.getSize();
+                            resData.close();
+                            
+                            if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0) {
+                                Main.LOGGER.info(() -> "Re-Exporting " + local);
+                                File ff = new File(outputFileDialogue.getSelectedFile(), local);
+                                ff.getParentFile().mkdirs();
+                                res.repack(ff);
+                            }
+                        }
+                        catch (IOException e) {
+                            Main.LOGGER.log(Level.SEVERE, "IOException while trying to re-export " + f, e);
+                        }
                     }
+                    return null;
                 }
-                catch (IOException e) {
-                    Main.LOGGER.log(Level.SEVERE, "IOException while trying to re-export " + f, e);
+                
+                @Override
+                protected void done() {
+                    MainWindow.this.setEnabled(true);
                 }
-            }
+            };
+            
+            worker.execute();
         }
         
     }
