@@ -62,6 +62,7 @@ public class FontPreviewDialogue extends JFrame {
         setResizable(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         setBounds(0, 0, 600, 400);
+        setTitle("Font Preview");
         
         inputText.setFont(new Font("Monospaced", Font.PLAIN, 13));
         inputText.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));

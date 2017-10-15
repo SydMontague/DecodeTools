@@ -26,15 +26,19 @@ public class JResizeDialogue extends JFrame {
     private int selected = 0;
     
     final JImageSelector imageSelector;
-    private final JLabel lblX = new JLabel("X: 0000");
-    private final JLabel lblY = new JLabel("Y: 0000");
-    private final JLabel lblW = new JLabel("W: 0000");
-    private final JLabel lblH = new JLabel("H: 0000");
+    private final JLabel lblX = new JLabel("X: ");
+    private final JLabel lblY = new JLabel("Y: ");
+    private final JLabel lblW = new JLabel("W: ");
+    private final JLabel lblH = new JLabel("H: ");
     private final JButton zoomOutButton = new JButton("-");
     private final JButton zoomInButton = new JButton("+");
     final JScrollPane scrollPane = new JScrollPane();
     private final JSpinner spinner = new JSpinner();
     private final JLabel lblGmioId = new JLabel("GMIO Id");
+    private final JSpinner xSpinner = new JSpinner();
+    private final JSpinner ySpinner = new JSpinner();
+    private final JSpinner widthSpinner = new JSpinner();
+    private final JSpinner heightSpinner = new JSpinner();
     
     public JResizeDialogue(List<Image> images) {
         setBounds(0, 0, 500, 300);
@@ -50,10 +54,27 @@ public class JResizeDialogue extends JFrame {
         
         imageSelector.addPropertyChangeListener("selection", a -> {
             Rectangle selection = (Rectangle) a.getNewValue();
-            lblX.setText("X: " + (int) selection.getMinX());
-            lblY.setText("Y: " + (int) selection.getMinY());
-            lblW.setText("W: " + (int) selection.getWidth());
-            lblH.setText("H: " + (int) selection.getHeight());
+            xSpinner.setValue(selection.getMinX());
+            ySpinner.setValue(selection.getMinY());
+            widthSpinner.setValue(selection.getWidth());
+            heightSpinner.setValue(selection.getHeight());
+        });
+        
+        xSpinner.addChangeListener(a -> {
+            imageSelector.getSelection().x = ((Number) xSpinner.getValue()).intValue();
+            imageSelector.repaint();
+        });
+        ySpinner.addChangeListener(a -> {
+            imageSelector.getSelection().y = ((Number) ySpinner.getValue()).intValue();
+            imageSelector.repaint();
+        });
+        widthSpinner.addChangeListener(a -> {
+            imageSelector.getSelection().width = ((Number) widthSpinner.getValue()).intValue();
+            imageSelector.repaint();
+        });
+        heightSpinner.addChangeListener(a -> {
+            imageSelector.getSelection().height = ((Number) heightSpinner.getValue()).intValue();
+            imageSelector.repaint();
         });
         
         spinner.addChangeListener(a -> setSelectedImage((int) spinner.getValue()));
@@ -87,43 +108,63 @@ public class JResizeDialogue extends JFrame {
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
                             .addContainerGap()
-                            .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                                .addComponent(lblX)
-                                .addComponent(lblY)
-                                .addComponent(lblW)
-                                .addComponent(lblH)
+                            .addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+                                .addGroup(groupLayout.createSequentialGroup()
+                                    .addComponent(lblY)
+                                    .addPreferredGap(ComponentPlacement.RELATED)
+                                    .addComponent(ySpinner, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE))
+                                .addGroup(groupLayout.createSequentialGroup()
+                                    .addComponent(lblW)
+                                    .addPreferredGap(ComponentPlacement.RELATED)
+                                    .addComponent(widthSpinner, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE))
+                                .addGroup(groupLayout.createSequentialGroup()
+                                    .addComponent(lblH)
+                                    .addPreferredGap(ComponentPlacement.RELATED)
+                                    .addComponent(heightSpinner, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(spinner, GroupLayout.PREFERRED_SIZE, 84, GroupLayout.PREFERRED_SIZE)
+                                .addGroup(groupLayout.createSequentialGroup()
+                                    .addComponent(lblX)
+                                    .addPreferredGap(ComponentPlacement.RELATED)
+                                    .addComponent(xSpinner))
                                 .addGroup(groupLayout.createSequentialGroup()
                                     .addComponent(zoomOutButton)
                                     .addPreferredGap(ComponentPlacement.RELATED)
-                                    .addComponent(zoomInButton))
-                                .addComponent(spinner, GroupLayout.PREFERRED_SIZE, 84, GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(zoomInButton))))
                         .addGroup(groupLayout.createSequentialGroup()
                             .addGap(23)
                             .addComponent(lblGmioId)))
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
+                    .addGap(7)
+                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
         );
         groupLayout.setVerticalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(lblX)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblX)
+                        .addComponent(xSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(lblY)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblY)
+                        .addComponent(ySpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(lblW)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblW)
+                        .addComponent(widthSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(lblH)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblH)
+                        .addComponent(heightSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
                         .addComponent(zoomOutButton)
                         .addComponent(zoomInButton))
-                    .addPreferredGap(ComponentPlacement.RELATED, 92, Short.MAX_VALUE)
+                    .addPreferredGap(ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
                     .addComponent(lblGmioId)
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addComponent(spinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addContainerGap())
-                .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
         );
         scrollPane.setViewportView(imageSelector);
         GroupLayout gl_imageSelector = new GroupLayout(imageSelector);
