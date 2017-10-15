@@ -249,5 +249,8 @@ public class JImageSelector extends JPanel {
             return cursorType;
         }
     }
-    
+
+    public void fireSelectionUpdate() {
+        firePropertyChange("selection", null, this.selection);
+    }
 }

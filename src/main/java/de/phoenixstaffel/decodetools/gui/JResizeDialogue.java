@@ -62,18 +62,22 @@ public class JResizeDialogue extends JFrame {
         
         xSpinner.addChangeListener(a -> {
             imageSelector.getSelection().x = ((Number) xSpinner.getValue()).intValue();
+            imageSelector.fireSelectionUpdate();
             imageSelector.repaint();
         });
         ySpinner.addChangeListener(a -> {
             imageSelector.getSelection().y = ((Number) ySpinner.getValue()).intValue();
+            imageSelector.fireSelectionUpdate();
             imageSelector.repaint();
         });
         widthSpinner.addChangeListener(a -> {
             imageSelector.getSelection().width = ((Number) widthSpinner.getValue()).intValue();
+            imageSelector.fireSelectionUpdate();
             imageSelector.repaint();
         });
         heightSpinner.addChangeListener(a -> {
             imageSelector.getSelection().height = ((Number) heightSpinner.getValue()).intValue();
+            imageSelector.fireSelectionUpdate();
             imageSelector.repaint();
         });
         
