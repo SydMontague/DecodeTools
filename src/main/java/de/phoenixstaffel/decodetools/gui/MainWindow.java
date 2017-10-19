@@ -66,12 +66,16 @@ public class MainWindow extends JFrame implements Observer {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int confirm =   JOptionPane.showOptionDialog(null,
-                                                          "Are You Sure to Close this Application?",
-                                                          "Exit Confirmation", JOptionPane.YES_NO_OPTION,
-                                                          JOptionPane.QUESTION_MESSAGE, null, null, null);
+                int confirm = JOptionPane.showOptionDialog(null,
+                                                           "Are you sure you want to close this Application?",
+                                                           "Confirm Exit",
+                                                           JOptionPane.YES_NO_OPTION,
+                                                           JOptionPane.QUESTION_MESSAGE,
+                                                           null,
+                                                           null,
+                                                           null);
                 
-                if(confirm == JOptionPane.YES_OPTION)
+                if (confirm == JOptionPane.YES_OPTION)
                     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 else
                     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -293,7 +297,7 @@ public class MainWindow extends JFrame implements Observer {
             
             String path = inputFileDialogue.getSelectedFile().getPath();
             List<File> files = Utils.fileOrder(inputFileDialogue.getSelectedFile());
-
+            
             MainWindow.this.setEnabled(false);
             SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {
                 @Override
