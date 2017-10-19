@@ -1,6 +1,8 @@
 package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,13 +19,16 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.Utils;
@@ -51,13 +56,29 @@ public class MainWindow extends JFrame implements Observer {
     private JMenuItem mntmRebuildUncompressedArcv = new JMenuItem("Rebuild Uncompressed ARCV");
     private JMenu mnTools = new JMenu("Tools");
     private JMenuItem mntmReexportMipmaps = new JMenuItem("Re-Export Malformatted Files");
-    private JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+    private JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
     
     public MainWindow() {
         model.addObserver(this);
         
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 1127, 791);
+        
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                int confirm =   JOptionPane.showOptionDialog(null,
+                                                          "Are You Sure to Close this Application?",
+                                                          "Exit Confirmation", JOptionPane.YES_NO_OPTION,
+                                                          JOptionPane.QUESTION_MESSAGE, null, null, null);
+                
+                if(confirm == JOptionPane.YES_OPTION)
+                    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                else
+                    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+                
+                super.windowClosing(e);
+            }
+        });
         
         setJMenuBar(menuBar);
         
