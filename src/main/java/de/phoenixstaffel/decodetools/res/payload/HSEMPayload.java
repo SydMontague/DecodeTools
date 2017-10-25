@@ -106,8 +106,8 @@ public class HSEMPayload extends ResPayload {
         entries.forEach(a -> a.writeKCAP(dest));
     }
     
-    //FIXME add COLLADA im-/exporter
-    //FIXME make cleaner and stuff
+    // FIXME add COLLADA im-/exporter
+    // FIXME make cleaner and stuff
     public void toObj(PrintStream out) {
         int vertexOffset = 1;
         int normalOffset = 1;
@@ -123,8 +123,8 @@ public class HSEMPayload extends ResPayload {
                 XTVOPayload xtvo = (XTVOPayload) xtvos.get(e.getVertexId());
                 XDIOPayload xdio = (XDIOPayload) xdios.get(e.getIndexId());
                 
-                boolean hasNorm = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.POSITION);
-                boolean hasUV = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.POSITION);
+                boolean hasNorm = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.NORMAL);
+                boolean hasUV = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.TEXTURE0);
                 
                 out.println("g group_" + groupIndex++);
                 
@@ -193,6 +193,6 @@ class Face {
         if (uv1 == -1)
             return "f " + vert1 + "//" + norm1 + " " + vert2 + "//" + norm2 + " " + vert3 + "//" + norm3;
         
-        return "f " + vert1 + "/" + norm1 + "/" + uv1 + " " + vert2 + "/" + norm2 + "/" + uv2 + " " + vert3 + "/" + norm3 + "/" + uv3;
+        return "f " + vert1 + "/" + uv1 + "/" + norm1 + " " + vert2 + "/" + uv2 + "/" + norm2 + " " + vert3 + "/" + uv3 + "/" + norm3;
     }
 }
