@@ -3,6 +3,9 @@ package de.phoenixstaffel.decodetools;
 import java.awt.image.BufferedImage;
 import java.util.function.Function;
 
+import de.phoenixstaffel.decodetools.core.TriFunction;
+import de.phoenixstaffel.decodetools.core.Utils;
+
 public enum PixelFormat {
     RGBA8(0, 32, true, PixelFormatDecoder::convertFromRGBA8, PixelFormatEncoder::convertToRGBA8),
     RGB8(1, 24, true, PixelFormatDecoder::convertFromRGB8, PixelFormatEncoder::convertToRGB8),

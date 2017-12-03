@@ -1,6 +1,6 @@
 package de.phoenixstaffel.decodetools.res;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 public interface HeaderExtensionPayload {
     public default int getSize() {

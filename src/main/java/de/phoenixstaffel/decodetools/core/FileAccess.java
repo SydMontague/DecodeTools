@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools.dataminer;
+package de.phoenixstaffel.decodetools.core;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,16 +6,17 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
-
-import de.phoenixstaffel.decodetools.Main;
+import java.util.logging.Logger;
 
 public class FileAccess implements Access {
-    private static final String ERROR_READ = "FileAccess: failed to read a from FileChannel";
-    private static final String ERROR_WRITE = "FileAccess: failed to write into a FileChannel";
+    private static final Logger LOGGER = Logger.getLogger(Access.class.getName());
+    
+    private static final String ERROR_READ = "FileAccess: failed to read from FileChannel";
+    private static final String ERROR_WRITE = "FileAccess: failed to write into FileChannel";
+    
+    private static final StandardOpenOption openOptions[] = { StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE, };
     
     // We're not thread safe, as we read a file, so we can reuse the buffers
     private final ByteBuffer byteBuf = ByteBuffer.allocate(1);
@@ -24,36 +25,124 @@ public class FileAccess implements Access {
     private final ByteBuffer longBuf = ByteBuffer.allocate(8);
     
     private final String name;
-    private FileChannel chan;
+    private final FileChannel chan;
     
-    public FileAccess(FileChannel chan, String name) {
+    /**
+     * Initialises a new instances of this class.
+     * 
+     * @param chan the FileChannel to read and write from
+     * @param name the name to give this instance
+     * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
+     */
+    public FileAccess(FileChannel chan, String name, ByteOrder byteOrder) {
         this.chan = chan;
         this.name = name;
+        
+        byteBuf.order(byteOrder);
+        shortBuf.order(byteOrder);
+        intBuf.order(byteOrder);
+        longBuf.order(byteOrder);
     }
     
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * The byte order will be set to Little Endian.
+     * </p>
+     * 
+     * @param chan the FileChannel to read and write from
+     * @param name the name to give this instance
+     */
+    public FileAccess(FileChannel chan, String name) {
+        this(chan, name, ByteOrder.LITTLE_ENDIAN);
+    }
+    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * The name will be set to an empty String.
+     * </p>
+     * 
+     * @param chan the FileChannel to read and write from
+     * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
+     */
+    public FileAccess(FileChannel chan, ByteOrder byteOrder) {
+        this(chan, "", byteOrder);
+    }
+    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * The name will be set to an empty String. The byte order will be set to Little Endian.
+     * </p>
+     * 
+     * @param chan the FileChannel to read and write from
+     */
     public FileAccess(FileChannel chan) {
         this(chan, "");
     }
     
-    public FileAccess(File file, String name) throws IOException {
-        this.name = name;
-        this.chan = FileChannel.open(file.toPath(),
-                                     StandardOpenOption.READ,
-                                     StandardOpenOption.WRITE,
-                                     StandardOpenOption.CREATE);
-        
-        byteBuf.order(ByteOrder.LITTLE_ENDIAN);
-        shortBuf.order(ByteOrder.LITTLE_ENDIAN);
-        intBuf.order(ByteOrder.LITTLE_ENDIAN);
-        longBuf.order(ByteOrder.LITTLE_ENDIAN);
-    }
-    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
+     * the file. The byte order will be set to Little Endian.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @throws IOException if anything goes wrong opening the file
+     */
     public FileAccess(File file) throws IOException {
         this(file, file.getPath());
     }
     
-    public FileChannel getChannel() {
-        return chan;
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
+     * the file.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
+     * @throws IOException if anything goes wrong opening the file
+     */
+    public FileAccess(File file, ByteOrder byteOrder) throws IOException {
+        this(file, file.getPath(), byteOrder);
+    }
+    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The byte order will be set to Little
+     * Endian.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @param name the name to give this instance
+     * @throws IOException if anything goes wrong opening the file
+     */
+    public FileAccess(File file, String name) throws IOException {
+        this(FileChannel.open(file.toPath(), openOptions), name);
+    }
+    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @param name the name to give this instance
+     * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
+     * @throws IOException if anything goes wrong opening the file
+     */
+    public FileAccess(File file, String name, ByteOrder byteOrder) throws IOException {
+        this(FileChannel.open(file.toPath(), openOptions), name, byteOrder);
     }
     
     @Override
@@ -128,10 +217,6 @@ public class FileAccess implements Access {
         return longBuf.getFloat();
     }
     
-    public String getName() {
-        return name;
-    }
-    
     @Override
     public String readASCIIString() {
         StringBuilder b = new StringBuilder();
@@ -155,19 +240,19 @@ public class FileAccess implements Access {
     }
     
     @Override
-    public String readString(int length, String charset) {
+    public String readString(int bytes, String charset) {
         Charset localCharset = getCharset(charset);
         
-        ByteBuffer buff = ByteBuffer.allocate(length);
+        ByteBuffer buff = ByteBuffer.allocate(bytes);
         readBuffer(buff);
         return localCharset.decode(buff).toString();
     }
     
     @Override
-    public String readString(long address, int length, String charset) {
+    public String readString(long address, int bytes, String charset) {
         Charset localCharset = getCharset(charset);
         
-        ByteBuffer buff = ByteBuffer.allocate(length);
+        ByteBuffer buff = ByteBuffer.allocate(bytes);
         readBuffer(buff, address);
         return localCharset.decode(buff).toString();
     }
@@ -329,7 +414,7 @@ public class FileAccess implements Access {
             return chan.position();
         }
         catch (IOException e) {
-            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
+            LOGGER.log(Level.SEVERE, ERROR_READ, e);
             return -1;
         }
     }
@@ -340,8 +425,42 @@ public class FileAccess implements Access {
             chan.position(address);
         }
         catch (IOException e) {
-            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
+            LOGGER.log(Level.SEVERE, ERROR_READ, e);
         }
+    }
+    
+    @Override
+    public long getSize() {
+        try {
+            return chan.size();
+        }
+        catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Could not get size of FileChannel", e);
+            return -1;
+        }
+    }
+    
+    @Override
+    public void close() throws IOException {
+        chan.close();
+    }
+    
+    /**
+     * Returns the {@link FileChannel} this instance is using.
+     * 
+     * @return the FileChannel used
+     */
+    public FileChannel getChannel() {
+        return chan;
+    }
+    
+    /**
+     * Returns the name of the FileAccess, as given to the constructor.
+     * 
+     * @return the name of the FileAccess
+     */
+    public String getName() {
+        return name;
     }
     
     private void readBuffer(ByteBuffer buff) {
@@ -350,7 +469,7 @@ public class FileAccess implements Access {
             chan.read(buff);
         }
         catch (IOException e) {
-            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
+            LOGGER.log(Level.SEVERE, ERROR_READ, e);
         }
         buff.flip();
     }
@@ -361,7 +480,7 @@ public class FileAccess implements Access {
             chan.read(buff, address);
         }
         catch (IOException e) {
-            Main.LOGGER.log(Level.SEVERE, ERROR_READ, e);
+            LOGGER.log(Level.SEVERE, ERROR_READ, e);
         }
         buff.flip();
     }
@@ -372,7 +491,7 @@ public class FileAccess implements Access {
             chan.write(buff);
         }
         catch (IOException e) {
-            Main.LOGGER.log(Level.SEVERE, ERROR_WRITE, e);
+            LOGGER.log(Level.SEVERE, ERROR_WRITE, e);
         }
     }
     
@@ -382,40 +501,7 @@ public class FileAccess implements Access {
             chan.write(buff, address);
         }
         catch (IOException e) {
-            Main.LOGGER.log(Level.SEVERE, ERROR_WRITE, e);
+            LOGGER.log(Level.SEVERE, ERROR_WRITE, e);
         }
-    }
-    
-    private Charset getCharset(String charset) {
-        try {
-            return Charset.forName(charset);
-        }
-        catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
-            Main.LOGGER.severe("Invalid Charset given, falling back to default: " + charset + " Stacktrace: " + e);
-            return Charset.defaultCharset();
-        }
-    }
-    
-    @Override
-    public void close() throws IOException {
-        chan.close();
-    }
-    
-    @Override
-    public long getSize() {
-        try {
-            return chan.size();
-        }
-        catch (IOException e) {
-            Main.LOGGER.log(Level.WARNING, "Could not get size of FileChannel", e);
-            return -1;
-        }
-    }
-    
-    @Override
-    public void setSize(long size) {
-        long origSize = getSize();
-        setPosition(origSize);
-        writeByteArray(new byte[(int) (size - origSize)]);
     }
 }

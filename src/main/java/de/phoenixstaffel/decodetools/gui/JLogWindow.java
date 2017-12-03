@@ -25,7 +25,7 @@ public class JLogWindow extends JFrame {
     
     static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     
-    private transient Logger log;
+    private transient Logger[] log;
     private transient LogHandler handler;
     private final JScrollPane scrollPane = new JScrollPane();
     private final JTextArea textPane = new JTextArea();
@@ -38,10 +38,12 @@ public class JLogWindow extends JFrame {
     private final JMenuItem mntmSevere = new JMenuItem("Severe");
     private final JMenuItem mntmOff = new JMenuItem("Off");
     
-    public JLogWindow(Logger logger) {
+    public JLogWindow(Logger... logger) {
         this.log = logger;
         this.handler = new LogHandler();
-        log.addHandler(handler);
+        for(Logger l : logger) 
+            l.addHandler(handler);
+        
         setBounds(0, 0, 500, 300);
         
         setTitle("Log Window");

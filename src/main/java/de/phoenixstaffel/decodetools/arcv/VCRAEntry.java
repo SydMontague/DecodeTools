@@ -2,7 +2,7 @@ package de.phoenixstaffel.decodetools.arcv;
 
 import java.nio.ByteBuffer;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 /*
 * VCRA Entry Format – 0x20

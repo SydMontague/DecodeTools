@@ -6,8 +6,8 @@ import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
-import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
@@ -47,7 +47,7 @@ public class KCAPPayload extends ResPayload {
         int numEntries = source.readInteger();
         int numPayloadEntries = source.readInteger();
         int headerSize = source.readInteger();
-        source.readInteger(); //extension payload start
+        source.readInteger(); // extension payload start
         
         if (headerSize > 0x20)
             extension = HeaderExtension.craft(source);
@@ -100,7 +100,7 @@ public class KCAPPayload extends ResPayload {
             if (entry.getType() == null)
                 continue;
             
-            //make sure it's padded to the content specific padding before adding more
+            // make sure it's padded to the content specific padding before adding more
             value = Utils.getPadded(value, extension.getContentAlignment(this));
             value += entry.getSize();
         }
@@ -156,7 +156,7 @@ public class KCAPPayload extends ResPayload {
         return Payload.KCAP;
     }
     
-    //FIXME generate extension payload during runtime
+    // FIXME generate extension payload during runtime
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
         long start = dest.getPosition();
@@ -193,7 +193,8 @@ public class KCAPPayload extends ResPayload {
         
         extensionPayload.writeKCAP(dest, extPayloadStart); // extension payload
         
-        dest.setSize(start + tmp); // padding
+        dest.setPosition(dest.getSize());
+        dest.writeByteArray(new byte[(int) ((start + tmp) - dest.getSize())]); // padding
         
         // write sub structures
         entries.forEach(a -> {
@@ -237,7 +238,7 @@ public class KCAPPayload extends ResPayload {
     public String toString() {
         return getType().name() + " " + (getExtension() != null ? getExtension().getType().name() : "");
     }
-
+    
     public ResPayload get(int i) {
         return entries.get(i);
     }

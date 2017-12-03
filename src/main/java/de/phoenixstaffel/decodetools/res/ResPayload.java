@@ -10,8 +10,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
 import de.phoenixstaffel.decodetools.Main;
-import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.payload.BTXFile;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;

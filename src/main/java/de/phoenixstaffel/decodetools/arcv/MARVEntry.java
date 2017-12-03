@@ -3,7 +3,7 @@ package de.phoenixstaffel.decodetools.arcv;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import de.phoenixstaffel.decodetools.Utils;
+import de.phoenixstaffel.decodetools.core.Utils;
 
 /*
  * MARV Entry Format – 0x20

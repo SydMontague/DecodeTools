@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 
 import de.phoenixstaffel.decodetools.Main;
-import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.dataminer.Access;
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.FileAccess;
+import de.phoenixstaffel.decodetools.core.Utils;
 
 public class ResFile {
     private ResPayload root;

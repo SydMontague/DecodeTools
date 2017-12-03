@@ -1,7 +1,7 @@
 package de.phoenixstaffel.lostevotools;
 
-import de.phoenixstaffel.decodetools.PixelFormatDecoder;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.Utils;
 
 public class NSCR {
     private NitroHeader nHeader;
@@ -53,11 +53,11 @@ public class NSCR {
         }
         
         public boolean isFlippedHorizontally() {
-            return PixelFormatDecoder.getBitValue(data, 11);
+            return Utils.getBitValue(data, 11);
         }
         
         public boolean isFlippedVertically() {
-            return PixelFormatDecoder.getBitValue(data, 10);
+            return Utils.getBitValue(data, 10);
         }
         
         public byte getPaletteIndex() {
@@ -65,7 +65,7 @@ public class NSCR {
         }
         
         public short getTileIndex() {
-            return (short) PixelFormatDecoder.getSubInteger(data, 0, 10);
+            return (short) Utils.getSubInteger(data, 0, 10);
         }
     }
 }

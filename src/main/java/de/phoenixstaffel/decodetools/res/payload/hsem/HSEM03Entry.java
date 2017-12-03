@@ -3,7 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload.hsem;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 //something with effects? and animations?
 public class HSEM03Entry implements HSEMEntryPayload {

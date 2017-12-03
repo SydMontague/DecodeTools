@@ -3,7 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload.hsem;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 public class HSEMTextureEntry implements HSEMEntryPayload {
     private short unkn1;

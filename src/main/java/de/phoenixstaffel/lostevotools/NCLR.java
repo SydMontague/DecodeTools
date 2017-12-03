@@ -1,7 +1,7 @@
 package de.phoenixstaffel.lostevotools;
 
-import de.phoenixstaffel.decodetools.PixelFormatDecoder;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.Utils;
 
 /*
  * RLCN
@@ -89,9 +89,9 @@ public class NCLR {
         }
         
         public byte getIndex(int rgb, byte original) {
-            byte red = (byte) (PixelFormatDecoder.getSubInteger(rgb, 0, 8) >>> 3);
-            byte green = (byte) (PixelFormatDecoder.getSubInteger(rgb, 8, 8) >>> 3);
-            byte blue = (byte) (PixelFormatDecoder.getSubInteger(rgb, 16, 8) >>> 3);
+            byte red = (byte) (Utils.getSubInteger(rgb, 0, 8) >>> 3);
+            byte green = (byte) (Utils.getSubInteger(rgb, 8, 8) >>> 3);
+            byte blue = (byte) (Utils.getSubInteger(rgb, 16, 8) >>> 3);
             
             short delta = 1024;
             byte tmp = 0;
@@ -130,9 +130,9 @@ public class NCLR {
         
         public int toRGB8() {
             int color = 0;
-            color += (PixelFormatDecoder.extend5To8(red));
-            color += (PixelFormatDecoder.extend5To8(green) << 8);
-            color += (PixelFormatDecoder.extend5To8(blue) << 16);
+            color += (Utils.extend5To8(red));
+            color += (Utils.extend5To8(green) << 8);
+            color += (Utils.extend5To8(blue) << 16);
             
             return color;
         }

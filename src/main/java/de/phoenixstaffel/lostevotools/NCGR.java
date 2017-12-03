@@ -2,7 +2,7 @@ package de.phoenixstaffel.lostevotools;
 
 import java.awt.image.BufferedImage;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.lostevotools.NCLR.PaletteData;
 
 public class NCGR {

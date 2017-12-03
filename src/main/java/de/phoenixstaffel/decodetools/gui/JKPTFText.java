@@ -20,8 +20,10 @@ import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload.TNFOEntry;
 
 public class JKPTFText extends JComponent {
-    private static final int WIDTH = 400;
-    private static final int HEIGHT = 240;
+    private static final long serialVersionUID = 2059603808794522704L;
+    
+    private static final int TEXT_WIDTH = 400;
+    private static final int TEXT_HEIGHT = 240;
     
     private transient BufferedImage textBoxImage;
     
@@ -34,14 +36,14 @@ public class JKPTFText extends JComponent {
     private int startY = 0;
     private double resolutionScale = 1;
 
-    private TNFOPayload tnfo;
-    private List<GMIOPayload> gmios;
+    private transient TNFOPayload tnfo;
+    private transient List<GMIOPayload> gmios;
     
     private boolean showTextbox = true;
     
     public JKPTFText() {
         super();
-        setPreferredSize(new Dimension((int) (WIDTH * resolutionScale), (int) (HEIGHT * resolutionScale)));
+        setPreferredSize(new Dimension((int) (TEXT_WIDTH * resolutionScale), (int) (TEXT_HEIGHT * resolutionScale)));
         try {
             textBoxImage = ImageIO.read(getClass().getClassLoader().getResource("textbox.png"));
         }
@@ -60,7 +62,7 @@ public class JKPTFText extends JComponent {
         super.paintComponent(g);
 
         g.setColor(getBackground());
-        g.fillRect(0, 0, (int) (WIDTH * resolutionScale), (int) (HEIGHT * resolutionScale));
+        g.fillRect(0, 0, (int) (TEXT_WIDTH * resolutionScale), (int) (TEXT_HEIGHT * resolutionScale));
         g.setColor(getForeground());
         
         if(tnfo == null)
@@ -175,7 +177,7 @@ public class JKPTFText extends JComponent {
 
     public void update() {
         repaint();
-        setPreferredSize(new Dimension((int) (WIDTH * resolutionScale), (int) (HEIGHT * resolutionScale)));
+        setPreferredSize(new Dimension((int) (TEXT_WIDTH * resolutionScale), (int) (TEXT_HEIGHT * resolutionScale)));
     }
 
     public void setDisplayTextbox(boolean selected) {

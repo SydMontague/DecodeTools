@@ -3,6 +3,8 @@ package de.phoenixstaffel.decodetools.dataminer;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import de.phoenixstaffel.decodetools.core.Access;
+
 public enum StructureType {
     BYTE((a, b) -> a.readByte()),
     SHORT((a,b) -> a.readShort()),

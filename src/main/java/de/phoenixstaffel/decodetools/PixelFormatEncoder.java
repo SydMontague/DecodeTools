@@ -9,7 +9,8 @@ import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.core.FileAccess;
+import de.phoenixstaffel.decodetools.core.Utils;
 
 public class PixelFormatEncoder {
     private static final String ENCODER_PATH = "./3dstex";

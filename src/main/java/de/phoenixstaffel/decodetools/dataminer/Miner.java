@@ -1,5 +1,7 @@
 package de.phoenixstaffel.decodetools.dataminer;
 
+import de.phoenixstaffel.decodetools.core.Access;
+
 public abstract class Miner {
     private Access source;
     private Structure structure;

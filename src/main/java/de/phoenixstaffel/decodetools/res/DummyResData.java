@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import de.phoenixstaffel.decodetools.Utils;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class DummyResData implements IResData {

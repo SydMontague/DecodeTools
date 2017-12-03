@@ -3,10 +3,12 @@ package de.phoenixstaffel.decodetools.res.payload;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.QuadConsumer;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.hsem.HSEM03Entry;
@@ -17,7 +19,9 @@ import de.phoenixstaffel.decodetools.res.payload.hsem.HSEMJointEntry;
 import de.phoenixstaffel.decodetools.res.payload.hsem.HSEMMaterialEntry;
 import de.phoenixstaffel.decodetools.res.payload.hsem.HSEMTextureEntry;
 import de.phoenixstaffel.decodetools.res.payload.xdio.XDIOFace;
+import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVORegisterType;
+import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 
 /*
  * HSEM "head" (0x40 byte)
@@ -41,6 +45,18 @@ import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVORegisterType;
  * 0x14 byte                outro data
  */
 public class HSEMPayload extends ResPayload {
+    public static final QuadConsumer<XTVOVertex, XTVORegisterType, String, PrintStream> VERTEX_TO_OBJ_FUNCTION = (a, r, v, out) -> {
+        Entry<XTVOAttribute, List<Number>> entry = a.getParameter(r);
+        if (entry == null)
+            return;
+        
+        StringBuilder b = new StringBuilder(v);
+        
+        entry.getValue().forEach(c -> b.append(entry.getKey().getValue(c)).append(" "));
+        out.println(b.toString());
+    };
+    
+    
     private int id;
     private int size;
     private int unknown1;
@@ -129,9 +145,9 @@ public class HSEMPayload extends ResPayload {
                 out.println("g group_" + groupIndex++);
                 
                 // vertex, normal, uv
-                xtvo.getVertices().forEach(a -> Utils.VERTEX_TO_OBJ_FUNCTION.apply(a, XTVORegisterType.POSITION, "v ", out));
-                xtvo.getVertices().forEach(a -> Utils.VERTEX_TO_OBJ_FUNCTION.apply(a, XTVORegisterType.NORMAL, "vn ", out));
-                xtvo.getVertices().forEach(a -> Utils.VERTEX_TO_OBJ_FUNCTION.apply(a, XTVORegisterType.TEXTURE0, "vt ", out));
+                xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.POSITION, "v ", out));
+                xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.NORMAL, "vn ", out));
+                xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.TEXTURE0, "vt ", out));
                 
                 for (XDIOFace a : xdio.getFaces())
                     out.println(new Face(a, vertexOffset, hasNorm ? normalOffset : -1, hasUV ? uvOffset : -1).toObj());

@@ -27,6 +27,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JMenu;
 
 public class FontPreviewDialogue extends JFrame {
+    private static final long serialVersionUID = 8687652956429883024L;
+
     private static final String HEX_REGEX = "^#?[0-9a-fA-F]{6}$";
     
     private TNFOPayload tnfo;

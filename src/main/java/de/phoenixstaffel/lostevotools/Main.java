@@ -5,8 +5,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.FileAccess;
 
 public class Main {
     private Main() {

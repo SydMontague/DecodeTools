@@ -1,6 +1,6 @@
 package de.phoenixstaffel.decodetools.res.payload.xtvo;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 public class XTVOAttribute {
     private XTVORegisterType registerId;

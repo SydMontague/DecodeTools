@@ -1,16 +1,13 @@
-package de.phoenixstaffel.decodetools.dataminer;
+package de.phoenixstaffel.decodetools.core;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 
-import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.jna.Kernel32;
 
 public class MemoryAccess implements Access {
@@ -81,13 +78,13 @@ public class MemoryAccess implements Access {
     }
     
     @Override
-    public String readString(long address, int length, String charset) {
+    public String readString(long address, int bytes, String charset) {
         Charset localCharset = getCharset(charset);
         
-        Memory memory = new Memory(length);
-        kernel.ReadProcessMemory(process, new Pointer(address + offset), memory, length, null);
+        Memory memory = new Memory(bytes);
+        kernel.ReadProcessMemory(process, new Pointer(address + offset), memory, bytes, null);
 
-        return localCharset.decode(memory.getByteBuffer(0, length)).toString();
+        return localCharset.decode(memory.getByteBuffer(0, bytes)).toString();
     }
     
     @Override
@@ -155,9 +152,9 @@ public class MemoryAccess implements Access {
     }
     
     @Override
-    public String readString(int length, String charset) {
-        String value = readString(currentPointer, length, charset);
-        currentPointer += length;
+    public String readString(int bytes, String charset) {
+        String value = readString(currentPointer, bytes, charset);
+        currentPointer += bytes;
         return value;
     }
     
@@ -291,16 +288,6 @@ public class MemoryAccess implements Access {
         this.currentPointer = address;
     }
 
-    private Charset getCharset(String charset) {
-        try {
-            return Charset.forName(charset);
-        }
-        catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
-            Main.LOGGER.severe("Invalid Charset given, falling back to default: " + charset + " Stacktrace: " + e);
-            return Charset.defaultCharset();
-        }
-    }
-
     @Override
     public void close() throws IOException {
         kernel.CloseHandle(process);
@@ -309,10 +296,5 @@ public class MemoryAccess implements Access {
     @Override
     public long getSize() {
         throw new UnsupportedOperationException("Can't get size of MemoryAccess.");
-    }
-
-    @Override
-    public void setSize(long size) {
-        throw new UnsupportedOperationException("Can't set size of MemoryAccess.");
     }
 }

@@ -38,6 +38,8 @@ import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload.TNFOEntry;
 
 public class KPTFPanel extends PayloadPanel {
+    private static final long serialVersionUID = 4410795681047271875L;
+    
     private transient KCAPPayload kptf;
     private transient TNFOPayload tnfo;
     private transient TNFOEntry entry;

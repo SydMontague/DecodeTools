@@ -1,5 +1,7 @@
 package de.phoenixstaffel.decodetools.dataminer;
 
+import de.phoenixstaffel.decodetools.core.Access;
+
 /*-
  * Read linear data sheets
  * -> Fixed order and size of the entry

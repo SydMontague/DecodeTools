@@ -1,6 +1,6 @@
 package de.phoenixstaffel.decodetools.res.payload.hsem;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 public interface HSEMEntryPayload {
     

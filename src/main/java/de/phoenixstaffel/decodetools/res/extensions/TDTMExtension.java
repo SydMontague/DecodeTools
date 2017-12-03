@@ -3,8 +3,8 @@ package de.phoenixstaffel.decodetools.res.extensions;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;

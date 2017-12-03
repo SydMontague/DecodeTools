@@ -3,7 +3,7 @@ package de.phoenixstaffel.decodetools.res.extensions;
 import java.util.logging.Level;
 
 import de.phoenixstaffel.decodetools.Main;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;

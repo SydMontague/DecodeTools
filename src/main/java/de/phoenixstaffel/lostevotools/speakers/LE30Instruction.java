@@ -1,6 +1,6 @@
 package de.phoenixstaffel.lostevotools.speakers;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 public class LE30Instruction extends LEInstruction {
     public LE30Instruction(Access source) {

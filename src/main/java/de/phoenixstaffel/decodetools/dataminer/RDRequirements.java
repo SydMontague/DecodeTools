@@ -3,6 +3,8 @@ package de.phoenixstaffel.decodetools.dataminer;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.phoenixstaffel.decodetools.core.Access;
+
 public class RDRequirements implements StructureClass {
     static int a = 1;
     

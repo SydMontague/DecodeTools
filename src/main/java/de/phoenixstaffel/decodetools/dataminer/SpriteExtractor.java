@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools;
+package de.phoenixstaffel.decodetools.dataminer;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;

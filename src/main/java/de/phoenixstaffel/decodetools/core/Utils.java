@@ -1,28 +1,11 @@
-package de.phoenixstaffel.decodetools;
+package de.phoenixstaffel.decodetools.core;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-
-import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
-import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVORegisterType;
-import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 
 public class Utils {
-    public static final QuadConsumer<XTVOVertex, XTVORegisterType, String, PrintStream> VERTEX_TO_OBJ_FUNCTION = (a, r, v, out) -> {
-        Entry<XTVOAttribute, List<Number>> entry = a.getParameter(r);
-        if(entry == null)
-            return;
-        
-        StringBuilder b = new StringBuilder(v);
-        
-        entry.getValue().forEach(c -> b.append(entry.getKey().getValue(c)).append(" "));
-        out.println(b.toString());
-    };
-    
     private Utils() {
     }
     
@@ -82,7 +65,7 @@ public class Utils {
         i = (i | (i >>> 7)) & 0x3F;
         return i;
     }
-
+    
     public static BufferedImage flipImage(BufferedImage image) {
         return flipImage(image, false);
     }
@@ -128,8 +111,54 @@ public class Utils {
         
         return files;
     }
-
+    
     public static boolean isPowOf2(int x) {
         return (x & (x - 1)) == 0;
+    }
+    
+    public static long crop(long value, long min, long max) {
+        return Math.min(Math.max(min, value), max);
+    }
+    
+    public static long add3BitSigned(long base, long toAdd) {
+        if (toAdd < 0 || toAdd > 7)
+            throw new IllegalArgumentException("Second argument must be between 0 and 7 (inclusive), but was " + toAdd);
+        
+        if ((toAdd & 0x4) == 0)
+            return base + toAdd;
+        
+        return base - ((~toAdd & 0x3) + 1);
+    }
+    
+    public static boolean getBitValue(long value, int bit) {
+        if (bit >= Long.SIZE || bit < 0)
+            throw new IllegalArgumentException("Can't get the " + bit + " bit of a 64bit number.");
+        
+        return (value >>> bit & 0x1) != 0;
+    }
+    
+    public static long getSubInteger(long value, int bit, int length) {
+        if (bit < 0 || length <= 0 || Long.SIZE - bit < length)
+            throw new IllegalArgumentException("Can't get bits " + bit + " to " + (bit + length) + " of a long int.");
+        
+        return (value << Long.SIZE - length - bit) >>> (Long.SIZE - length);
+    }
+    
+    public static long extend4To8(long value) {
+        long tmp = value & 0xF;
+        
+        return (tmp << 4) + tmp;
+    }
+    
+    public static long extend5To8(long value) {
+        long tmp = value & 0x1F;
+        
+        return (tmp << 3) + (tmp >>> 2);
+    }
+    
+    public static long extend6To8(long value) {
+        long tmp = value & 0x3F;
+        
+        return (tmp << 2) + (tmp >>> 4);
     }
 }

@@ -1,6 +1,6 @@
 package de.phoenixstaffel.lostevotools.speakers;
 
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.core.FileAccess;
 
 public class LEInstruction {
     

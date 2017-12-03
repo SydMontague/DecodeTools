@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.lostevotools.NCGR.TileData;
 import de.phoenixstaffel.lostevotools.NCLR.PaletteData;
 import de.phoenixstaffel.lostevotools.NSCR.MapData;

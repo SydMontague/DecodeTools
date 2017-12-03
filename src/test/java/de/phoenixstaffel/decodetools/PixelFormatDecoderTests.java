@@ -18,6 +18,8 @@ import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
+import de.phoenixstaffel.decodetools.core.Utils;
+
 public class PixelFormatDecoderTests {
     
     private byte[] bla() throws IOException {
@@ -58,31 +60,31 @@ public class PixelFormatDecoderTests {
     
     @Test
     public void testExpand4To8() {
-        assertEquals(PixelFormatDecoder.extend4To8(0b1111), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend4To8(0b0001), 0b00010001);
-        assertEquals(PixelFormatDecoder.extend4To8(0b111111111111), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend4To8(-1), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend4To8(0b0000), 0b00000000);
+        assertEquals(Utils.extend4To8(0b1111), 0b11111111);
+        assertEquals(Utils.extend4To8(0b0001), 0b00010001);
+        assertEquals(Utils.extend4To8(0b111111111111), 0b11111111);
+        assertEquals(Utils.extend4To8(-1), 0b11111111);
+        assertEquals(Utils.extend4To8(0b0000), 0b00000000);
     }
     
     @Test
     public void testExpand5To8() {
-        assertEquals(PixelFormatDecoder.extend5To8(0b11111), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend5To8(0b00001), 0b00001000);
-        assertEquals(PixelFormatDecoder.extend5To8(0b10001), 0b10001100);
-        assertEquals(PixelFormatDecoder.extend5To8(0b111111111111), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend5To8(-1), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend5To8(0b00000), 0b00000000);
+        assertEquals(Utils.extend5To8(0b11111), 0b11111111);
+        assertEquals(Utils.extend5To8(0b00001), 0b00001000);
+        assertEquals(Utils.extend5To8(0b10001), 0b10001100);
+        assertEquals(Utils.extend5To8(0b111111111111), 0b11111111);
+        assertEquals(Utils.extend5To8(-1), 0b11111111);
+        assertEquals(Utils.extend5To8(0b00000), 0b00000000);
     }
     
     @Test
     public void testExpand6To8() {
-        assertEquals(PixelFormatDecoder.extend6To8(0b111111), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend6To8(0b000001), 0b00000100);
-        assertEquals(PixelFormatDecoder.extend6To8(0b100001), 0b10000110);
-        assertEquals(PixelFormatDecoder.extend6To8(0b111111111111), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend6To8(-1), 0b11111111);
-        assertEquals(PixelFormatDecoder.extend6To8(0b000000), 0b00000000);
+        assertEquals(Utils.extend6To8(0b111111), 0b11111111);
+        assertEquals(Utils.extend6To8(0b000001), 0b00000100);
+        assertEquals(Utils.extend6To8(0b100001), 0b10000110);
+        assertEquals(Utils.extend6To8(0b111111111111), 0b11111111);
+        assertEquals(Utils.extend6To8(-1), 0b11111111);
+        assertEquals(Utils.extend6To8(0b000000), 0b00000000);
     }
     
     @Test

@@ -1,6 +1,6 @@
 package de.phoenixstaffel.lostevotools;
 
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 
 public class NitroHeader {
     private int magicValueNCLR;

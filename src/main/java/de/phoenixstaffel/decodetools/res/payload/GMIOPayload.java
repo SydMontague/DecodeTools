@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.PixelFormat;
-import de.phoenixstaffel.decodetools.Utils;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;

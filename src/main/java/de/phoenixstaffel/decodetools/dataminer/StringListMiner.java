@@ -3,6 +3,8 @@ package de.phoenixstaffel.decodetools.dataminer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import de.phoenixstaffel.decodetools.core.Access;
+
 /*
  * TYPE: Map
  * 

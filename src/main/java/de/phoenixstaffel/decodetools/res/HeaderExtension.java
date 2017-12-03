@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 
 import de.phoenixstaffel.decodetools.Main;
-import de.phoenixstaffel.decodetools.dataminer.Access;
+import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.extensions.CTPPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.GMIPExtension;
 import de.phoenixstaffel.decodetools.res.extensions.HSEMExtension;

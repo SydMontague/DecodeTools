@@ -31,10 +31,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import de.phoenixstaffel.decodetools.Main;
-import de.phoenixstaffel.decodetools.Utils;
 import de.phoenixstaffel.decodetools.arcv.ARCVFile;
-import de.phoenixstaffel.decodetools.dataminer.Access;
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.FileAccess;
+import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.ResFile;
 

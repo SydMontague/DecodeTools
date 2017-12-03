@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.phoenixstaffel.decodetools.dataminer.FileAccess;
+import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.lostevotools.speakers.LEInstruction.Instruction;
 
 public class Script {

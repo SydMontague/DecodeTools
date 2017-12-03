@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import de.phoenixstaffel.decodetools.Utils;
+import de.phoenixstaffel.decodetools.core.Utils;
 
 public class XTVOVertex {
     private Map<XTVOAttribute, List<Number>> vertexParams = new HashMap<>();
