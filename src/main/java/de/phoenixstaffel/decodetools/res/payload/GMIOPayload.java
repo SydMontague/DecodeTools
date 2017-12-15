@@ -155,7 +155,7 @@ public class GMIOPayload extends ResPayload {
     
     @Override
     public int getSize() {
-        return Utils.getPadded(0x40 + extraData.length, 4);
+        return Utils.align(0x40 + extraData.length, 4);
     }
     
     @Override

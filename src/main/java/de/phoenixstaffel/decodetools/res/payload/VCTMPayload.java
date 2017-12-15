@@ -66,7 +66,7 @@ public class VCTMPayload extends ResPayload {
     
     @Override
     public int getSize() {
-        return 0x20 + Utils.getPadded(data1.length * sizeValue2, 4) + Utils.getPadded(data2.length * sizeValue1, 4);
+        return 0x20 + Utils.align(data1.length * sizeValue2, 4) + Utils.align(data2.length * sizeValue1, 4);
     }
     
     @Override
@@ -96,7 +96,7 @@ public class VCTMPayload extends ResPayload {
             for (byte b : entry.getData())
                 dest.writeByte(b);
             
-        dest.setPosition(Utils.getPadded(dest.getPosition(), 0x4));
+        dest.setPosition(Utils.align(dest.getPosition(), 0x4));
         
         for (VCTMEntry entry : data2)
             for (byte b : entry.getData())

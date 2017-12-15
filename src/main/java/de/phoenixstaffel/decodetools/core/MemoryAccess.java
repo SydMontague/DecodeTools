@@ -8,7 +8,7 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 
-import de.phoenixstaffel.decodetools.jna.Kernel32;
+import de.phoenixstaffel.decodetools.core.jna.Kernel32;
 
 public class MemoryAccess implements Access {
     private static final int PROCESS_VM_READ = 0x0010;
@@ -27,6 +27,9 @@ public class MemoryAccess implements Access {
         
         this.offset = offset;
         process = kernel.OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION, false, pid);
+        
+        if(process == null)
+            throw new IllegalArgumentException("Could not open process with PID " + pid + ". Error:" + kernel.GetLastError());
     }
     
     @Override

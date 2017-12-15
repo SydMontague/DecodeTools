@@ -318,7 +318,7 @@ public class MainWindow extends JFrame implements Observer {
                             int dataSize = resData.getSize();
                             resData.close();
                             
-                            if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0) {
+                            if (input.length - Utils.align(structureSize, 0x80) != dataSize && dataSize != 0) {
                                 Main.LOGGER.info(() -> "Re-Exporting " + local);
                                 File ff = new File(outputFileDialogue.getSelectedFile(), local);
                                 ff.getParentFile().mkdirs();

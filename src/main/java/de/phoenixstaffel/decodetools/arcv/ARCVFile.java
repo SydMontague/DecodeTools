@@ -100,7 +100,7 @@ public class ARCVFile {
             compresser.end();
         }
         else {
-            byte[] output = Arrays.copyOf(input, Utils.getPadded(input.length, 0x800));
+            byte[] output = Arrays.copyOf(input, Utils.align(input.length, 0x800));
             compressedSize = input.length;
             destination.writeByteArray(output);
             sectorCount += output.length / 0x800;
@@ -125,7 +125,7 @@ public class ARCVFile {
         
         resDataTime += System.nanoTime() - t;
         
-        if (input.length - Utils.getPadded(structureSize, 0x80) != dataSize && dataSize != 0)
+        if (input.length - Utils.align(structureSize, 0x80) != dataSize && dataSize != 0)
             Main.LOGGER.log(Level.WARNING, () -> name + " calculated size and actual size differs. It's format might be invalid, please check and re-export.");
         
         MARVEntry marv = new MARVEntry(structureSize, dataSize, dataEntries, name.endsWith(".img"));

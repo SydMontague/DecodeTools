@@ -122,4 +122,9 @@ public class TNOJPayload extends ResPayload {
         dest.writeInteger(0); // padding
         dest.writeInteger(0); // padding
     }
+    
+    @Override
+    public String toString() {
+        return name;
+    }
 }

@@ -73,7 +73,7 @@ public class KCAPPayload extends ResPayload {
                 entries.add(ResPayload.craft(source, dataStart, this, entry.getLength(), extensionPayload.get(i)));
         }
         
-        source.setPosition(Utils.getPadded(source.getPosition(), 0x10));
+        source.setPosition(Utils.align(source.getPosition(), 0x10));
     }
     
     @Override
@@ -81,7 +81,7 @@ public class KCAPPayload extends ResPayload {
         int value = 0x20; // magic value, KCAP base size
         
         // header extension, always padded to a multiple of 0x10
-        value += Utils.getPadded(extension.getSize(), 0x10);
+        value += Utils.align(extension.getSize(), 0x10);
         
         // pointer table
         int payload = getNumEntries() * 8;
@@ -90,10 +90,10 @@ public class KCAPPayload extends ResPayload {
         payload += extensionPayload.getSize();
         
         // special cases for GMIP headers, where the KCAP content starts directly after the header payload
-        payload = Utils.getPadded(payload, extension.getType().getPadding());
+        payload = Utils.align(payload, extension.getType().getPadding());
         
         value += payload;
-        value = Utils.getPadded(value, extension.getContentAlignment(this));
+        value = Utils.align(value, extension.getContentAlignment(this));
         
         // sub entries
         for (ResPayload entry : entries) {
@@ -101,12 +101,12 @@ public class KCAPPayload extends ResPayload {
                 continue;
             
             // make sure it's padded to the content specific padding before adding more
-            value = Utils.getPadded(value, extension.getContentAlignment(this));
+            value = Utils.align(value, extension.getContentAlignment(this));
             value += entry.getSize();
         }
         
         // make sure it's padded
-        value = Utils.getPadded(value, 0x4);
+        value = Utils.align(value, 0x4);
         
         return value;
     }
@@ -177,14 +177,14 @@ public class KCAPPayload extends ResPayload {
         
         extension.writeKCAP(dest); // extension header
         
-        int fileStart = Utils.getPadded(extPayloadStart + extensionPayload.getSize(), extension.getType().getPadding());
-        fileStart = Utils.getPadded(fileStart, extension.getContentAlignment(this));
+        int fileStart = Utils.align(extPayloadStart + extensionPayload.getSize(), extension.getType().getPadding());
+        fileStart = Utils.align(fileStart, extension.getContentAlignment(this));
         int tmp = fileStart;
         
         // pointer table
         for (ResPayload entry : entries) {
             if (entry.getType() != null)
-                fileStart = Utils.getPadded(fileStart, extension.getContentAlignment(this));
+                fileStart = Utils.align(fileStart, extension.getContentAlignment(this));
             
             dest.writeInteger(entry.getSize() == 0 ? 0 : fileStart);
             dest.writeInteger(entry.getSize());
@@ -202,13 +202,13 @@ public class KCAPPayload extends ResPayload {
                 return;
             
             int i = (int) (dest.getPosition() - start);
-            int d = Utils.getPadded(i, extension.getContentAlignment(this)) - i;
+            int d = Utils.align(i, extension.getContentAlignment(this)) - i;
             
             dest.setPosition(dest.getPosition() + d);
             a.writeKCAP(dest, dataStream);
         });
         
-        int diff = (int) (Utils.getPadded(dest.getPosition(), 0x4) - dest.getPosition());
+        int diff = (int) (Utils.align(dest.getPosition(), 0x4) - dest.getPosition());
         dest.writeByteArray(new byte[diff]);
     }
     

@@ -33,7 +33,7 @@ public class ResFile {
         
         try (Access dest = new FileAccess(file); IResData data = new ResData()) {
             root.writeKCAP(dest, data);
-            dest.setPosition(Utils.getPadded(root.getSizeOfRoot(), 0x80));
+            dest.setPosition(Utils.align(root.getSizeOfRoot(), 0x80));
             dest.writeByteArray(data.getStream().toByteArray());
         }
         catch (IOException e) {

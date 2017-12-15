@@ -96,7 +96,7 @@ public class BTXFile extends ResPayload {
             
             if (a.getValue().getMeta() != null) {
                 size += 0x30;
-                size = Utils.getPadded(size, 4);
+                size = Utils.align(size, 4);
             }
             else
                 size += 2;
@@ -136,7 +136,7 @@ public class BTXFile extends ResPayload {
             
             int lPointer = (int) (pointer - dest.getPosition() + 2);
             if (a.getValue().getMeta() != null)
-                lPointer = Utils.getPadded(lPointer, 4);
+                lPointer = Utils.align(lPointer, 4);
             else
                 lPointer += 2;
             
@@ -145,7 +145,7 @@ public class BTXFile extends ResPayload {
             dest.writeString(a.getValue().getString(), WRITE_ENCODING, pointer);
             pointer += a.getValue().getString().length() * 2;
             if (a.getValue().getMeta() != null)
-                pointer = Utils.getPadded(pointer, 4);
+                pointer = Utils.align(pointer, 4);
             else
                 pointer += 2;
         }

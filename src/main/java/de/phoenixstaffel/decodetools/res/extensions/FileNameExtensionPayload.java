@@ -35,7 +35,7 @@ public class FileNameExtensionPayload implements HeaderExtensionPayload {
             size += name.length() + 1;
         }
         
-        return Utils.getPadded(size, 0x4);
+        return Utils.align(size, 0x4);
     }
     
     @Override

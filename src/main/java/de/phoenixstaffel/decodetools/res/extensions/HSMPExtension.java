@@ -49,7 +49,7 @@ public class HSMPExtension implements HeaderExtension {
     
     @Override
     public int getSize() {
-        return Utils.getPadded(0x2C + name.length() + 2, 0x10);
+        return Utils.align(0x2C + name.length() + 2, 0x10);
     }
     
     @Override

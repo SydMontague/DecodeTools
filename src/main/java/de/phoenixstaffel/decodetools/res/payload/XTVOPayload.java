@@ -14,22 +14,23 @@ import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 
 public class XTVOPayload extends ResPayload {
+    //int magic value
     private int unknown1;
     private short unknown2;
     private short id;
-    private int dataPointer;
+    //int dataPointer;
     
-    private int numEntries;
-    private int entrySize;
-    private int dataSize;
+    //int numEntries;
+    //int entrySize;
+    //int dataSize;
     private int unknown7;
     
     private int shaderId;
     private int unknown9;
     private int unknown10;
-    private int shaderVariablesSize;
+    //int shaderVariablesSize;
     
-    private short attributeCount;
+    //short attributeCount;
     private short unknown12;
     
     private float[] mTex0 = new float[4];
@@ -52,19 +53,19 @@ public class XTVOPayload extends ResPayload {
         unknown1 = source.readInteger();
         unknown2 = source.readShort();
         id = source.readShort();
-        dataPointer = source.readInteger();
+        int dataPointer = source.readInteger();
         
-        numEntries = source.readInteger();
-        entrySize = source.readInteger();
-        dataSize = source.readInteger();
+        int numEntries = source.readInteger();
+        int entrySize = source.readInteger();
+        int dataSize = source.readInteger();
         unknown7 = source.readInteger();
         
         shaderId = source.readInteger();
         unknown9 = source.readInteger();
         unknown10 = source.readInteger();
-        shaderVariablesSize = source.readInteger();
+        source.readInteger(); // shaderVariableSize
         
-        attributeCount = source.readShort();
+        short attributeCount = source.readShort();
         unknown12 = source.readShort();
         
         for (int i = 0; i < 4; i++)
@@ -93,7 +94,7 @@ public class XTVOPayload extends ResPayload {
     
     @Override
     public int getSize() {
-        return 0x30 + shaderVariablesSize;
+        return 0x74 + attributes.size() * 0xC; //0x30 + shaderVariablesSize;
     }
     
     @Override
@@ -110,11 +111,11 @@ public class XTVOPayload extends ResPayload {
     public void writeKCAP(Access dest, IResData dataStream) {
         int size = 0;
         for (XTVOAttribute attr : attributes) {
-            size = Utils.getPadded(size, attr.getValueType().getAlignment());
+            size = Utils.align(size, attr.getValueType().getAlignment());
             size += attr.getCount() * attr.getValueType().getAlignment();
         }
         
-        size = Utils.getPadded(size, 2);
+        size = Utils.align(size, 2);
         
         byte[] array = new byte[data.size() * size];
         ByteBuffer buff = ByteBuffer.wrap(array);
@@ -136,9 +137,9 @@ public class XTVOPayload extends ResPayload {
         dest.writeInteger(shaderId);
         dest.writeInteger(unknown9);
         dest.writeInteger(unknown10);
-        dest.writeInteger(shaderVariablesSize);
+        dest.writeInteger(getSize() - 0x30);
         
-        dest.writeShort(attributeCount);
+        dest.writeShort((short) attributes.size());
         dest.writeShort(unknown12);
         
         for (float f : mTex0)
@@ -158,11 +159,11 @@ public class XTVOPayload extends ResPayload {
     public void fillDummyResData(DummyResData resData) {
         int size = 0;
         for (XTVOAttribute attr : attributes) {
-            size = Utils.getPadded(size, attr.getValueType().getAlignment());
+            size = Utils.align(size, attr.getValueType().getAlignment());
             size += attr.getCount() * attr.getValueType().getAlignment();
         }
         
-        size = Utils.getPadded(size, 2);
+        size = Utils.align(size, 2);
         
         byte[] array = new byte[data.size() * size];
         resData.add(array, false, getParent());

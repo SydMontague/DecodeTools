@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools.jna;
+package de.phoenixstaffel.decodetools.core.jna;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;

@@ -9,18 +9,46 @@ public class Utils {
     private Utils() {
     }
     
-    public static int getPadded(int value, int paddingSize) {
-        if (value % paddingSize == 0)
-            return value;
+    /**
+     * <p>
+     * Aligns an input to a given alignment.
+     * </p>
+     * The returned value will be:
+     * <ul>
+     * <li>value >= the input
+     * <li>value % alignment == 0
+     * </ul>
+     * 
+     * @param input the value to be aligned
+     * @param alignment the alignment
+     * @return the aligned value
+     */
+    public static int align(int input, int alignment) {
+        if (input % alignment == 0)
+            return input;
         
-        return value + (paddingSize - (value % paddingSize));
+        return input + (alignment - (input % alignment));
     }
-    
-    public static long getPadded(long value, int paddingSize) {
-        if (value % paddingSize == 0)
-            return value;
+
+    /**
+     * <p>
+     * Aligns an input to a given alignment.
+     * </p>
+     * The returned value will be:
+     * <ul>
+     * <li>value >= the input
+     * <li>value % alignment == 0
+     * </ul>
+     * 
+     * @param input the value to be aligned
+     * @param alignment the alignment
+     * @return the aligned value
+     */
+    public static long align(long input, int alignment) {
+        if (input % alignment == 0)
+            return input;
         
-        return value + (paddingSize - (value % paddingSize));
+        return input + (alignment - (input % alignment));
     }
     
     public static int[] untile(short width, short height, int[] pixelData) {

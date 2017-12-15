@@ -23,7 +23,7 @@ public class ResData implements IResData {
             return entry.get().getAddress();
         }
 
-        byte[] padding = new byte[Utils.getPadded(getSize(), 0x80) - getSize()];
+        byte[] padding = new byte[Utils.align(getSize(), 0x80) - getSize()];
         stream.write(padding, 0, padding.length);
         
         int address = stream.size();

@@ -17,7 +17,7 @@ public class XTVOVertex {
         attributes.forEach(a -> {
             List<Number> list = new ArrayList<>();
             
-            source.position(Utils.getPadded(source.position(), a.getValueType().getAlignment()));
+            source.position(Utils.align(source.position(), a.getValueType().getAlignment()));
             
             for (int i = 0; i < a.getCount(); i++)
                 list.add(a.getValueType().read(source));
@@ -34,20 +34,21 @@ public class XTVOVertex {
         int size = 0;
         
         for (XTVOAttribute attr : vertexParams.keySet()) {
-            size = Utils.getPadded(size, attr.getValueType().getAlignment());
+            size = Utils.align(size, attr.getValueType().getAlignment());
             size += attr.getCount() * attr.getValueType().getAlignment();
         }
         
-        size = Utils.getPadded(size, 2); // all data is aligned to two bytes
+        size = Utils.align(size, 2); // all data is aligned to two bytes
         
         ByteBuffer buff = ByteBuffer.allocate(size);
         buff.order(ByteOrder.LITTLE_ENDIAN);
         
         vertexParams.forEach((a, b) -> {
-            buff.position(Utils.getPadded(buff.position(), a.getValueType().getAlignment()));
+            buff.position(Utils.align(buff.position(), a.getValueType().getAlignment()));
             b.forEach(c -> a.getValueType().write(buff, c));
         });
-        
+
+        buff.position(Utils.align(buff.position(), 2));
         buff.flip();
         return buff;
     }

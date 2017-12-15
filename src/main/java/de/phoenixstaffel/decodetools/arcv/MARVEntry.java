@@ -51,7 +51,7 @@ public class MARVEntry {
         this.unknown4 = dataSize == 0 ? 1 : 0x80;
         this.numEntries = dataEntries;
         
-        this.unknown6 = this.numEntries == 0 ? structureSize + 0x20 : Utils.getPadded(structureSize, 0x80) + 0x20;
+        this.unknown6 = this.numEntries == 0 ? structureSize + 0x20 : Utils.align(structureSize, 0x80) + 0x20;
     }
     
     public byte[] getBytes() {

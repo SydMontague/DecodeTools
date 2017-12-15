@@ -35,7 +35,7 @@ public class XFEPExtension implements HeaderExtension {
         
         // TODO dirty
         int size = 0x0C + data1.length * 4 + data2.length * 4 + name.length() + 1;
-        size = Utils.getPadded(size, 16) - size;
+        size = Utils.align(size, 16) - size;
         
         if (size == 0)
             size = 16;
@@ -57,7 +57,7 @@ public class XFEPExtension implements HeaderExtension {
     
     @Override
     public int getSize() {
-        return Utils.getPadded(0x0C + data1.length * 4 + data2.length * 4 + name.length() + 2, 16);
+        return Utils.align(0x0C + data1.length * 4 + data2.length * 4 + name.length() + 2, 16);
     }
     
     @Override

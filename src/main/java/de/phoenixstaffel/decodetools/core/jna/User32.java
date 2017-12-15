@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools.jna;
+package de.phoenixstaffel.decodetools.core.jna;
 
 public interface User32 extends com.sun.jna.platform.win32.User32 {
     

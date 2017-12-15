@@ -192,7 +192,7 @@ public abstract class ResPayload {
         }
         
         public int getDataStart(Access source) {
-            return Utils.getPadded(method.apply(source), 0x80);
+            return Utils.align(method.apply(source), 0x80);
         }
     }
     

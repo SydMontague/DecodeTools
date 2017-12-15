@@ -48,7 +48,7 @@ public class TDTMExtension implements HeaderExtension {
     
     @Override
     public int getSize() {
-        return Utils.getPadded(0x20 + entries.size() * 8, 0x10);
+        return Utils.align(0x20 + entries.size() * 8, 0x10);
     }
     
     @Override
