@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import de.phoenixstaffel.decodetools.core.Utils;
 
 public class XTVOVertex {
-    private Map<XTVOAttribute, List<Number>> vertexParams = new HashMap<>();
+    private SortedMap<XTVOAttribute, List<Number>> vertexParams = new TreeMap<>();
     
     public XTVOVertex(ByteBuffer source, List<XTVOAttribute> attributes) {
         attributes.forEach(a -> {

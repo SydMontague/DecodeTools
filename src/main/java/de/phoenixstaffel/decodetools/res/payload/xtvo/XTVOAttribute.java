@@ -2,10 +2,10 @@ package de.phoenixstaffel.decodetools.res.payload.xtvo;
 
 import de.phoenixstaffel.decodetools.core.Access;
 
-public class XTVOAttribute {
+public class XTVOAttribute implements Comparable<XTVOAttribute> {
     private XTVORegisterType registerId;
-    private short unknown1;
-    private short unknown2;
+    private short unknown1; //stride/offset
+    private short unknown2; //attrib ID?
     private byte count;
     private XTVOValueType valueType;
     private float scale;
@@ -34,6 +34,10 @@ public class XTVOAttribute {
     
     public byte getCount() {
         return count;
+    }
+    
+    public short getStride() {
+        return unknown1;
     }
     
     public XTVOValueType getValueType() {
@@ -71,5 +75,13 @@ public class XTVOAttribute {
             return false;
         
         return true;
+    }
+
+    @Override
+    public int compareTo(XTVOAttribute o) {
+        if(o.getStride() == getStride())
+            return 0;
+        
+        return o.getStride() < getStride() ? 1 : 0;
     }
 }
