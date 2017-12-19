@@ -169,7 +169,7 @@ public class GMIOPanel extends PayloadPanel {
             uvHeightSpinner.setModel(new SpinnerNumberModel(selectedGMIO.getUVHeightAbsolute(), 0, null, 1));
             uvWidthSpinner.setModel(new SpinnerNumberModel(selectedGMIO.getUVWidthAbsolute(), 0, null, 1));
         }
-        resolution.setText(selectedGMIO == null ? null : selectedGMIO.getImage().getWidth() + "x" + selectedGMIO.getImage().getHeight());
+        resolution.setText(selectedGMIO == null ? null : selectedGMIO.getWidth() + "x" + selectedGMIO.getHeight());
     }
     
     public GMIOPayload getSelectedFile() {
@@ -190,6 +190,11 @@ public class GMIOPanel extends PayloadPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (getSelectedFile() == null)
+                return;
+            
+            BufferedImage lImage = getSelectedFile().getImage();
+            
+            if(lImage == null)
                 return;
             
             JFileChooser fileDialogue = new JFileChooser("./Output");
@@ -218,7 +223,7 @@ public class GMIOPanel extends PayloadPanel {
                 else
                     file = new File(fileDialogue.getSelectedFile().getPath() + ".png");
                 
-                ImageIO.write(getSelectedFile().getImage(), "PNG", file);
+                ImageIO.write(lImage, "PNG", file);
             }
             catch (IOException ex) {
                 Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
