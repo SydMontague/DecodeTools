@@ -235,7 +235,7 @@ public class FontPreviewDialogue extends JFrame {
         
         scaleSpinner.setModel(new SpinnerNumberModel(1D, 0D, null, 1D));
         fontSizeSpinner.setModel(new SpinnerNumberModel(1, 1, null, 1));
-        widespaceSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
+        widespaceSpinner.setModel(new SpinnerNumberModel(0, null, null, 1));
         lineHeightSpinner.setModel(new SpinnerNumberModel(1, 1, null, 1));
         startXSpinner.setModel(new SpinnerNumberModel(0, null, null, 1));
         startYSpinner.setModel(new SpinnerNumberModel(0, null, null, 1));
