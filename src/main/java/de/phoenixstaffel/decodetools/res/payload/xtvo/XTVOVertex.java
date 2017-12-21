@@ -3,15 +3,14 @@ package de.phoenixstaffel.decodetools.res.payload.xtvo;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import de.phoenixstaffel.decodetools.core.Utils;
 
+//TODO allow change of vertex order?
 public class XTVOVertex {
     private SortedMap<XTVOAttribute, List<Number>> vertexParams = new TreeMap<>();
     
@@ -25,10 +24,6 @@ public class XTVOVertex {
                 list.add(a.getValueType().read(source));
             
             vertexParams.put(a, list);
-            
-            if(a.getRegisterId() == XTVORegisterType.IDX) {
-                list.forEach(b -> { if(b.intValue() > 45) System.out.println(b); });
-            }
         });
     }
     

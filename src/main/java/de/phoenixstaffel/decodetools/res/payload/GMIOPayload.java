@@ -27,8 +27,8 @@ public class GMIOPayload extends ResPayload {
     private int unknown4;
     
     private int unknown5;
-    private short width;
-    private short height;
+    // width (2 byte)
+    // height (2 byte)
     private int unknown6;
     private int unknown7;
     
@@ -67,8 +67,8 @@ public class GMIOPayload extends ResPayload {
         unknown4 = source.readInteger();
         
         unknown5 = source.readInteger();
-        width = version == VERSION ? source.readShort() : uvSizeX;
-        height = version == VERSION ? source.readShort() : uvSizeY;
+        short width = version == VERSION ? source.readShort() : uvSizeX;
+        short height = version == VERSION ? source.readShort() : uvSizeY;
         unknown6 = version == VERSION ? source.readInteger() : 0;
         unknown7 = version == VERSION ? source.readInteger() : 0;
         
@@ -106,7 +106,7 @@ public class GMIOPayload extends ResPayload {
     }
     
     public int getUVHeightAbsolute() {
-        return (int) Math.round(getUVHeight() * this.height);
+        return (int) Math.round(getUVHeight() * getHeight());
     }
     
     public double getUVWidth() {
@@ -114,7 +114,7 @@ public class GMIOPayload extends ResPayload {
     }
     
     public int getUVWidthAbsolute() {
-        return (int) Math.round(getUVWidth() * this.width);
+        return (int) Math.round(getUVWidth() * getWidth());
     }
     
     public void setUVWidth(float uvWidth) {
@@ -122,7 +122,7 @@ public class GMIOPayload extends ResPayload {
     }
     
     public void setUVWidthAbsolute(int uvWidth) {
-        this.uvWidth = (float) uvWidth / this.width;
+        this.uvWidth = (float) uvWidth / getWidth();
     }
     
     public void setUVHeight(float uvHeight) {
@@ -130,7 +130,7 @@ public class GMIOPayload extends ResPayload {
     }
     
     public void setUVHeightAbsolute(int uvHeight) {
-        this.uvHeight = (float) uvHeight / this.height;
+        this.uvHeight = (float) uvHeight / getHeight();
     }
     
     public BufferedImage getImage() {
@@ -233,7 +233,7 @@ public class GMIOPayload extends ResPayload {
     
     @Override
     public String toString() {
-        return name != null ? name : "GMIO " + " " + format + " " + width + " " + height;
+        return name != null ? name : "GMIO " + " " + format + " " + getWidth() + " " + getHeight();
     }
 
     public int getWidth() {

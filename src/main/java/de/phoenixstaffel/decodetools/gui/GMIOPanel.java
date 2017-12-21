@@ -254,6 +254,8 @@ public class GMIOPanel extends PayloadPanel {
                 BufferedImage localImage = ImageIO.read(fileDialogue.getSelectedFile());
                 getSelectedFile().setImage(localImage);
                 setSelectedFile(getSelectedFile());
+                uvHeightSpinner.setValue(getSelectedFile().getUVHeightAbsolute());
+                uvWidthSpinner.setValue(getSelectedFile().getUVWidthAbsolute());
             }
             catch (IOException ex) {
                 Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
