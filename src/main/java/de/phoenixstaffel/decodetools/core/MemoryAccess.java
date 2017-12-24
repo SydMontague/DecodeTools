@@ -49,6 +49,14 @@ public class MemoryAccess implements Access {
     }
     
     @Override
+    public char readChar(long address) {
+        Memory memory = new Memory(Character.BYTES);
+        kernel.ReadProcessMemory(process, new Pointer(address + offset), memory, Character.BYTES, null);
+        
+        return memory.getChar(0);
+    }
+    
+    @Override
     public int readInteger(long address) {
         Memory memory = new Memory(Integer.BYTES);
         kernel.ReadProcessMemory(process, new Pointer(address + offset), memory, Integer.BYTES, null);
@@ -103,7 +111,14 @@ public class MemoryAccess implements Access {
         currentPointer += Short.BYTES;
         return value;
     }
-    
+
+    @Override
+    public char readChar() {
+        char value = readChar(currentPointer);
+        currentPointer += Character.BYTES;
+        return value;
+    }
+
     @Override
     public int readInteger() {
         int value = readInteger(currentPointer);
@@ -199,6 +214,19 @@ public class MemoryAccess implements Access {
         Memory memory = new Memory(Short.BYTES);
         memory.setShort(0, value);
         kernel.WriteProcessMemory(process, new Pointer(address + offset), memory, Short.BYTES, null);
+    }
+
+    @Override
+    public void writeChar(char value) {
+        writeChar(value, currentPointer);
+        currentPointer += Character.BYTES;
+    }
+
+    @Override
+    public void writeChar(char value, long address) {
+        Memory memory = new Memory(Character.BYTES);
+        memory.setChar(0, value);
+        kernel.WriteProcessMemory(process, new Pointer(address + offset), memory, Character.BYTES, null);        
     }
     
     @Override

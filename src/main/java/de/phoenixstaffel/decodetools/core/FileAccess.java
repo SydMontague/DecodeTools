@@ -156,6 +156,12 @@ public class FileAccess implements Access {
         readBuffer(intBuf, position);
         return intBuf.getInt();
     }
+
+    @Override
+    public char readChar(long position) {
+        readBuffer(shortBuf, position);
+        return shortBuf.getChar();
+    }
     
     @Override
     public short readShort(long position) {
@@ -191,6 +197,12 @@ public class FileAccess implements Access {
     public int readInteger() {
         readBuffer(intBuf);
         return intBuf.getInt();
+    }
+
+    @Override
+    public char readChar() {
+        readBuffer(shortBuf);
+        return shortBuf.getChar();
     }
     
     @Override
@@ -305,6 +317,22 @@ public class FileAccess implements Access {
     public void writeShort(short value, long address) {
         shortBuf.clear();
         shortBuf.putShort(value);
+        
+        writeBuffer(shortBuf, address);
+    }
+
+    @Override
+    public void writeChar(char value) {
+        shortBuf.clear();
+        shortBuf.putChar(value);
+        
+        writeBuffer(shortBuf);
+    }
+
+    @Override
+    public void writeChar(char value, long address) {
+        shortBuf.clear();
+        shortBuf.putChar(value);
         
         writeBuffer(shortBuf, address);
     }
@@ -504,4 +532,5 @@ public class FileAccess implements Access {
             LOGGER.log(Level.SEVERE, ERROR_WRITE, e);
         }
     }
+
 }

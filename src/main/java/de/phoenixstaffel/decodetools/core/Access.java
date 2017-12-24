@@ -58,6 +58,27 @@ public interface Access extends Closeable {
     public short readShort(long address);
     
     /**
+     * Reads a Java char (16-bit Unicode character) from the underlying data storage from the current position.
+     * <p>
+     * This operation increases the current position by 2.
+     * </p>
+     * 
+     * @return the char read
+     */
+    public char readChar();
+    
+    /**
+     * Reads a Java char (16-bit Unicode character) from the underlying data storage from the given address.
+     * <p>
+     * This operation does not affect the current position.
+     * </p>
+     * 
+     * @param address the position to read from
+     * @return the short read
+     */
+    public char readChar(long address);
+    
+    /**
      * Reads a integer from the underlying data storage from the current position.
      * <p>
      * This operation increases the current position by 4.
@@ -223,7 +244,7 @@ public interface Access extends Closeable {
     /**
      * Writes a byte to the underlying data storage at the current position.
      * <p>
-     * This operation increases the current position by 1
+     * This operation increases the current position by 1.
      * </p>
      * 
      * @param value the byte to write
@@ -243,7 +264,7 @@ public interface Access extends Closeable {
     /**
      * Writes a short to the underlying data storage at the current position.
      * <p>
-     * This operation increases the current position by 2
+     * This operation increases the current position by 2.
      * </p>
      * 
      * @param value the short to write
@@ -260,10 +281,32 @@ public interface Access extends Closeable {
      */
     public void writeShort(short value, long address);
     
+    
+    //TODO doc
+    /**
+     * Writes a Java char (16-bit Unicode character) to the underlying data storage at the current position.
+     * <p>
+     * This operation increases the current position by 2.
+     * </p>
+     * 
+     * @param value the char to write
+     */
+    public void writeChar(char value);
+    
+    /**
+     * Writes a Java char (16-bit Unicode character) to the underlying data storage at the given address.
+     * <p>
+     * This operation does not affect the current position..
+     * </p>
+     * 
+     * @param value the char to write
+     */
+    public void writeChar(char input, long address);
+    
     /**
      * Writes an integer to the underlying data storage at the current position.
      * <p>
-     * This operation increases the current position by 4
+     * This operation increases the current position by 4.
      * </p>
      * 
      * @param value the integer to write
@@ -283,7 +326,7 @@ public interface Access extends Closeable {
     /**
      * Writes a long to the underlying data storage at the current position.
      * <p>
-     * This operation increases the current position by 8
+     * This operation increases the current position by 8.
      * </p>
      * 
      * @param value the long to write
@@ -303,7 +346,7 @@ public interface Access extends Closeable {
     /**
      * Writes a float to the underlying data storage at the current position.
      * <p>
-     * This operation increases the current position by 4
+     * This operation increases the current position by 4.
      * </p>
      * 
      * @param value the float to write
@@ -323,7 +366,7 @@ public interface Access extends Closeable {
     /**
      * Writes a double to the underlying data storage at the current position.
      * <p>
-     * This operation increases the current position by 8
+     * This operation increases the current position by 8.
      * </p>
      * 
      * @param value the double to write
@@ -426,4 +469,5 @@ public interface Access extends Closeable {
             return Charset.defaultCharset();
         }
     }
+
 }

@@ -1,14 +1,8 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 
-import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.core.Utils;
@@ -16,9 +10,7 @@ import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
 public class BTXFile extends ResPayload {
-    private static final String READ_ENCODING = "UTF-16BE";
     private static final String WRITE_ENCODING = "UTF-16LE";
-    private static final Charset cset = Charset.forName(READ_ENCODING);
     
     private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
     
@@ -56,23 +48,16 @@ public class BTXFile extends ResPayload {
         
         for (Tuple<Integer, Long> entry : pointers) {
             long pointer = entry.getValue();
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            StringBuilder builder = new StringBuilder();
             source.setPosition(pointer);
             
-            short val;
+            char val;
             do {
-                val = source.readShort();
-                byte[] arr = new byte[] { (byte) (val >> 8), (byte) (val & 0xFF) };
-                try {
-                    stream.write(arr);
-                }
-                catch (IOException e) {
-                    Main.LOGGER.log(Level.WARNING, "Exception while writing into char buffer.", e);
-                }
+                val = source.readChar();
+                builder.append((char) val);
             } while (val != 0);
             
-            ByteBuffer b = ByteBuffer.wrap(stream.toByteArray());
-            strings.add(cset.decode(b).toString());
+            strings.add(builder.toString());
         }
         
         List<BTXMeta> metas = new LinkedList<>();
