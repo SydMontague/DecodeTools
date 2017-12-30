@@ -54,12 +54,12 @@ public class UtilsTests {
     
     @Test
     public void testAdd3BitSigned() {
-        assertEquals(0, Utils.add3BitSigned(0,0));
-        assertEquals(3, Utils.add3BitSigned(0,3));
-        assertEquals(-1, Utils.add3BitSigned(0,7));
-        assertEquals(-3, Utils.add3BitSigned(1,4));
-        assertEquals(10017, Utils.add3BitSigned(10021,4));
-        assertEquals(10024, Utils.add3BitSigned(10021,3));
+        assertEquals(0, Utils.add3BitSigned(0, 0));
+        assertEquals(3, Utils.add3BitSigned(0, 3));
+        assertEquals(-1, Utils.add3BitSigned(0, 7));
+        assertEquals(-3, Utils.add3BitSigned(1, 4));
+        assertEquals(10017, Utils.add3BitSigned(10021, 4));
+        assertEquals(10024, Utils.add3BitSigned(10021, 3));
         
         assertException(IllegalArgumentException.class, () -> Utils.add3BitSigned(100, -1));
         assertException(IllegalArgumentException.class, () -> Utils.add3BitSigned(100, 10));
@@ -78,12 +78,27 @@ public class UtilsTests {
         assertFalse(Utils.getBitValue(5, 30));
     }
     
+    @Test
+    public void testGetSubInteger() {
+        assertEquals(0xF, Utils.getSubInteger(0xFF, 0, 4));
+        assertEquals(0x7, Utils.getSubInteger(0xFF, 0, 3));
+        assertEquals(0xF, Utils.getSubInteger(0xFF, 2, 4));
+        assertEquals(-1, Utils.getSubInteger(-1, 0, 64));
+        assertEquals(Long.MAX_VALUE, Utils.getSubInteger(-1, 0, 63));
+        assertEquals(4362, Utils.getSubInteger(0x54122154, 5, 13));
+        
+        assertException(IllegalArgumentException.class, () -> Utils.getSubInteger(541564, 66, 0));
+        assertException(IllegalArgumentException.class, () -> Utils.getSubInteger(541564, -1, 0));
+        assertException(IllegalArgumentException.class, () -> Utils.getSubInteger(541564, 30, -1));
+        assertException(IllegalArgumentException.class, () -> Utils.getSubInteger(541564, 30, 0));
+        assertException(IllegalArgumentException.class, () -> Utils.getSubInteger(541564, 30, 44));
+    }
+    
     /*
      * public static BufferedImage flipImage(BufferedImage image) {
      * public static BufferedImage flipImage(BufferedImage image, boolean newImage) {
      * public static BufferedImage flipImageVertically(BufferedImage image) {
      * public static List<File> fileOrder(File file) {
-     * public static long getSubInteger(long value, int bit, int length) {
      * public static long extend4To8(long value) {
      * public static long extend5To8(long value) {
      * public static long extend6To8(long value) {

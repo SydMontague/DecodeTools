@@ -24,7 +24,7 @@ public class Utils {
      * @return the aligned value
      */
     public static int align(int input, int alignment) {
-        if(alignment <= 0)
+        if (alignment <= 0)
             throw new IllegalArgumentException("Can't align to an alignment of 0 or less!");
         
         if (input % alignment == 0)
@@ -32,12 +32,12 @@ public class Utils {
         
         int value = input + (alignment - Math.abs(input % alignment));
         
-        if(value < input)
+        if (value < input)
             throw new IllegalArgumentException("New value is smaller than the input, have you encountered an overflow?");
         
         return value;
     }
-
+    
     /**
      * <p>
      * Aligns an input to a given alignment.
@@ -53,15 +53,15 @@ public class Utils {
      * @return the aligned value
      */
     public static long align(long input, int alignment) {
-        if(alignment <= 0)
+        if (alignment <= 0)
             throw new IllegalArgumentException("Can't align to an alignment of 0 or less!");
         
         if (input % alignment == 0)
             return input;
-
+        
         long value = input + (alignment - Math.abs(input % alignment));
         
-        if(value < input)
+        if (value < input)
             throw new IllegalArgumentException("New value is smaller than the input, have you encountered an overflow?");
         
         return value;
@@ -123,12 +123,10 @@ public class Utils {
         /*
          * A number can only be a power of 2 if only exactly one bit is set.
          * Doing an AND operation on the value and the value-1 will always result in 0 if it's a power of 2.
-         * 
-         *   01000000 (64)
+         * 01000000 (64)
          * & 00111111 (64-1 -> 63)
          * = 00000000 (0)
-         *   
-         *   01001100 (76)
+         * 01001100 (76)
          * & 01001011 (76-1 -> 75)
          * = 01001000 (72)
          */
@@ -164,10 +162,10 @@ public class Utils {
         if (toAdd < 0 || toAdd > 7)
             throw new IllegalArgumentException("Second argument must be between 0 and 7 (inclusive), but was " + toAdd);
         
-        if ((toAdd & 0x4) == 0) //bit 3 is the signed bit, it being 0 means we can add normally
+        if ((toAdd & 0x4) == 0) // bit 3 is the signed bit, it being 0 means we can add normally
             return base + toAdd;
         
-        return base - ((~toAdd & 0x3) + 1); //build the two's complement and subtract it
+        return base - ((~toAdd & 0x3) + 1); // build the two's complement and subtract it
     }
     
     /**
@@ -184,6 +182,18 @@ public class Utils {
         return (value >>> bit & 0x1) != 0;
     }
     
+    /**
+     * Returns an integer from within a given value starting from a given bit with a given length.
+     * The result does not consider signed values, so unless the extracted value exceeds the maximal value of a Long, it
+     * will always be positive.
+     * 
+     * 
+     * @param value the value to extract the integer from
+     * @param bit the bit to start extracting from starting from LSB, most be positive and lower than 63
+     * @param length the number of bits that should make up the extracted integer, most larger than 0 and smaller than
+     *        64 - {@code bit}
+     * @return the extracted number
+     */
     public static long getSubInteger(long value, int bit, int length) {
         if (bit < 0 || length <= 0 || Long.SIZE - bit < length)
             throw new IllegalArgumentException("Can't get bits " + bit + " to " + (bit + length) + " of a long int.");
@@ -208,7 +218,7 @@ public class Utils {
         
         return (tmp << 2) + (tmp >>> 4);
     }
-
+    
     public static int[] untile(short width, short height, int[] pixelData) {
         int[] data = new int[width * height];
         
