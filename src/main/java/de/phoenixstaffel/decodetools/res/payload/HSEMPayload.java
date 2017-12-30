@@ -56,6 +56,44 @@ public class HSEMPayload extends ResPayload {
         out.println(b.toString());
     };
     
+    public static final QuadConsumer<XTVOVertex, float[], String, PrintStream> UV_FUNCTION = (a, mTex, v, out) -> {
+        Entry<XTVOAttribute, List<Number>> entry = a.getParameter(XTVORegisterType.TEXTURE0);
+        if (entry == null)
+            return;
+        
+        Number uOrig = entry.getValue().get(0);
+        Number vOrig = entry.getValue().get(1);
+        
+        Vector4 uvs = new Vector4(entry.getKey().getValue(uOrig), entry.getKey().getValue(vOrig), 0f, 1f);
+        Vector4 mTex00 = new Vector4(mTex[2], 0f, 0f, mTex[0]);
+        Vector4 mTex01 = new Vector4(0f, mTex[3], 0f, mTex[1]);
+        
+        float uCoord = uvs.dot(mTex00);
+        float vCoord = uvs.dot(mTex01);
+        
+        out.println("vt " + uCoord + " " + vCoord);
+    };
+    
+    static class Vector4 {
+        float x = 0;
+        float y = 0;
+        float z = 0;
+        float w = 0;
+        
+        public Vector4() {
+        }
+
+        public Vector4(float x, float y, float z, float w) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+        
+        public float dot(Vector4 in) {
+            return x * in.x + y * in.y + z * in.z + w * in.w;
+        }
+    }
     
     private int id;
     private int size;
@@ -141,13 +179,13 @@ public class HSEMPayload extends ResPayload {
                 
                 boolean hasNorm = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.NORMAL);
                 boolean hasUV = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.TEXTURE0);
-                
+
                 out.println("g group_" + groupIndex++);
-                
+
                 // vertex, normal, uv
                 xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.POSITION, "v ", out));
                 xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.NORMAL, "vn ", out));
-                xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.TEXTURE0, "vt ", out));
+                xtvo.getVertices().forEach(a -> UV_FUNCTION.accept(a, xtvo.getMTex0(), "vt ", out));
                 
                 for (XDIOFace a : xdio.getFaces())
                     out.println(new Face(a, vertexOffset, hasNorm ? normalOffset : -1, hasUV ? uvOffset : -1).toObj());

@@ -18,21 +18,30 @@ public class XTVOPayload extends ResPayload {
     private int unknown1;
     private short unknown2;
     private short id;
-    //int dataPointer;
+    //int dataPointer
     
-    //int numEntries;
-    //int entrySize;
-    //int dataSize;
+    //int numEntries
+    //int entrySize
+    //int dataSize
     private int unknown7;
     
     private int shaderId;
     private int unknown9;
     private int unknown10;
-    //int shaderVariablesSize;
+    //int shaderVariablesSize
     
-    //short attributeCount;
+    //short attributeCount
     private short unknown12;
     
+    
+    /*
+     * Each mTex array gets used to build a mTex matrix in the shader.
+     * 
+     * [ mTex[2], 0, 0, mTex[0] ]
+     * [ mTex[3], 0, 0, mTex[1] ]
+     * [       0, 0, 0,       0 ]
+     * [       0, 0, 0,       0 ]
+     */
     private float[] mTex0 = new float[4];
     private float[] mTex1 = new float[4];
     private float[] mTex2 = new float[4];
@@ -179,5 +188,9 @@ public class XTVOPayload extends ResPayload {
     
     public short getId() {
         return id;
+    }
+
+    public float[] getMTex0() {
+        return mTex0;
     }
 }
