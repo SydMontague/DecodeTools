@@ -27,6 +27,7 @@ public abstract class PayloadPanel extends JPanel {
         
         tempPanels.put(Payload.GMIO, new GMIOPanel(null));
         tempPanels.put(Extensions.KPTF, new KPTFPanel(null));
+        tempPanels.put(Payload.HSEM, new HSEMPanel(null));
         
         return tempPanels;
     }
