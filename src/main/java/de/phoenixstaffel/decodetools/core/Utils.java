@@ -201,18 +201,39 @@ public class Utils {
         return (value << Long.SIZE - length - bit) >>> (Long.SIZE - length);
     }
     
+    /**
+     * Expands a 4-bit number into a 8-bit number by shifting it by 4 bit to the left and adding itself onto it.
+     * If the number is outside of the defined range for a 4-bit unsigned number only the lower most 4-bit will be considered.
+     * 
+     * @param value the 4-bit number to extend to 8-bit
+     * @return the number extended to 8-bit
+     */
     public static long extend4To8(long value) {
         long tmp = value & 0xF;
         
         return (tmp << 4) + tmp;
     }
     
+    /**
+     * Expands a 5-bit number into a 8-bit number by shifting it by 3 bit to the left and adding it's lowest 3 bits onto it.
+     * If the number is outside of the defined range for a 5-bit unsigned number only the lower most 5-bit will be considered.
+     * 
+     * @param value the 5-bit number to extend to 8-bit
+     * @return the number extended to 8-bit
+     */
     public static long extend5To8(long value) {
         long tmp = value & 0x1F;
         
         return (tmp << 3) + (tmp >>> 2);
     }
     
+    /**
+     * Expands a 5-bit number into a 6-bit number by shifting it by 2 bit to the left and adding it's lowest 2 bits onto it.
+     * If the number is outside of the defined range for a 6-bit unsigned number only the lower most 6-bit will be considered.
+     * 
+     * @param value the 6-bit number to extend to 8-bit
+     * @return the number extended to 8-bit
+     */
     public static long extend6To8(long value) {
         long tmp = value & 0x3F;
         

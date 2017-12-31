@@ -301,7 +301,7 @@ public interface Access extends Closeable {
      * 
      * @param value the char to write
      */
-    public void writeChar(char input, long address);
+    public void writeChar(char value, long address);
     
     /**
      * Writes an integer to the underlying data storage at the current position.
