@@ -5,6 +5,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Arrays;
+
+import javax.imageio.ImageIO;
+
 import org.junit.Test;
 
 public class UtilsTests {
@@ -94,14 +100,75 @@ public class UtilsTests {
         assertException(IllegalArgumentException.class, () -> Utils.getSubInteger(541564, 30, 44));
     }
     
+    @Test
+    public void testExtend4to8() {
+        assertEquals(0x11, Utils.extend4To8(0x01));
+        assertEquals(0x11, Utils.extend4To8(0x11));
+        assertEquals(0xFF, Utils.extend4To8(0x0F));
+        assertEquals(0xFF, Utils.extend4To8(-1));
+        assertEquals(0xEE, Utils.extend4To8(-2));
+    }
+    
+    @Test
+    public void testExtend5to8() {
+        assertEquals(0x08, Utils.extend5To8(0x01));
+        assertEquals(0x21, Utils.extend5To8(0x04));
+        assertEquals(0xFF, Utils.extend5To8(0x1F));
+        assertEquals(0xE7, Utils.extend5To8(0x1C));
+        assertEquals(0xFF, Utils.extend5To8(-1));
+        assertEquals(0xF7, Utils.extend5To8(-2));
+    }
+    
+    @Test
+    public void testExtend6to8() {
+        assertEquals(0b00000100, Utils.extend6To8(0x01));
+        assertEquals(0b00001000, Utils.extend6To8(0x02));
+        assertEquals(0b11001111, Utils.extend6To8(0x33));
+        assertEquals(0b11111111, Utils.extend6To8(-1));
+        assertEquals(0b11111011, Utils.extend6To8(-2));
+    }
+    
+    @Test
+    public void testFlipImage() throws IOException {
+        BufferedImage normal = ImageIO.read(UtilsTests.class.getResourceAsStream("/unflipped.png"));
+        BufferedImage hori = ImageIO.read(UtilsTests.class.getResourceAsStream("/flippedHori.png"));
+        BufferedImage verti = ImageIO.read(UtilsTests.class.getResourceAsStream("/flippedVerti.png"));
+        
+        assertTrue(normal != null);
+        assertTrue(hori != null);
+        assertTrue(verti != null);
+
+        int[] horiData = hori.getRGB(0, 0, hori.getWidth(), hori.getHeight(), null, 0, hori.getWidth());
+        int[] vertiData = verti.getRGB(0, 0, verti.getWidth(), verti.getHeight(), null, 0, verti.getWidth());
+        int[] normalData = normal.getRGB(0, 0, normal.getWidth(), normal.getHeight(), null, 0, normal.getWidth());
+        
+        BufferedImage flippedHori = Utils.flipImageHorizontal(normal, true);
+        int[] flippedHoriData = flippedHori.getRGB(0, 0, flippedHori.getWidth(), flippedHori.getHeight(), null, 0, flippedHori.getWidth());
+        
+        assertFalse(flippedHori == normal);
+        assertTrue(Arrays.equals(flippedHoriData, horiData));
+        
+        BufferedImage flippedVerti = Utils.flipImageVertical(normal, true);
+        int[] flippedVertiData = flippedVerti.getRGB(0, 0, flippedVerti.getWidth(), flippedVerti.getHeight(), null, 0, flippedVerti.getWidth());
+
+        assertFalse(flippedVerti == normal);
+        assertTrue(Arrays.equals(flippedVertiData, vertiData));
+        
+        BufferedImage b2 = Utils.flipImageHorizontal(normal);
+        
+        assertTrue(b2 == normal);
+        
+        Utils.flipImageHorizontal(b2);
+
+        int[] doubleFlippedData = b2.getRGB(0, 0, b2.getWidth(), b2.getHeight(), null, 0, b2.getWidth());
+        assertTrue(Arrays.equals(normalData, doubleFlippedData));
+        
+        assertException(IllegalArgumentException.class, () -> Utils.flipImageHorizontal(null));
+        assertException(IllegalArgumentException.class, () -> Utils.flipImageVertical(null));
+    }
+    
     /*
-     * public static BufferedImage flipImage(BufferedImage image) {
-     * public static BufferedImage flipImage(BufferedImage image, boolean newImage) {
-     * public static BufferedImage flipImageVertically(BufferedImage image) {
      * public static List<File> fileOrder(File file) {
-     * public static long extend4To8(long value) {
-     * public static long extend5To8(long value) {
-     * public static long extend6To8(long value) {
      * public static int[] untile(short width, short height, int[] pixelData) {
      * public static int[] tile(int width, int height, int[] pixelData) {
      * private static int getMortonOffset(int x, int y) {

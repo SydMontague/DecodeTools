@@ -50,7 +50,7 @@ public enum PixelFormat {
     
     public byte[] convertToFormat(BufferedImage image) {
         //unflip images to make them applicable for the conversion process
-        return encoder.apply(Utils.flipImage(image, true));
+        return encoder.apply(Utils.flipImageVertical(image, true));
     }
     
     public static PixelFormat valueOf(int id) {

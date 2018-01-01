@@ -52,11 +52,11 @@ public class NSCR {
             this.data = data;
         }
         
-        public boolean isFlippedHorizontally() {
+        public boolean isFlippedVertically() {
             return Utils.getBitValue(data, 11);
         }
         
-        public boolean isFlippedVertically() {
+        public boolean isFlippedHorizontally() {
             return Utils.getBitValue(data, 10);
         }
         

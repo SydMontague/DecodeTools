@@ -67,11 +67,14 @@ public class Utils {
         return value;
     }
     
-    public static BufferedImage flipImage(BufferedImage image) {
-        return flipImage(image, false);
+    public static BufferedImage flipImageVertical(BufferedImage image) {
+        return flipImageVertical(image, false);
     }
     
-    public static BufferedImage flipImage(BufferedImage image, boolean newImage) {
+    public static BufferedImage flipImageVertical(BufferedImage image, boolean newImage) {
+        if(image == null) 
+            throw new IllegalArgumentException("Expected BufferedImage, null given.");
+        
         BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType()) : image;
         
         int[] original = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
@@ -85,7 +88,16 @@ public class Utils {
         return target;
     }
     
-    public static BufferedImage flipImageVertically(BufferedImage image) {
+    public static BufferedImage flipImageHorizontal(BufferedImage image) {
+        return flipImageHorizontal(image, false);
+    }
+    
+    public static BufferedImage flipImageHorizontal(BufferedImage image, boolean newImage) {
+        if(image == null) 
+            throw new IllegalArgumentException("Expected BufferedImage, null given.");
+        
+        BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType()) : image;
+        
         int[] original = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
         int[] flipped = new int[image.getWidth() * image.getHeight()];
         
@@ -93,8 +105,8 @@ public class Utils {
             for (int y = 0; y < image.getHeight(); y++)
                 flipped[x + y * image.getWidth()] = original[(image.getWidth() - x - 1) + y * image.getWidth()];
             
-        image.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
-        return image;
+        target.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
+        return target;
     }
     
     public static List<File> fileOrder(File file) {

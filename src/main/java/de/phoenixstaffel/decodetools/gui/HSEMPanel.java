@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 
+//TODO quick 'n' dirty, make proper
 public class HSEMPanel extends PayloadPanel {
     
     private static final long serialVersionUID = -4369075808768544826L;
