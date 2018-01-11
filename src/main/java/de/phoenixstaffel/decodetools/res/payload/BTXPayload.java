@@ -9,14 +9,15 @@ import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
-public class BTXFile extends ResPayload {
+public class BTXPayload extends ResPayload {
     private static final String WRITE_ENCODING = "UTF-16LE";
     
     private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
+    private int unknown;
     
     // FIXME allow search and replace in map/text/*.pack files
     // TODO make cleaner/nicer
-    public BTXFile(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public BTXPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         long start = source.getPosition();
         int postStart = 0;
@@ -32,7 +33,7 @@ public class BTXFile extends ResPayload {
         
         source.setPosition(start + headerSize + (postStart == 0 ? 0 : 4));
         
-        source.readInteger(); // always 1
+        unknown = source.readInteger(); 
         int numEntries = source.readInteger();
         
         List<Tuple<Integer, Long>> pointers = new LinkedList<>();
@@ -54,7 +55,7 @@ public class BTXFile extends ResPayload {
             char val;
             do {
                 val = source.readChar();
-                builder.append((char) val);
+                builder.append(val);
             } while (val != 0);
             
             strings.add(builder.toString());
@@ -112,7 +113,7 @@ public class BTXFile extends ResPayload {
         if (entries.stream().noneMatch(a -> a.getValue().getMeta() != null))
             dest.writeInteger(0); // padding
             
-        dest.writeInteger(1);
+        dest.writeInteger(unknown);
         dest.writeInteger(entries.size());
         
         long pointer = dest.getPosition() + entries.size() * 8;
@@ -139,6 +140,10 @@ public class BTXFile extends ResPayload {
         dest.setPosition(pointer);
         
         entries.stream().filter(a -> a.getValue().getMeta() != null).forEach(a -> a.getValue().getMeta().writeKCAP(dest));
+    }
+    
+    public List<Tuple<Integer, BTXEntry>> getEntries() {
+        return entries;
     }
     
     static class BTXMeta {
@@ -195,6 +200,10 @@ public class BTXFile extends ResPayload {
         
         public int getId() {
             return id;
+        }
+        
+        public int getSpeaker() {
+            return unknown1;
         }
     }
     

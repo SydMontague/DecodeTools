@@ -12,7 +12,7 @@ import javax.swing.tree.MutableTreeNode;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.payload.BTXFile;
+import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 import de.phoenixstaffel.decodetools.res.payload.GenericPayload;
@@ -98,7 +98,7 @@ public abstract class ResPayload {
         XDIO(0x4F494458, XDIOPayload.class),
         VCTM(0x4D544356, VCTMPayload.class),
         QSTM(0x4D545351, QSTMPayload.class),
-        BTX(0x20585442, BTXFile.class),
+        BTX(0x20585442, BTXPayload.class),
         PADH(0x48444150, PADHPayload.class),
         HSEM(0, HSEMPayload.class),
         LRTM(0, LRTMPayload.class),
