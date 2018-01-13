@@ -57,6 +57,7 @@ public class MainWindow extends JFrame implements Observer {
     private JMenu mnTools = new JMenu("Tools");
     private JMenuItem mntmReexportMipmaps = new JMenuItem("Re-Export Malformatted Files");
     private JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
+    private final JMenuItem mntmMassStringReplacer = new JMenuItem("Mass String Replacer");
     
     public MainWindow() {
         model.addObserver(this);
@@ -107,6 +108,9 @@ public class MainWindow extends JFrame implements Observer {
         
         menuBar.add(mnStyle);
         menuBar.add(mnTools);
+        
+        mntmMassStringReplacer.setAction(new FunctionAction("Mass String Replacer", a -> new MassStringReplacer().setVisible(true)));
+        mnTools.add(mntmMassStringReplacer);
         
         mntmReexportMipmaps.setAction(new ReExportAction());
         mnTools.add(mntmReexportMipmaps);
