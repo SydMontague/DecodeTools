@@ -25,113 +25,101 @@ public class BXTPayloadTest {
     @Test
     public void testSpeakers() throws IOException {
         String[] compare = new String[] {
-                "おめはつえぇね\nやっぱり都会<r2_とかい>は色<r1_いろ>んなやつがおるなー\0",
-                "おめと戦<r1_たたか>えて満足<r2_まんぞく>したっぺ\nオラァ、もっとつよぐなるため旅<r1_たび>にでるだよ\0",
-                "まだの〜！\0"                
+                "おめはつえぇね\nやっぱり都会<r2_とかい>は色<r1_いろ>んなやつがおるなー",
+                "おめと戦<r1_たたか>えて満足<r2_まんぞく>したっぺ\nオラァ、もっとつよぐなるため旅<r1_たび>にでるだよ",
+                "まだの〜！"                
         };
         
         try (InputStream in = BXTPayloadTest.class.getResourceAsStream("/btxSpeakers.res")) {
-            byte[] arr = new byte[in.available()];
-            in.read(arr);
-            
-            ByteBuffer buff = ByteBuffer.wrap(arr);
-            
-            try (StreamAccess access = new StreamAccess(buff)) {
-                ResFile f = new ResFile(access);
-                BTXPayload btx = (BTXPayload) f.getRoot();
-                
-                List<Tuple<Integer, BTXEntry>> list = btx.getEntries();
-                
-                assertEquals(compare.length, list.size()); // check size
-                
-                for (int i = 0; i < list.size(); i++) {
-                    assertEquals(compare[i], list.get(i).getValue().getString());
-                    assertNotEquals(null, list.get(i).getValue().getMeta());
-                    assertEquals(217, list.get(i).getValue().getMeta().getSpeaker());
-                }
-                
-                File outputFile = File.createTempFile("output", "Speakers");
-                try(FileAccess target = new FileAccess(outputFile)) {
-                    btx.writeKCAP(target, null);
-                }
-                
-                byte[] output = Files.readAllBytes(outputFile.toPath());
-                
-                assertTrue(Arrays.equals(arr, output));
-                outputFile.delete();
-            }
+            testBTX(in, compare, "Speakers", true);
         }
-        
-        
     }
     
     @Test
     public void testNoSpeakers() throws IOException {
         String[] compare = new String[] {
-                "ごうかい\0",
-                "ゆうかん\0",
-                "がんばりや\0",
-                "ひょうひょう\0",
-                "かしこい\0",
-                "れいせい\0",
-                "がまんづよい\0",
-                "せんりゃくか\0",
-                "おくびょう\0",
-                "コンビA\0",
-                "コンビB\0",
-                "策士\0",
-                "バースト\0",
-                "ビルド\0",
-                "狡猾\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0",
-                "\0"
+                "ごうかい",
+                "ゆうかん",
+                "がんばりや",
+                "ひょうひょう",
+                "かしこい",
+                "れいせい",
+                "がまんづよい",
+                "せんりゃくか",
+                "おくびょう",
+                "コンビA",
+                "コンビB",
+                "策士",
+                "バースト",
+                "ビルド",
+                "狡猾",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
         };
         try (InputStream in = BXTPayloadTest.class.getResourceAsStream("/btxNoSpeakers.res")) {
-            byte[] arr = new byte[in.available()];
-            in.read(arr);
-            
-            ByteBuffer buff = ByteBuffer.wrap(arr);
-            
-            try (StreamAccess access = new StreamAccess(buff)) {
-                ResFile f = new ResFile(access);
-                BTXPayload btx = (BTXPayload) f.getRoot();
-                
-                List<Tuple<Integer, BTXEntry>> list = btx.getEntries();
-                
-                assertEquals(compare.length, list.size()); // check size
-                
-                for (int i = 0; i < list.size(); i++) {
-                    assertEquals(compare[i], list.get(i).getValue().getString());
-                    assertEquals(null, list.get(i).getValue().getMeta());
-                }
-                
-                File outputFile = File.createTempFile("output", "NoSpeakers");
-                try(FileAccess target = new FileAccess(outputFile)) {
-                    btx.writeKCAP(target, null);
-                }
-                
-                byte[] output = Files.readAllBytes(outputFile.toPath());
-                assertTrue(Arrays.equals(arr, output));
-                outputFile.delete();
-            }
+            testBTX(in, compare, "NoSpeakers", false);
         }
+    }
+    
+    private void testBTX(InputStream in, String[] compare, String suffix, boolean hasMeta) throws IOException {
+        byte[] arr = new byte[in.available()];
+        in.read(arr);
         
+        ByteBuffer buff = ByteBuffer.wrap(arr);
         
+        try (StreamAccess access = new StreamAccess(buff)) {
+            ResFile f = new ResFile(access);
+            BTXPayload btx = (BTXPayload) f.getRoot();
+            
+            List<Tuple<Integer, BTXEntry>> list = btx.getEntries();
+            
+            assertEquals(compare.length, list.size()); // check size
+            
+            for (int i = 0; i < list.size(); i++) {
+                assertEquals(compare[i], list.get(i).getValue().getString());
+                if(hasMeta) {
+                    assertNotEquals(null, list.get(i).getValue().getMeta());
+                    assertEquals(217, list.get(i).getValue().getMeta().getSpeaker());
+                }
+                else
+                    assertEquals(null, list.get(i).getValue().getMeta());
+            }
+            
+            File outputFile = File.createTempFile("output", suffix);
+            try(FileAccess target = new FileAccess(outputFile)) {
+                btx.writeKCAP(target, null);
+            }
+            
+            byte[] output = Files.readAllBytes(outputFile.toPath());
+            
+            assertTrue(Arrays.equals(arr, output));
+            outputFile.delete();
+            
+            list.stream().map(a -> a.getValue()).forEach(a -> a.setString(a.getString()));
+            
+            outputFile = File.createTempFile("output", suffix);
+            try(FileAccess target = new FileAccess(outputFile)) {
+                btx.writeKCAP(target, null);
+            }
+            
+            assertTrue(Arrays.equals(arr, output));
+            outputFile.delete();
+        }
     }
     
     @Test
@@ -152,9 +140,10 @@ public class BXTPayloadTest {
                 
                 assertTrue(Arrays.equals(arr, output));
                 outputFile.delete();
+                
+                File out = new File("output/langkeep.res");
+                f.repack(out);
             }
         }
-        
-        
     }
 }

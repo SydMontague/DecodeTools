@@ -53,10 +53,9 @@ public class BTXPayload extends ResPayload {
             source.setPosition(pointer);
             
             char val;
-            do {
-                val = source.readChar();
+            while((val = source.readChar()) != 0) {
                 builder.append(val);
-            } while (val != 0);
+            }
             
             strings.add(builder.toString());
         }
@@ -79,7 +78,7 @@ public class BTXPayload extends ResPayload {
         int size = 0x18 + entries.size() * 8;
         
         for (Tuple<Integer, BTXEntry> a : entries) {
-            size += (a.getValue().getString().length() * 2);
+            size += ((a.getValue().getString().length() + 1) * 2);
             
             if (a.getValue().getMeta() != null) {
                 size += 0x30;
@@ -129,8 +128,8 @@ public class BTXPayload extends ResPayload {
             
             dest.writeInteger(lPointer);
             
-            dest.writeString(a.getValue().getString(), WRITE_ENCODING, pointer);
-            pointer += a.getValue().getString().length() * 2;
+            dest.writeString(a.getValue().getString() + "\0", WRITE_ENCODING, pointer);
+            pointer += (a.getValue().getString().length() + 1) * 2;
             if (a.getValue().getMeta() != null)
                 pointer = Utils.align(pointer, 4);
             else
@@ -146,7 +145,7 @@ public class BTXPayload extends ResPayload {
         return entries;
     }
     
-    static class BTXMeta {
+    public static class BTXMeta {
         // for textboxes
         
         private int id; // ???
@@ -207,7 +206,7 @@ public class BTXPayload extends ResPayload {
         }
     }
     
-    static class BTXEntry {
+    public static class BTXEntry {
         private String string;
         private BTXMeta meta;
         
