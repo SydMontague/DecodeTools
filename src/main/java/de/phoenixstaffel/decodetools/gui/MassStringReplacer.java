@@ -14,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -145,16 +146,30 @@ public class MassStringReplacer extends JFrame {
         public void actionPerformed(ActionEvent e) {
             String input = originalInput.getText();
             long count = 0;
+            long fCount = 0;
+            StringBuilder filesFound = new StringBuilder();
             
             for (Entry<String, ResFile> file : files.entrySet()) {
+                boolean replaced = false;
+                
                 for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) payload;
                     
-                    count += btx.getEntries().stream().map(c -> c.getValue().getString()).filter(c -> c.equals(input)).count();
+                    long lCount = btx.getEntries().stream().map(c -> c.getValue().getString()).filter(c -> c.equals(input)).count();
+                    count += lCount;
+                    
+                    if(lCount > 0)
+                        replaced = true;
+                }
+                
+                if(replaced) {
+                    filesFound.append(file.getKey()).append("\n");
+                    fCount++;
                 }
             }
             
-            messageLabel.setText("Found: " + count);
+            messageLabel.setText("Found: " + count + " in " + fCount + " files.");
+            JOptionPane.showMessageDialog(null, "Found: " + count + " in " + fCount + " files:\n" + filesFound.toString());
         }
     }
     
