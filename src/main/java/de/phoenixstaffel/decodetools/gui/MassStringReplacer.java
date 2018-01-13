@@ -155,7 +155,7 @@ public class MassStringReplacer extends JFrame {
                 for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) payload;
                     
-                    long lCount = btx.getEntries().stream().map(c -> c.getValue().getString()).filter(c -> c.equals(input)).count();
+                    long lCount = btx.getEntries().stream().map(c -> c.getValue().getString()).filter(c -> c.contains(input)).count();
                     count += lCount;
                     
                     if(lCount > 0)
@@ -192,9 +192,9 @@ public class MassStringReplacer extends JFrame {
                 
                 for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) payload;
-                    long lCount = btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().equals(input)).count();
+                    long lCount = btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().contains(input)).count();
                     count += lCount;
-                    btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().equals(input)).forEach(c -> c.setString(replacement));
+                    btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().contains(input)).forEach(c -> c.setString(c.getString().replace(input, replacement)));
                     if (lCount > 0)
                         replaced = true;
                 }
