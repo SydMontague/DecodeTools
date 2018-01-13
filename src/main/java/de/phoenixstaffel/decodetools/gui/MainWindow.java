@@ -312,7 +312,7 @@ public class MainWindow extends JFrame implements Observer {
                             
                             byte[] input = Files.readAllBytes(f.toPath());
                             
-                            Access access = new FileAccess(f);
+                            Access access = new FileAccess(f, true);
                             ResFile res = new ResFile(access);
                             access.close();
                             

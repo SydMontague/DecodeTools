@@ -109,7 +109,7 @@ public class ARCVFile {
         zipTime += System.nanoTime() - t;
         t = System.nanoTime();
         
-        Access access = new FileAccess(a.toFile());
+        Access access = new FileAccess(a.toFile(), true);
         ResPayload res = new ResFile(access).getRoot();
         access.close();
         

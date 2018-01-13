@@ -312,8 +312,13 @@ public class MassStringReplacer extends JFrame {
             int count = 0;
             setProgress(0);
             for (File ff : dirContent) {
-                try (FileAccess access = new FileAccess(ff)) {
-                    files.put(ff.getName(), new ResFile(access));
+                try (FileAccess access = new FileAccess(ff, true)) {
+                    try {
+                        files.put(ff.getName(), new ResFile(access));
+                    }
+                    catch(Exception e) {
+                        //do nothing
+                    }
                 }
                 setProgress((++count * 100) / dirContent.length);
                 firePropertyChange(MESSAGE_PROPERTY, "", count + " of " + dirContent.length + " files loaded.");

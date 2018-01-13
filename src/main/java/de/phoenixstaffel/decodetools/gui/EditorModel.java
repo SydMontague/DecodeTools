@@ -29,7 +29,7 @@ public class EditorModel extends Observable {
     }
     
     public void setSelectedFile(File selectedFile) {
-        try (Access access = new FileAccess(selectedFile)) {
+        try (Access access = new FileAccess(selectedFile, true)) {
             ResFile file = new ResFile(access);
             
             this.selectedFile = selectedFile;

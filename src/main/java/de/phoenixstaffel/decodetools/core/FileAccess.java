@@ -15,10 +15,13 @@ public class FileAccess extends BufferedAccess {
     private static final String ERROR_READ = "FileAccess: failed to read from FileChannel";
     private static final String ERROR_WRITE = "FileAccess: failed to write into FileChannel";
     
-    private static final StandardOpenOption openOptions[] = { StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE, };
+    private static final StandardOpenOption[] OPEN_OPTIONS = { StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE };
+    private static final StandardOpenOption[] READ_OPTIONS = { StandardOpenOption.READ };
     
     private final String name;
     private final FileChannel chan;
+    
+    private boolean readOnly = false;
     
     /**
      * Initialises a new instances of this class.
@@ -116,7 +119,7 @@ public class FileAccess extends BufferedAccess {
      * @throws IOException if anything goes wrong opening the file
      */
     public FileAccess(File file, String name) throws IOException {
-        this(FileChannel.open(file.toPath(), openOptions), name);
+        this(FileChannel.open(file.toPath(), OPEN_OPTIONS), name);
     }
     
     /**
@@ -132,7 +135,73 @@ public class FileAccess extends BufferedAccess {
      * @throws IOException if anything goes wrong opening the file
      */
     public FileAccess(File file, String name, ByteOrder byteOrder) throws IOException {
-        this(FileChannel.open(file.toPath(), openOptions), name, byteOrder);
+        this(FileChannel.open(file.toPath(), OPEN_OPTIONS), name, byteOrder);
+    }
+    
+
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
+     * the file. The byte order will be set to Little Endian.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @throws IOException if anything goes wrong opening the file
+     */
+    public FileAccess(File file, boolean readOnly) throws IOException {
+        this(file, file.getPath(), readOnly);
+    }
+    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
+     * the file.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
+     * @throws IOException if anything goes wrong opening the file
+     */
+    public FileAccess(File file, ByteOrder byteOrder, boolean readOnly) throws IOException {
+        this(file, file.getPath(), byteOrder, readOnly);
+    }
+    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The byte order will be set to Little
+     * Endian.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @param name the name to give this instance
+     * @throws IOException if anything goes wrong opening the file
+     */
+    public FileAccess(File file, String name, boolean readOnly) throws IOException {
+        this(FileChannel.open(file.toPath(), readOnly ? READ_OPTIONS : OPEN_OPTIONS), name);
+        this.readOnly = readOnly;
+    }
+    
+    /**
+     * Initialises a new instances of this class.
+     * <p>
+     * A FileChannel will be opened based on the given file, using
+     * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}.
+     * </p>
+     * 
+     * @param file the file to read and write from
+     * @param name the name to give this instance
+     * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
+     * @throws IOException if anything goes wrong opening the file
+     */
+    public FileAccess(File file, String name, ByteOrder byteOrder, boolean readOnly) throws IOException {
+        this(FileChannel.open(file.toPath(), readOnly ? READ_OPTIONS : OPEN_OPTIONS), name, byteOrder);
+        this.readOnly = readOnly;
     }
     
     @Override
@@ -149,7 +218,7 @@ public class FileAccess extends BufferedAccess {
     @Override
     public void setPosition(long address) {
         try {
-            if(address > getSize()) {
+            if(address > getSize() && !readOnly) {
                 chan.position(getSize());
                 chan.write(ByteBuffer.allocate((int) (address - getSize())));
             }
