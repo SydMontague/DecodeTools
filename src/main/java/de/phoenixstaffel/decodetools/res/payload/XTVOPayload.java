@@ -14,6 +14,8 @@ import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 
 public class XTVOPayload extends ResPayload {
+    private final long dataStartOnLoad;
+    
     //int magic value
     private int unknown1;
     private short unknown2;
@@ -99,6 +101,8 @@ public class XTVOPayload extends ResPayload {
             buff.order(ByteOrder.LITTLE_ENDIAN);
             data.add(new XTVOVertex(buff, attributes));
         }
+        
+        dataStartOnLoad = (long) dataStart + dataPointer;
     }
     
     @Override
@@ -192,5 +196,10 @@ public class XTVOPayload extends ResPayload {
 
     public float[] getMTex0() {
         return mTex0;
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString() + " 0x" + Long.toHexString(dataStartOnLoad).toUpperCase();
     }
 }
