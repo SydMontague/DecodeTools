@@ -30,10 +30,10 @@ public class PixelFormatDecoder {
     public static int[] convertFromRGBA8(byte[] a, int width, int height) {
         int[] data = new int[a.length / 4];
         for (int i = 0; i < data.length; i++) {
-            data[i] += (Byte.toUnsignedInt(a[i * 4]) << 24);
-            data[i] += (Byte.toUnsignedInt(a[i * 4 + 1]));
-            data[i] += (Byte.toUnsignedInt(a[i * 4 + 2]) << 8);
-            data[i] += (Byte.toUnsignedInt(a[i * 4 + 3]) << 16);
+            data[i] |= (Byte.toUnsignedInt(a[i * 4]) << 24);
+            data[i] |= (Byte.toUnsignedInt(a[i * 4 + 1]));
+            data[i] |= (Byte.toUnsignedInt(a[i * 4 + 2]) << 8);
+            data[i] |= (Byte.toUnsignedInt(a[i * 4 + 3]) << 16);
         }
         return data;
     }
@@ -41,10 +41,10 @@ public class PixelFormatDecoder {
     public static int[] convertFromRGB8(byte[] a, int width, int height) {
         int[] data = new int[a.length / 3];
         for (int i = 0; i < data.length; i++) {
-            data[i] += 255 << 24;
-            data[i] += (Byte.toUnsignedInt(a[i * 3]));
-            data[i] += (Byte.toUnsignedInt(a[i * 3 + 1]) << 8);
-            data[i] += (Byte.toUnsignedInt(a[i * 3 + 2]) << 16);
+            data[i] |= 255 << 24;
+            data[i] |= (Byte.toUnsignedInt(a[i * 3]));
+            data[i] |= (Byte.toUnsignedInt(a[i * 3 + 1]) << 8);
+            data[i] |= (Byte.toUnsignedInt(a[i * 3 + 2]) << 16);
         }
         return data;
     }
@@ -53,10 +53,10 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length / 2];
         for (int i = 0; i < data.length; i++) {
             int value = (Byte.toUnsignedInt(a[i * 2 + 1]) << 8) + Byte.toUnsignedInt(a[i * 2]);
-            data[i] += ((value & 0x01) != 0 ? 255 : 0) << 24;
-            data[i] += Utils.extend5To8((value >>> 1) & 0x1F);
-            data[i] += Utils.extend5To8((value >>> 6) & 0x1F) << 8;
-            data[i] += Utils.extend5To8((value >>> 11) & 0x1F) << 16;
+            data[i] |= ((value & 0x01) != 0 ? 255 : 0) << 24;
+            data[i] |= Utils.extend5To8((value >>> 1) & 0x1F);
+            data[i] |= Utils.extend5To8((value >>> 6) & 0x1F) << 8;
+            data[i] |= Utils.extend5To8((value >>> 11) & 0x1F) << 16;
         }
         return data;
     }
@@ -65,10 +65,10 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length / 2];
         for (int i = 0; i < data.length; i++) {
             int value = (Byte.toUnsignedInt(a[i * 2 + 1]) << 8) + Byte.toUnsignedInt(a[i * 2]);
-            data[i] += Utils.extend4To8(value & 0xF) << 24;
-            data[i] += Utils.extend4To8((value >>> 4) & 0x1F);
-            data[i] += Utils.extend4To8((value >>> 8) & 0xF) << 8;
-            data[i] += Utils.extend4To8((value >>> 12) & 0xF) << 16;
+            data[i] |= Utils.extend4To8(value & 0xF) << 24;
+            data[i] |= Utils.extend4To8((value >>> 4) & 0x1F);
+            data[i] |= Utils.extend4To8((value >>> 8) & 0xF) << 8;
+            data[i] |= Utils.extend4To8((value >>> 12) & 0xF) << 16;
         }
         return data;
     }
@@ -77,10 +77,10 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length / 2];
         for (int i = 0; i < data.length; i++) {
             int value = (Byte.toUnsignedInt(a[i * 2 + 1]) << 8) + Byte.toUnsignedInt(a[i * 2]);
-            data[i] += 255 << 24;
-            data[i] += Utils.extend5To8(value & 0x1F);
-            data[i] += Utils.extend6To8((value & 0x7E0) >>> 5) << 8;
-            data[i] += Utils.extend5To8((value & 0xF800) >>> 11) << 16;
+            data[i] |= 255 << 24;
+            data[i] |= Utils.extend5To8(value & 0x1F);
+            data[i] |= Utils.extend6To8((value & 0x7E0) >>> 5) << 8;
+            data[i] |= Utils.extend5To8((value & 0xF800) >>> 11) << 16;
         }
         return data;
     }
@@ -89,10 +89,10 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length];
         
         for (int i = 0; i < data.length; i++) {
-            data[i] += Utils.extend4To8(a[i] & 0xF) << 24;
-            data[i] += Utils.extend4To8((a[i] >>> 4) & 0xF);
-            data[i] += Utils.extend4To8((a[i] >>> 4) & 0xF) << 8;
-            data[i] += Utils.extend4To8((a[i] >>> 4) & 0xF) << 16;
+            data[i] |= Utils.extend4To8(a[i] & 0xF) << 24;
+            data[i] |= Utils.extend4To8((a[i] >>> 4) & 0xF);
+            data[i] |= Utils.extend4To8((a[i] >>> 4) & 0xF) << 8;
+            data[i] |= Utils.extend4To8((a[i] >>> 4) & 0xF) << 16;
         }
         
         return data;
@@ -102,10 +102,10 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length / 2];
         
         for (int i = 0; i < data.length; i++) {
-            data[i] += (Byte.toUnsignedInt(a[i * 2 + 1])) << 24;
-            data[i] += (Byte.toUnsignedInt(a[i * 2 + 0])) << 16;
-            data[i] += (Byte.toUnsignedInt(a[i * 2 + 0])) << 8;
-            data[i] += (Byte.toUnsignedInt(a[i * 2 + 0]));
+            data[i] |= (Byte.toUnsignedInt(a[i * 2 + 0])) << 24;
+            data[i] |= (Byte.toUnsignedInt(a[i * 2 + 1])) << 16;
+            data[i] |= (Byte.toUnsignedInt(a[i * 2 + 1])) << 8;
+            data[i] |= (Byte.toUnsignedInt(a[i * 2 + 1]));
         }
         
         return data;
@@ -115,10 +115,10 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length];
         
         for (int i = 0; i < data.length; i++) {
-            data[i] += Byte.toUnsignedInt(a[i]) << 24;
-            data[i] += 255;
-            data[i] += 255 << 8;
-            data[i] += 255 << 16;
+            data[i] |= Byte.toUnsignedInt(a[i]) << 24;
+            data[i] |= 255;
+            data[i] |= 255 << 8;
+            data[i] |= 255 << 16;
         }
         
         return data;
@@ -128,10 +128,10 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length];
         
         for (int i = 0; i < data.length; i++) {
-            data[i] += 255 << 24;
-            data[i] += Byte.toUnsignedInt(a[i]);
-            data[i] += Byte.toUnsignedInt(a[i]) << 8;
-            data[i] += Byte.toUnsignedInt(a[i]) << 16;
+            data[i] |= 255 << 24;
+            data[i] |= Byte.toUnsignedInt(a[i]);
+            data[i] |= Byte.toUnsignedInt(a[i]) << 8;
+            data[i] |= Byte.toUnsignedInt(a[i]) << 16;
         }
         
         return data;
@@ -141,15 +141,15 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length * 2];
         
         for (int i = 0; i < a.length; i++) {
-            data[i * 2 + 1] += 255 << 24;
-            data[i * 2 + 1] += Utils.extend4To8(a[i] >>> 4);
-            data[i * 2 + 1] += Utils.extend4To8(a[i] >>> 4) << 8;
-            data[i * 2 + 1] += Utils.extend4To8(a[i] >>> 4) << 16;
+            data[i * 2 + 1] |= 255 << 24;
+            data[i * 2 + 1] |= Utils.extend4To8(a[i] >>> 4);
+            data[i * 2 + 1] |= Utils.extend4To8(a[i] >>> 4) << 8;
+            data[i * 2 + 1] |= Utils.extend4To8(a[i] >>> 4) << 16;
             
-            data[i * 2 + 0] += 255 << 24;
-            data[i * 2 + 0] += Utils.extend4To8(a[i] & 0xF);
-            data[i * 2 + 0] += Utils.extend4To8(a[i] & 0xF) << 8;
-            data[i * 2 + 0] += Utils.extend4To8(a[i] & 0xF) << 16;
+            data[i * 2 + 0] |= 255 << 24;
+            data[i * 2 + 0] |= Utils.extend4To8(a[i] & 0xF);
+            data[i * 2 + 0] |= Utils.extend4To8(a[i] & 0xF) << 8;
+            data[i * 2 + 0] |= Utils.extend4To8(a[i] & 0xF) << 16;
         }
         
         return data;
@@ -159,15 +159,15 @@ public class PixelFormatDecoder {
         int[] data = new int[a.length * 2];
         
         for (int i = 0; i < a.length; i++) {
-            data[i * 2 + 1] += Utils.extend4To8(a[i] >>> 4) << 24;
-            data[i * 2 + 1] += 255;
-            data[i * 2 + 1] += 255 << 8;
-            data[i * 2 + 1] += 255 << 16;
+            data[i * 2 + 1] |= Utils.extend4To8(a[i] >>> 4) << 24;
+            data[i * 2 + 1] |= 255;
+            data[i * 2 + 1] |= 255 << 8;
+            data[i * 2 + 1] |= 255 << 16;
             
-            data[i * 2 + 0] += Utils.extend4To8(a[i] & 0xF) << 24;
-            data[i * 2 + 0] += 255;
-            data[i * 2 + 0] += 255 << 8;
-            data[i * 2 + 0] += 255 << 16;
+            data[i * 2 + 0] |= Utils.extend4To8(a[i] & 0xF) << 24;
+            data[i * 2 + 0] |= 255;
+            data[i * 2 + 0] |= 255 << 8;
+            data[i * 2 + 0] |= 255 << 16;
         }
         
         return data;
@@ -175,10 +175,10 @@ public class PixelFormatDecoder {
     
     private static int buildRGBA8(long r, long g, long b, long a) {
         int data = 0;
-        data += (a << 24);
-        data += (r << 16);
-        data += (g << 8);
-        data += b;
+        data |= (a << 24);
+        data |= (r << 16);
+        data |= (g << 8);
+        data |= b;
         
         return data & 0xFFFFFFFF;
     }

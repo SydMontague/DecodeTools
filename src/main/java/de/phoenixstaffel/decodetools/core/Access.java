@@ -281,8 +281,6 @@ public interface Access extends Closeable {
      */
     public void writeShort(short value, long address);
     
-    
-    //TODO doc
     /**
      * Writes a Java char (16-bit Unicode character) to the underlying data storage at the current position.
      * <p>

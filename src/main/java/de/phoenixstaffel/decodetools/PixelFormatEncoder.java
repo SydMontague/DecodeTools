@@ -131,8 +131,8 @@ public class PixelFormatEncoder {
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
         for(int i : pixels) {
-            buffer.put((byte) ((i) & 0xFF));
             buffer.put((byte) ((i >>> 24) & 0xFF));
+            buffer.put((byte) ((i) & 0xFF));
         }
         
         return data;

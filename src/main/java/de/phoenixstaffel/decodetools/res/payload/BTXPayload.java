@@ -15,7 +15,6 @@ public class BTXPayload extends ResPayload {
     private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
     private int unknown;
     
-    // FIXME allow search and replace in map/text/*.pack files
     // TODO make cleaner/nicer
     public BTXPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
