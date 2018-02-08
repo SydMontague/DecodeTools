@@ -116,9 +116,10 @@ public class KPTFPanel extends PayloadPanel {
             if (list.getSelectedValue() == -1)
                 return;
             
-            int character = list.getSelectedValue();
-            tnfo.removeAssignment(character);
-            model.removeElement(character);
+            list.getSelectedValuesList().forEach(character ->  {
+                tnfo.removeAssignment(character);
+                model.removeElement(character);
+            });
         }));
         
         btnAdd.setAction(new FunctionAction("Add", a -> {
@@ -152,8 +153,6 @@ public class KPTFPanel extends PayloadPanel {
             entry.setY1(1 - y1);
             entry.setY2(1 - y2);
         });
-        
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setModel(model);
         
         list.addListSelectionListener(a -> {
