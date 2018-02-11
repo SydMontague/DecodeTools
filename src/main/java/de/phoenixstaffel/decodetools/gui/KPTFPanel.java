@@ -134,7 +134,7 @@ public class KPTFPanel extends PayloadPanel {
                 return;
             }
             
-            tnfo.getAssignments().putIfAbsent(i, new TNFOEntry());
+            tnfo.addAssignment(i, new TNFOEntry());
             regenerateListModel();
         }));
         

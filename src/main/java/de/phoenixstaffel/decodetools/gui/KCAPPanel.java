@@ -92,7 +92,7 @@ public class KCAPPanel extends EditorPanel {
                 JFileChooser inputFileDialogue = new JFileChooser("./");
                 inputFileDialogue.setDialogTitle("Which file to import?");
                 inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                inputFileDialogue.showOpenDialog(null);
+                inputFileDialogue.showSaveDialog(null);
                 
                 File file = inputFileDialogue.getSelectedFile();
                 Object selected = ((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();

@@ -1,8 +1,10 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -45,11 +47,11 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
  * 4 byte - chars in assignment table?
  * 4 byte - assignment entry size 
  * 
- * ??? Table, one entry per character
+ * Metrics Table, one entry per character
  * 16 byte
  * - 2 byte GMIO id
- * - 1 byte x translation?
- * - 1 byte y translation?
+ * - 1 byte x translation
+ * - 1 byte y translation
  * - 1 byte width
  * - 1 byte height
  * - 1 byte width in text
@@ -74,18 +76,12 @@ public class TNFOPayload extends ResPayload {
     
     private short spaceWidth;
     private short unknown2;
-    private int firstCharacter;
-    private int lastCharacter;
     private short referenceSize;
     private short unknown3;
     
     private int tnfoType; // 1 = firstCharacter to lastCharacter; 2 = each character defined in assignment
     
     private TNFOEntry defaultEntry;
-    
-    private int assignTablePointer;
-    private int assignTableEntries;
-    private int assignEntrySize;
     
     private List<TNFOEntry> entries = new ArrayList<>();
     private SortedMap<Integer, TNFOEntry> assignments = new TreeMap<>();
@@ -103,8 +99,8 @@ public class TNFOPayload extends ResPayload {
         
         spaceWidth = source.readShort();
         unknown2 = source.readShort();
-        firstCharacter = source.readInteger();
-        lastCharacter = source.readInteger();
+        int firstCharacter = source.readInteger();
+        source.readInteger(); // last character, redundant
         referenceSize = source.readShort();
         unknown3 = source.readShort();
         
@@ -128,9 +124,9 @@ public class TNFOPayload extends ResPayload {
         
         source.readInteger(); // always TABLE_HEADER_SIZE, so 0x10
         
-        assignTablePointer = source.readInteger();
-        assignTableEntries = source.readInteger();
-        assignEntrySize = source.readInteger();
+        int assignTablePointer = source.readInteger();
+        int assignTableEntries = source.readInteger();
+        source.readInteger(); // assign entry size, deducted by tnfoType
         
         while (source.getPosition() < startPosition + HEADER_SIZE + assignTablePointer)
             entries.add(new TNFOEntry(source));
@@ -139,16 +135,20 @@ public class TNFOPayload extends ResPayload {
         
         short charCounter = (short) firstCharacter;
         for (int i = 0; i < assignTableEntries; i++) {
-            short utf16Char = assignEntrySize == 4 ? source.readShort() : charCounter++;
+            short utf16Char = tnfoType == 2 ? source.readShort() : charCounter++;
             short id = source.readShort();
             
             assignments.put(Short.toUnsignedInt(utf16Char), id == (short) 0xFFFF ? null : entries.get(id));
         }
     }
     
+    private int getAssignEntrySize() {
+        return tnfoType == 1 ? 2 : 4;
+    }
+    
     @Override
     public int getSize() {
-        return TOTAL_HEADER_SIZE + entries.size() * 0x10 + assignments.size() * assignEntrySize;
+        return TOTAL_HEADER_SIZE + entries.size() * 0x10 + assignments.size() * getAssignEntrySize();
     }
     
     @Override
@@ -162,11 +162,11 @@ public class TNFOPayload extends ResPayload {
     }
     
     public int getFirstCharacter() {
-        return firstCharacter;
+        return assignments.keySet().stream().min(Comparator.comparingInt(a -> a)).orElseGet(() -> -1);
     }
     
     public int getLastCharacter() {
-        return lastCharacter;
+        return assignments.keySet().stream().max(Comparator.comparingInt(a -> a)).orElseGet(() -> -1);
     }
     
     @Override
@@ -179,8 +179,8 @@ public class TNFOPayload extends ResPayload {
         
         dest.writeShort(spaceWidth);
         dest.writeShort(unknown2);
-        dest.writeInteger(firstCharacter);
-        dest.writeInteger(lastCharacter);
+        dest.writeInteger(getFirstCharacter());
+        dest.writeInteger(getLastCharacter());
         dest.writeShort(referenceSize);
         dest.writeShort(unknown3);
         
@@ -189,7 +189,7 @@ public class TNFOPayload extends ResPayload {
         dest.writeInteger(0);
         dest.writeInteger(tnfoType);
         
-        int count = entries.size();
+        int count = (int) assignments.values().stream().filter(Objects::nonNull).count();
         
         dest.writeInteger(count);
         dest.writeInteger(HEADER_SIZE); // directly after the header
@@ -204,25 +204,31 @@ public class TNFOPayload extends ResPayload {
         
         dest.writeInteger(TABLE_HEADER_SIZE); // seems to be 0x10 all the time
         
-        dest.writeInteger(count * 0x10 + TABLE_HEADER_SIZE);
-        dest.writeInteger(assignEntrySize == 2 ? getLastCharacter() - getFirstCharacter() + 1 : count);
-        dest.writeInteger(assignEntrySize);
+        dest.writeInteger(entries.size() * 0x10 + TABLE_HEADER_SIZE);
+        dest.writeInteger(tnfoType == 1 ? getLastCharacter() - getFirstCharacter() + 1 : assignments.size());
+        dest.writeInteger(getAssignEntrySize());
         
         entries.forEach(a -> a.writeKCAP(dest));
         
-        assignments.forEach((a, b) -> {
-            if (assignEntrySize == 4)
+        int lastCharacter = getLastCharacter();
+        if (tnfoType == 1) {
+            for (int i = getFirstCharacter(); i <= lastCharacter; ++i)
+                dest.writeShort((short) entries.indexOf(assignments.get(i)));
+        }
+        else {
+            assignments.forEach((a, b) -> {
                 dest.writeShort(a.shortValue());
-            dest.writeShort((short) entries.indexOf(b));
-        });
+                dest.writeShort((short) entries.indexOf(b));
+            });
+        }
     }
     
     /*
-     * ??? Table, one entry per character
+     * Metrics Table, one entry per character
      * 16 byte
      * - 2 byte GMIO id
-     * - 1 byte x translation?
-     * - 1 byte y translation?
+     * - 1 byte x translation
+     * - 1 byte y translation
      * - 1 byte width
      * - 1 byte height
      * - 1 byte width in text
@@ -241,7 +247,7 @@ public class TNFOPayload extends ResPayload {
         private byte height;
         private byte textWidth;
         private byte unused;
-
+        
         private double x1;
         private double x2;
         private double y1;
@@ -264,9 +270,9 @@ public class TNFOPayload extends ResPayload {
         }
         
         public TNFOEntry() {
-            //everything 0, nothing to init
+            // everything 0, nothing to init
         }
-
+        
         public void writeKCAP(Access dest) {
             dest.writeShort(gmioId);
             dest.writeByte(xTranslation);
@@ -280,156 +286,161 @@ public class TNFOPayload extends ResPayload {
             dest.writeShort((short) (y1 * Short.MAX_VALUE));
             dest.writeShort((short) (y2 * Short.MAX_VALUE));
         }
-
+        
         public short getGmioId() {
             return gmioId;
         }
-
+        
         public void setGmioId(short gmioId) {
             this.gmioId = gmioId;
         }
-
+        
         public byte getXTranslation() {
             return xTranslation;
         }
-
+        
         public void setXTranslation(byte xTranslation) {
             this.xTranslation = xTranslation;
         }
-
+        
         public byte getYTranslation() {
             return yTranslation;
         }
-
+        
         public void setYTranslation(byte yTranslation) {
             this.yTranslation = yTranslation;
         }
-
+        
         public byte getWidth() {
             return width;
         }
-
+        
         public void setWidth(byte width) {
             this.width = width;
         }
-
+        
         public byte getHeight() {
             return height;
         }
-
+        
         public void setHeight(byte height) {
             this.height = height;
         }
-
+        
         public byte getTextWidth() {
             return textWidth;
         }
-
+        
         public void setTextWidth(byte textWidth) {
             this.textWidth = textWidth;
         }
-
+        
         public double getX1() {
             return x1;
         }
-
+        
         public void setX1(double x1) {
             this.x1 = x1;
         }
-
+        
         public double getX2() {
             return x2;
         }
-
+        
         public void setX2(double x2) {
             this.x2 = x2;
         }
-
+        
         public double getY1() {
             return y1;
         }
-
+        
         public void setY1(double y1) {
             this.y1 = y1;
         }
-
+        
         public double getY2() {
             return y2;
         }
-
+        
         public void setY2(double y2) {
             this.y2 = y2;
         }
     }
-
+    
     public Map<Integer, TNFOEntry> getAssignments() {
         return assignments;
     }
-
+    
     public void removeAssignment(int character) {
         TNFOEntry entry = assignments.remove(character);
         
-        if(entry == null)
+        if (entry == null)
             return;
         
-        if(assignments.containsValue(entry))
+        if (entries.contains(entry) && !assignments.containsValue(entry))
             entries.remove(entry);
     }
-
+    
+    public void addAssignment(int character, TNFOEntry entry) {
+        if (assignments.putIfAbsent(character, entry) == null)
+            entries.add(entry);
+    }
+    
     public short getUnknown1() {
         return unknown1;
     }
-
+    
     public void setUnknown1(short unknown1) {
         this.unknown1 = unknown1;
     }
-
+    
     public short getYOffset() {
         return yOffset;
     }
-
+    
     public void setYOffset(short yOffset) {
         this.yOffset = yOffset;
     }
-
+    
     public short getSpaceWidth() {
         return spaceWidth;
     }
-
+    
     public void setSpaceWidth(short spaceWidth) {
         this.spaceWidth = spaceWidth;
     }
-
+    
     public short getUnknown2() {
         return unknown2;
     }
-
+    
     public void setUnknown2(short unknown2) {
         this.unknown2 = unknown2;
     }
-
+    
     public short getReferenceSize() {
         return referenceSize;
     }
-
+    
     public void setReferenceSize(short referenceSize) {
         this.referenceSize = referenceSize;
     }
-
+    
     public short getUnknown3() {
         return unknown3;
     }
-
+    
     public void setUnknown3(short unknown3) {
         this.unknown3 = unknown3;
     }
-
+    
     public TNFOEntry getDefaultEntry() {
         return defaultEntry;
     }
-
+    
     public TNFOEntry getEntry(char c) {
         return assignments.getOrDefault((int) c, getDefaultEntry());
     }
-
+    
 }
