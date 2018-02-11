@@ -1,19 +1,36 @@
 package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Observable;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
+import de.phoenixstaffel.decodetools.Main;
+import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.FileAccess;
+import de.phoenixstaffel.decodetools.core.Utils;
+import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
+import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
@@ -22,6 +39,9 @@ public class KCAPPanel extends EditorPanel {
     
     private JScrollPane scrollPane = new JScrollPane();
     private JTree tree = new JTree((TreeModel) null);
+    private JPopupMenu popupMenu = new JPopupMenu();
+    private JMenuItem importItem = new JMenuItem("Import");
+    private JMenuItem exportItem = new JMenuItem("Export");
     
     private Map<Enum<?>, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
     private final JPanel panel = new JPanel();
@@ -29,6 +49,74 @@ public class KCAPPanel extends EditorPanel {
     
     public KCAPPanel(EditorModel model) {
         super(model);
+        
+
+        popupMenu.add(importItem);
+        popupMenu.add(exportItem);
+        
+        exportItem.setAction(new AbstractAction("Export") {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser inputFileDialogue = new JFileChooser("./");
+                inputFileDialogue.setDialogTitle("Where to save the exported file?");
+                inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                inputFileDialogue.showOpenDialog(null);
+                
+                Object selected = ((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
+                File file = inputFileDialogue.getSelectedFile();
+                if(!(selected instanceof ResPayload) || file == null)
+                    return;
+
+                if(file.exists() && !file.delete())
+                    Main.LOGGER.severe("Could not delete already existing " + file.getName() + ". Aborting.");
+                
+                try (Access dest = new FileAccess(file); IResData data = new ResData()) {
+                    ((ResPayload) selected).writeKCAP(dest, data);
+                    
+                    if(data.getSize() != 0) {
+                        dest.setPosition(Utils.align(((ResPayload) selected).getSize(), 0x80));
+                        dest.writeByteArray(data.getStream().toByteArray());
+                    }
+                }
+                catch(IOException ex) {
+                    Main.LOGGER.severe("Exception while exporting file: " + ex.getMessage());
+                }
+            }
+        });
+        
+        importItem.setAction(new AbstractAction("Import") {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser inputFileDialogue = new JFileChooser("./");
+                inputFileDialogue.setDialogTitle("Which file to import?");
+                inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                inputFileDialogue.showOpenDialog(null);
+                
+                File file = inputFileDialogue.getSelectedFile();
+                Object selected = ((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
+                
+                try (Access src = new FileAccess(file)) {
+                    ResFile res = new ResFile(src);
+                    
+                    if(selected instanceof ResPayload) {
+                        ResPayload selectedRes = (ResPayload) selected;
+                        
+                        if(selectedRes.hasParent()) {
+                            KCAPPayload parent = selectedRes.getParent();
+                            parent.replace(selectedRes, res.getRoot());
+                            model.update();
+                        }
+                        else
+                            model.setSelectedResource(res);
+                    }
+                }
+                catch(IOException ex) {
+                    
+                }
+            }
+        });
         
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         
@@ -48,6 +136,18 @@ public class KCAPPanel extends EditorPanel {
             }
             else
                 cardLayout.show(panel, "NULL");
+        });
+        
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    int row = tree.getClosestRowForLocation(e.getX(), e.getY());
+                    tree.setSelectionRow(row);
+                    if(row != -1)
+                        popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
         });
         
         scrollPane.setViewportView(tree);
@@ -75,7 +175,6 @@ public class KCAPPanel extends EditorPanel {
                     .addContainerGap()
                     .addContainerGap(621, Short.MAX_VALUE))
         );
-        //panel_1.setLayout(new CardLayout(0, 0));
         //@formatter:on
         
         setLayout(groupLayout);

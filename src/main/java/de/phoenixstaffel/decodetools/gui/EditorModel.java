@@ -33,18 +33,17 @@ public class EditorModel extends Observable {
             ResFile file = new ResFile(access);
             
             this.selectedFile = selectedFile;
-            this.selectedRes = file;
-            this.treeModel = new DefaultTreeModel(selectedRes.getRoot().getTreeNode());
-            this.imageListModel = new DefaultListModel<>();
-            selectedRes.getRoot().getElementsWithType(Payload.GMIO).forEach(a -> imageListModel.addElement((GMIOPayload) a));
-            
-            setChanged();
-            notifyObservers();
+            setSelectedResource(file);
         }
         catch (IOException e1) {
             Main.LOGGER.log(Level.WARNING, "Error while loading file!", e1);
             return;
         }
+    }
+    
+    public void setSelectedResource(ResFile res) {
+        this.selectedRes = res;
+        update();
     }
     
     public TreeModel getTreeModel() {
@@ -57,6 +56,15 @@ public class EditorModel extends Observable {
     
     public File getSelectedFile() {
         return selectedFile;
+    }
+
+    public void update() {
+        this.treeModel = new DefaultTreeModel(selectedRes.getRoot().getTreeNode());
+        this.imageListModel = new DefaultListModel<>();
+        selectedRes.getRoot().getElementsWithType(Payload.GMIO).forEach(a -> imageListModel.addElement((GMIOPayload) a));
+        
+        setChanged();
+        notifyObservers();        
     }
     
 }

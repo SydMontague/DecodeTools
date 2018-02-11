@@ -5,6 +5,7 @@ import de.phoenixstaffel.decodetools.res.HeaderExtension;
 import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
+//TODO add .fnt importer
 public class KPTFExtension implements HeaderExtension {
     private int unknown1;
     private int unknown2;
