@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
@@ -52,10 +49,6 @@ public abstract class ResPayload {
     }
     
     public abstract int getSize();
-    
-    public MutableTreeNode getTreeNode() {
-        return new DefaultMutableTreeNode(this);
-    }
     
     public abstract Payload getType();
     

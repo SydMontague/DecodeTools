@@ -21,13 +21,13 @@ import javax.swing.JTree;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
+import de.phoenixstaffel.decodetools.gui.util.ResPayloadTreeNode;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResFile;
@@ -63,7 +63,7 @@ public class KCAPPanel extends EditorPanel {
                 inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 inputFileDialogue.showOpenDialog(null);
                 
-                Object selected = ((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
+                Object selected = ((ResPayloadTreeNode) tree.getSelectionPath().getLastPathComponent()).getPayload();
                 File file = inputFileDialogue.getSelectedFile();
                 if(!(selected instanceof ResPayload) || file == null)
                     return;
@@ -95,7 +95,7 @@ public class KCAPPanel extends EditorPanel {
                 inputFileDialogue.showSaveDialog(null);
                 
                 File file = inputFileDialogue.getSelectedFile();
-                Object selected = ((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
+                Object selected = ((ResPayloadTreeNode) tree.getSelectionPath().getLastPathComponent()).getPayload();
                 
                 try (Access src = new FileAccess(file)) {
                     ResFile res = new ResFile(src);
@@ -122,7 +122,7 @@ public class KCAPPanel extends EditorPanel {
         
         tree.setShowsRootHandles(true);
         tree.addTreeSelectionListener(a -> {
-            Object selected = ((DefaultMutableTreeNode) a.getPath().getLastPathComponent()).getUserObject();
+            Object selected = ((ResPayloadTreeNode) a.getPath().getLastPathComponent()).getPayload();
             Enum<?> type = null;
             
             if (selected instanceof ResPayload && panels.containsKey(((ResPayload) selected).getType()))

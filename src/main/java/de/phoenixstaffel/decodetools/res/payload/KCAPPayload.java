@@ -3,9 +3,6 @@ package de.phoenixstaffel.decodetools.res.payload;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
@@ -138,15 +135,6 @@ public class KCAPPayload extends ResPayload {
         return getParent().getGenericAlignment();
     }
     
-    @Override
-    public MutableTreeNode getTreeNode() {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode(this);
-        
-        entries.forEach(a -> node.add(a.getTreeNode()));
-        
-        return node;
-    }
-    
     public HeaderExtensionPayload getExtensionPayload() {
         return extensionPayload;
     }
@@ -246,5 +234,9 @@ public class KCAPPayload extends ResPayload {
     
     public void replace(ResPayload current, ResPayload replacement) {
         entries.replaceAll(a -> a == current ? replacement : a);
+    }
+
+    public List<ResPayload> getEntries() {
+        return entries;
     }
 }

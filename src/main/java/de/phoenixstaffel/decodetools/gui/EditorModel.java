@@ -13,8 +13,9 @@ import javax.swing.tree.TreeModel;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
-import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
+import de.phoenixstaffel.decodetools.gui.util.ResPayloadTreeNodeFactory;
 import de.phoenixstaffel.decodetools.res.ResFile;
+import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 
 public class EditorModel extends Observable {
@@ -58,13 +59,15 @@ public class EditorModel extends Observable {
         return selectedFile;
     }
 
+    /**
+     * Update the models in this class and notify the listeners.
+     */
     public void update() {
-        this.treeModel = new DefaultTreeModel(selectedRes.getRoot().getTreeNode());
+        this.treeModel = new DefaultTreeModel(ResPayloadTreeNodeFactory.craft(selectedRes.getRoot()));
         this.imageListModel = new DefaultListModel<>();
         selectedRes.getRoot().getElementsWithType(Payload.GMIO).forEach(a -> imageListModel.addElement((GMIOPayload) a));
         
         setChanged();
         notifyObservers();        
     }
-    
 }

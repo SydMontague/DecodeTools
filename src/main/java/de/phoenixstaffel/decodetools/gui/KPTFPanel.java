@@ -124,7 +124,11 @@ public class KPTFPanel extends PayloadPanel {
         
         btnAdd.setAction(new FunctionAction("Add", a -> {
             String input = JOptionPane.showInputDialog(null, "Insert character to add: ", "Add character to KPTF", JOptionPane.PLAIN_MESSAGE);
-            if (input == null || input.length() > 1) {
+            
+            if(input == null)
+                return;
+            
+            if (input.isEmpty() || input.length() > 1) {
                 JOptionPane.showMessageDialog(null, "You have to enter exactly one character.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }

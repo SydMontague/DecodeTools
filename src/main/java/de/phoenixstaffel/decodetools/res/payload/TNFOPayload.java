@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
@@ -217,8 +218,13 @@ public class TNFOPayload extends ResPayload {
         }
         else {
             assignments.forEach((a, b) -> {
+                short entryId = (short) entries.indexOf(b);
+                
+                if(entryId == -1)
+                    Main.LOGGER.warning("Tried to write assignment for " + ((char) a.shortValue()) + " but couldn't find a TNFO. TNFO is " + b);
+                
                 dest.writeShort(a.shortValue());
-                dest.writeShort((short) entries.indexOf(b));
+                dest.writeShort(entryId);
             });
         }
     }
