@@ -54,7 +54,7 @@ public class ARCVFile {
         
         destination = new FileAccess(destFile);
         
-        List<File> list = Utils.fileOrder(inputDir);
+        List<File> list = Utils.listFiles(inputDir);
         
         list.stream().filter(a -> !a.getName().endsWith(".bak")).forEach(t -> {
             if (t.isDirectory())

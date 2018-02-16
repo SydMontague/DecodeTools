@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
+/**
+ * An abstract implementation of {@link Access} that reads and writes into buffers.
+ */
 public abstract class BufferedAccess implements Access {
 
     // We're not thread safe, as we read a file, so we can reuse the buffers

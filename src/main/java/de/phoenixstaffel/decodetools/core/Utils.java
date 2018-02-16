@@ -72,7 +72,7 @@ public class Utils {
     }
     
     public static BufferedImage flipImageVertical(BufferedImage image, boolean newImage) {
-        if(image == null) 
+        if (image == null)
             throw new IllegalArgumentException("Expected BufferedImage, null given.");
         
         BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType()) : image;
@@ -93,7 +93,7 @@ public class Utils {
     }
     
     public static BufferedImage flipImageHorizontal(BufferedImage image, boolean newImage) {
-        if(image == null) 
+        if (image == null)
             throw new IllegalArgumentException("Expected BufferedImage, null given.");
         
         BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType()) : image;
@@ -109,19 +109,35 @@ public class Utils {
         return target;
     }
     
-    public static List<File> fileOrder(File file) {
+    /**
+     * Creates a List of all files in a given directory and it's sub-directories.
+     * 
+     * Files in the root directory are added first, then the function is called recursively for all sub-directories.
+     * 
+     * @param file the directory to create a file list from
+     * @return the list of files in the directory
+     */
+    public static List<File> listFiles(File file) {
         List<File> files = new ArrayList<>();
         
-        for (File f : file.listFiles()) {
+        if(file == null)
+            return files;
+        
+        if(file.isFile()) {
+            files.add(file);
+            return files;
+        }
+        
+        File[] input = file.listFiles();
+        
+        for (File f : input)
             if (f.isFile())
                 files.add(f);
-        }
-        
-        for (File f : file.listFiles()) {
+            
+        for (File f : input)
             if (f.isDirectory())
-                files.addAll(fileOrder(f));
-        }
-        
+                files.addAll(listFiles(f));
+            
         return files;
     }
     
@@ -215,7 +231,8 @@ public class Utils {
     
     /**
      * Expands a 4-bit number into a 8-bit number by shifting it by 4 bit to the left and adding itself onto it.
-     * If the number is outside of the defined range for a 4-bit unsigned number only the lower most 4-bit will be considered.
+     * If the number is outside of the defined range for a 4-bit unsigned number only the lower most 4-bit will be
+     * considered.
      * 
      * @param value the 4-bit number to extend to 8-bit
      * @return the number extended to 8-bit
@@ -227,8 +244,10 @@ public class Utils {
     }
     
     /**
-     * Expands a 5-bit number into a 8-bit number by shifting it by 3 bit to the left and adding it's lowest 3 bits onto it.
-     * If the number is outside of the defined range for a 5-bit unsigned number only the lower most 5-bit will be considered.
+     * Expands a 5-bit number into a 8-bit number by shifting it by 3 bit to the left and adding it's lowest 3 bits onto
+     * it.
+     * If the number is outside of the defined range for a 5-bit unsigned number only the lower most 5-bit will be
+     * considered.
      * 
      * @param value the 5-bit number to extend to 8-bit
      * @return the number extended to 8-bit
@@ -240,8 +259,10 @@ public class Utils {
     }
     
     /**
-     * Expands a 5-bit number into a 6-bit number by shifting it by 2 bit to the left and adding it's lowest 2 bits onto it.
-     * If the number is outside of the defined range for a 6-bit unsigned number only the lower most 6-bit will be considered.
+     * Expands a 5-bit number into a 6-bit number by shifting it by 2 bit to the left and adding it's lowest 2 bits onto
+     * it.
+     * If the number is outside of the defined range for a 6-bit unsigned number only the lower most 6-bit will be
+     * considered.
      * 
      * @param value the 6-bit number to extend to 8-bit
      * @return the number extended to 8-bit

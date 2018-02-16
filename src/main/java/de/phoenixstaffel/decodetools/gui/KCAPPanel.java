@@ -113,7 +113,7 @@ public class KCAPPanel extends EditorPanel {
                     }
                 }
                 catch(IOException ex) {
-                    
+                    Main.LOGGER.warning(() -> "Failed to open file for import: " + file.getName());
                 }
             }
         });

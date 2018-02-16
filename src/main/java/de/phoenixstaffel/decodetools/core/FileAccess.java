@@ -9,6 +9,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * An implementation of {@link Access} that reads and writes from a File.
+ * 
+ * As such it can grow in size.
+ */
 public class FileAccess extends BufferedAccess {
     private static final Logger LOGGER = Logger.getLogger(Access.class.getName());
     

@@ -300,7 +300,7 @@ public class MainWindow extends JFrame implements Observer {
             outputFileDialogue.showSaveDialog(null);
             
             String path = inputFileDialogue.getSelectedFile().getPath();
-            List<File> files = Utils.fileOrder(inputFileDialogue.getSelectedFile());
+            List<File> files = Utils.listFiles(inputFileDialogue.getSelectedFile());
             
             MainWindow.this.setEnabled(false);
             SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {

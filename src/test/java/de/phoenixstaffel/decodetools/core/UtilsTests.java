@@ -6,8 +6,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -137,7 +139,7 @@ public class UtilsTests {
         assertTrue(normal != null);
         assertTrue(hori != null);
         assertTrue(verti != null);
-
+        
         int[] horiData = hori.getRGB(0, 0, hori.getWidth(), hori.getHeight(), null, 0, hori.getWidth());
         int[] vertiData = verti.getRGB(0, 0, verti.getWidth(), verti.getHeight(), null, 0, verti.getWidth());
         int[] normalData = normal.getRGB(0, 0, normal.getWidth(), normal.getHeight(), null, 0, normal.getWidth());
@@ -150,7 +152,7 @@ public class UtilsTests {
         
         BufferedImage flippedVerti = Utils.flipImageVertical(normal, true);
         int[] flippedVertiData = flippedVerti.getRGB(0, 0, flippedVerti.getWidth(), flippedVerti.getHeight(), null, 0, flippedVerti.getWidth());
-
+        
         assertFalse(flippedVerti == normal);
         assertTrue(Arrays.equals(flippedVertiData, vertiData));
         
@@ -159,12 +161,47 @@ public class UtilsTests {
         assertTrue(b2 == normal);
         
         Utils.flipImageHorizontal(b2);
-
+        
         int[] doubleFlippedData = b2.getRGB(0, 0, b2.getWidth(), b2.getHeight(), null, 0, b2.getWidth());
         assertTrue(Arrays.equals(normalData, doubleFlippedData));
         
         assertException(IllegalArgumentException.class, () -> Utils.flipImageHorizontal(null));
         assertException(IllegalArgumentException.class, () -> Utils.flipImageVertical(null));
+    }
+    
+    @Test
+    public void testListFiles() {
+        List<File> expected = Arrays.asList(new File("./listFile/test.test"),
+                                            new File("./listFile/test1.test"),
+                                            new File("./listFile/test2.test"),
+                                            new File("./listFile/Test3.test"),
+                                            new File("./listFile/bla/aest.test"),
+                                            new File("./listFile/bla/best.test"),
+                                            new File("./listFile/cla/cest.test"),
+                                            new File("./listFile/cla/dest.test"));
+        
+        File root = new File("./listFile");
+        
+        expected.forEach(a -> {
+            try {
+                a.getParentFile().mkdirs();
+                a.createNewFile();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        
+        List<File> files = Utils.listFiles(root);
+
+        assertTrue(Utils.listFiles(null).isEmpty());
+        assertEquals(expected, files);
+        assertEquals(Arrays.asList(new File("./listFile/test.test")), Utils.listFiles(new File("./listFile/test.test")));
+        
+        expected.forEach(a -> a.delete());
+        new File("./listFile/bla").delete();
+        new File("./listFile/cla").delete();
+        root.delete();
     }
     
     /*

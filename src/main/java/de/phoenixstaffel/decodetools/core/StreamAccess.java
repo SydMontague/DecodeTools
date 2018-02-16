@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * An implementation of {@link Access} that reads and writes from a given buffer.
+ * 
+ * As such it can not change it's size.
+ */
 public class StreamAccess extends BufferedAccess {
     private final ByteBuffer chan;
     
