@@ -96,7 +96,7 @@ public class GMIOPayload extends ResPayload {
         
         // flip image to make them logical for humans
         if (format != PixelFormat.ETC1 && format != PixelFormat.ETC1A4)
-            i = Utils.flipImageVertical(i);
+            i = Utils.mirrorImageVertical(i);
         
         image = i;
     }

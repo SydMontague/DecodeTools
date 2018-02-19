@@ -67,11 +67,26 @@ public class Utils {
         return value;
     }
     
-    public static BufferedImage flipImageVertical(BufferedImage image) {
-        return flipImageVertical(image, false);
+    /**
+     * Mirrors an image on the vertical (Y) Axis. 
+     * The input image will get manipulated manipulated and returned.
+     * 
+     * @param image the image to flip
+     * @return the flipped image, the same as the input.
+     */
+    public static BufferedImage mirrorImageVertical(BufferedImage image) {
+        return mirrorImageVertical(image, false);
     }
     
-    public static BufferedImage flipImageVertical(BufferedImage image, boolean newImage) {
+    /**
+     * Mirrors an image on the vertical (Y) Axis. 
+     * The method can create a new image or modify the input image, based on the newImage parameter.
+     * 
+     * @param image the image to flip
+     * @param newImage whether to manipulate the input image or to create a new image
+     * @return the flipped image, the same as the input if {@code newImage} is true, a new instance otherwise
+     */
+    public static BufferedImage mirrorImageVertical(BufferedImage image, boolean newImage) {
         if (image == null)
             throw new IllegalArgumentException("Expected BufferedImage, null given.");
         
@@ -87,12 +102,27 @@ public class Utils {
         target.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
         return target;
     }
-    
-    public static BufferedImage flipImageHorizontal(BufferedImage image) {
-        return flipImageHorizontal(image, false);
+
+    /**
+     * Mirrors an image on the horizontal (X) Axis. 
+     * The input image will get manipulated manipulated and returned.
+     * 
+     * @param image the image to flip
+     * @return the flipped image, the same as the input.
+     */
+    public static BufferedImage mirrorImageHorizontal(BufferedImage image) {
+        return mirrorImageHorizontal(image, false);
     }
     
-    public static BufferedImage flipImageHorizontal(BufferedImage image, boolean newImage) {
+    /**
+     * Mirrors an image on the horizontal (X) Axis. 
+     * The method can create a new image or modify the input image, based on the newImage parameter.
+     * 
+     * @param image the image to flip
+     * @param newImage whether to manipulate the input image or to create a new image
+     * @return the flipped image, the same as the input if {@code newImage} is true, a new instance otherwise
+     */
+    public static BufferedImage mirrorImageHorizontal(BufferedImage image, boolean newImage) {
         if (image == null)
             throw new IllegalArgumentException("Expected BufferedImage, null given.");
         

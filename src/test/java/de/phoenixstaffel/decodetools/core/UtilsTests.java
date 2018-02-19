@@ -144,29 +144,29 @@ public class UtilsTests {
         int[] vertiData = verti.getRGB(0, 0, verti.getWidth(), verti.getHeight(), null, 0, verti.getWidth());
         int[] normalData = normal.getRGB(0, 0, normal.getWidth(), normal.getHeight(), null, 0, normal.getWidth());
         
-        BufferedImage flippedHori = Utils.flipImageHorizontal(normal, true);
+        BufferedImage flippedHori = Utils.mirrorImageHorizontal(normal, true);
         int[] flippedHoriData = flippedHori.getRGB(0, 0, flippedHori.getWidth(), flippedHori.getHeight(), null, 0, flippedHori.getWidth());
         
         assertFalse(flippedHori == normal);
         assertTrue(Arrays.equals(flippedHoriData, horiData));
         
-        BufferedImage flippedVerti = Utils.flipImageVertical(normal, true);
+        BufferedImage flippedVerti = Utils.mirrorImageVertical(normal, true);
         int[] flippedVertiData = flippedVerti.getRGB(0, 0, flippedVerti.getWidth(), flippedVerti.getHeight(), null, 0, flippedVerti.getWidth());
         
         assertFalse(flippedVerti == normal);
         assertTrue(Arrays.equals(flippedVertiData, vertiData));
         
-        BufferedImage b2 = Utils.flipImageHorizontal(normal);
+        BufferedImage b2 = Utils.mirrorImageHorizontal(normal);
         
         assertTrue(b2 == normal);
         
-        Utils.flipImageHorizontal(b2);
+        Utils.mirrorImageHorizontal(b2);
         
         int[] doubleFlippedData = b2.getRGB(0, 0, b2.getWidth(), b2.getHeight(), null, 0, b2.getWidth());
         assertTrue(Arrays.equals(normalData, doubleFlippedData));
         
-        assertException(IllegalArgumentException.class, () -> Utils.flipImageHorizontal(null));
-        assertException(IllegalArgumentException.class, () -> Utils.flipImageVertical(null));
+        assertException(IllegalArgumentException.class, () -> Utils.mirrorImageHorizontal(null));
+        assertException(IllegalArgumentException.class, () -> Utils.mirrorImageVertical(null));
     }
     
     @Test
@@ -205,7 +205,6 @@ public class UtilsTests {
     }
     
     /*
-     * TODO public static List<File> fileOrder(File file) {
      * TODO public static int[] untile(short width, short height, int[] pixelData) {
      * TODO public static int[] tile(int width, int height, int[] pixelData) {
      * TODO private static int getMortonOffset(int x, int y) {

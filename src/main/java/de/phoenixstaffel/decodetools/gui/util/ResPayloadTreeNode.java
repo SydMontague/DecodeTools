@@ -52,7 +52,7 @@ public class ResPayloadTreeNode implements TreeNode {
     }
 
     @Override
-    public Enumeration children() {
+    public Enumeration<ResPayload> children() {
         return null;
     }
     

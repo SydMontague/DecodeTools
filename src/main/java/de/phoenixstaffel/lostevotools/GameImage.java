@@ -55,9 +55,9 @@ public class GameImage {
                 BufferedImage tile = tileMap.getTileData(data.getTileIndex()).toImage(this.palette.getPalette(data.getPaletteIndex()));
                 
                 if (data.isFlippedVertically())
-                    tile = Utils.flipImageVertical(tile);
+                    tile = Utils.mirrorImageVertical(tile);
                 if (data.isFlippedHorizontally())
-                    tile = Utils.flipImageHorizontal(tile);
+                    tile = Utils.mirrorImageHorizontal(tile);
                 
                 int[] rgbArray = tile.getRGB(0, 0, 8, 8, null, 0, 8);
                 image.setRGB(w * 8, h * 8, 8, 8, rgbArray, 0, 8);
@@ -96,9 +96,9 @@ public class GameImage {
                 BufferedImage i = image.getSubimage(w * 8, h * 8, 8, 8);
                 
                 if (mapData.isFlippedVertically())
-                    i = Utils.flipImageVertical(i);
+                    i = Utils.mirrorImageVertical(i);
                 if (mapData.isFlippedHorizontally())
-                    i = Utils.flipImageHorizontal(i);
+                    i = Utils.mirrorImageHorizontal(i);
                 
                 for (int x = 0; x < 8; x++)
                     for (int y = 0; y < 8; y++) {
