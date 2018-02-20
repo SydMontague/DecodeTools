@@ -332,12 +332,19 @@ public class Utils {
     
     private static int getMortonOffset(int x, int y) {
         int blockHeight = 8;
-        int coarseX = x & ~7;
-        int i = mortonInterleave(x, y);
+        int coarseX = x & ~7; //all bit the lowest 3 bits of x
+        int i = mortonInterleave(x, y); 
         
         return i + coarseX * blockHeight;
     }
     
+    /**
+     * Interleaves the lowest 3 bits of the given x and y values with the pattern YXYXYX.
+     * 
+     * @param x the first value, occupying the odd bits
+     * @param y the second value, occupying the even bits
+     * @return the interleaved 6 bit value
+     */
     private static int mortonInterleave(int x, int y) {
         int i = (x & 7) | ((y & 7) << 8);
         i = (i ^ (i << 2)) & 0x1313;

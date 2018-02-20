@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -169,6 +171,7 @@ public class UtilsTests {
         assertException(IllegalArgumentException.class, () -> Utils.mirrorImageVertical(null));
     }
     
+    //FIXME the order is not guaranteed, check if it's necessary and act accordingly
     @Test
     public void testListFiles() {
         List<File> expected = Arrays.asList(new File("./listFile/test.test"),
@@ -204,10 +207,25 @@ public class UtilsTests {
         root.delete();
     }
     
+    @Test
+    public void testMortonInterleave() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = Utils.class.getDeclaredMethod("mortonInterleave", int.class, int.class);
+        m.setAccessible(true);
+        
+        assertEquals(0b111111, m.invoke(null, 0b0111, 0b0111));
+        assertEquals(0b111110, m.invoke(null, 0b1110, 0b0111));
+        assertEquals(0b101010, m.invoke(null, 0b0000, 0b0111));
+        assertEquals(0b010101, m.invoke(null, 0b0111, 0b0000));
+        assertEquals(0b110011, m.invoke(null, 0b1101, 0b1101));
+        assertEquals(0b111111, m.invoke(null, 0b11110111, 0b11110111));
+        assertEquals(0b111111, m.invoke(null, 0b11110111, 0b11110111));
+        assertEquals(0b000000, m.invoke(null, 0b0, 0b0));
+        assertEquals(0b111111, m.invoke(null, 0xFFFFFFFF, 0xFFFFFFFF));
+    }
+    
     /*
      * TODO public static int[] untile(short width, short height, int[] pixelData) {
      * TODO public static int[] tile(int width, int height, int[] pixelData) {
      * TODO private static int getMortonOffset(int x, int y) {
-     * TODO private static int mortonInterleave(int x, int y) {
      */
 }
