@@ -332,7 +332,7 @@ public class Utils {
     
     private static int getMortonOffset(int x, int y) {
         int blockHeight = 8;
-        int coarseX = x & ~7; //all bit the lowest 3 bits of x
+        int coarseX = x & ~7; //all but the lowest 3 bits of x
         int i = mortonInterleave(x, y); 
         
         return i + coarseX * blockHeight;

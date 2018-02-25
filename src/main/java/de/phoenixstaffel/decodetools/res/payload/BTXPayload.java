@@ -144,11 +144,14 @@ public class BTXPayload extends ResPayload {
         return entries;
     }
     
+    /**
+     * Contains additional information for text strings, like the speaker for text messages.
+     * 
+     * Always 0x30 bytes.
+     */
     public static class BTXMeta {
-        // for textboxes
-        
-        private int id; // ???
-        private int unknown1; // actor sprite
+        private int id; // TODO shouldn't be stored but instead generated
+        private int speaker;
         private int unknown2;
         private int unknown3;
         
@@ -164,7 +167,7 @@ public class BTXPayload extends ResPayload {
         
         public BTXMeta(Access source) {
             id = source.readInteger();
-            unknown1 = source.readInteger();
+            speaker = source.readInteger();
             unknown2 = source.readInteger();
             unknown3 = source.readInteger();
             
@@ -181,7 +184,7 @@ public class BTXPayload extends ResPayload {
         
         public void writeKCAP(Access dest) {
             dest.writeInteger(id);
-            dest.writeInteger(unknown1);
+            dest.writeInteger(speaker);
             dest.writeInteger(unknown2);
             dest.writeInteger(unknown3);
             
@@ -196,15 +199,33 @@ public class BTXPayload extends ResPayload {
             dest.writeInteger(unknown11);
         }
         
+        /**
+         * Get the ID of the message this meta is associated with. 
+         * 
+         * @return the ID of the message this meta belong to
+         */
         public int getId() {
             return id;
         }
         
+        /**
+         * Gets the id of the speaker associated to the message.
+         * 
+         * Their names are found in files 12-14 in the LanguageKeep_jp.res,
+         * 0XXX -> File 12
+         * 1XXX -> File 13
+         * 2XXX -> File 14
+         * 
+         * @return the speaker ID
+         */
         public int getSpeaker() {
-            return unknown1;
+            return speaker;
         }
     }
     
+    /**
+     * An entry to a BTX, containing a String and an optional {@link BTXMeta}.
+     */
     public static class BTXEntry {
         private String string;
         private BTXMeta meta;
@@ -214,14 +235,29 @@ public class BTXPayload extends ResPayload {
             this.meta = meta;
         }
         
+        /**
+         * Gets the optional {@link BTXMeta} of this entry.
+         * 
+         * @return the BTXMeta of this entry, null if non-existent
+         */
         public BTXMeta getMeta() {
             return meta;
         }
         
+        /**
+         * Gets the String of this entry.
+         * 
+         * @return the string of this entry
+         */
         public String getString() {
             return string;
         }
         
+        /**
+         * Sets the String of this entry.
+         * 
+         * @param string the string to set update
+         */
         public void setString(String string) {
             this.string = string;
         }
