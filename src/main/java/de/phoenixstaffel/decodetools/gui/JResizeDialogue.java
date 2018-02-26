@@ -3,10 +3,8 @@ package de.phoenixstaffel.decodetools.gui;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -16,6 +14,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
+
+import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 
 public class JResizeDialogue extends JFrame {
     private static final long serialVersionUID = -1409196592444942514L;
@@ -83,26 +83,17 @@ public class JResizeDialogue extends JFrame {
         
         spinner.addChangeListener(a -> setSelectedImage((int) spinner.getValue()));
         
-        zoomInButton.setAction(new AbstractAction("+") {
-            private static final long serialVersionUID = 8463305912499686809L;
-            
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                imageSelector.setScale(imageSelector.getScale() + 1);
-                scrollPane.getVerticalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
-                scrollPane.getHorizontalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
-            }
-        });
-        zoomOutButton.setAction(new AbstractAction("-") {
-            private static final long serialVersionUID = 8117574193558765559L;
-            
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                imageSelector.setScale(imageSelector.getScale() - 1);
-                scrollPane.getVerticalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
-                scrollPane.getHorizontalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
-            }
-        });
+        zoomInButton.setAction(new FunctionAction("+", a -> {
+            imageSelector.setScale(imageSelector.getScale() + 1);
+            scrollPane.getVerticalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
+            scrollPane.getHorizontalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
+        }));
+        
+        zoomOutButton.setAction(new FunctionAction("-", a -> {
+            imageSelector.setScale(imageSelector.getScale() - 1);
+            scrollPane.getVerticalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
+            scrollPane.getHorizontalScrollBar().setUnitIncrement(imageSelector.getScale() * 2);
+        }));
         
         //@formatter:off
         GroupLayout groupLayout = new GroupLayout(getContentPane());

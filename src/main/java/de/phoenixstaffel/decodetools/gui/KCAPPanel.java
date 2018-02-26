@@ -1,7 +1,6 @@
 package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.CardLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -9,7 +8,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Observable;
 
-import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JFileChooser;
@@ -27,6 +25,7 @@ import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
+import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.gui.util.ResPayloadTreeNode;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResData;
@@ -54,69 +53,61 @@ public class KCAPPanel extends EditorPanel {
         popupMenu.add(importItem);
         popupMenu.add(exportItem);
         
-        exportItem.setAction(new AbstractAction("Export") {
+        exportItem.setAction(new FunctionAction("Export", a -> {
+            JFileChooser inputFileDialogue = new JFileChooser("./");
+            inputFileDialogue.setDialogTitle("Where to save the exported file?");
+            inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            inputFileDialogue.showOpenDialog(null);
             
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser inputFileDialogue = new JFileChooser("./");
-                inputFileDialogue.setDialogTitle("Where to save the exported file?");
-                inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                inputFileDialogue.showOpenDialog(null);
-                
-                Object selected = ((ResPayloadTreeNode) tree.getSelectionPath().getLastPathComponent()).getPayload();
-                File file = inputFileDialogue.getSelectedFile();
-                if(!(selected instanceof ResPayload) || file == null)
-                    return;
+            Object selected = ((ResPayloadTreeNode) tree.getSelectionPath().getLastPathComponent()).getPayload();
+            File file = inputFileDialogue.getSelectedFile();
+            if(!(selected instanceof ResPayload) || file == null)
+                return;
 
-                if(file.exists() && !file.delete())
-                    Main.LOGGER.severe("Could not delete already existing " + file.getName() + ". Aborting.");
-                
-                try (Access dest = new FileAccess(file); IResData data = new ResData()) {
-                    ((ResPayload) selected).writeKCAP(dest, data);
-                    
-                    if(data.getSize() != 0) {
-                        dest.setPosition(Utils.align(((ResPayload) selected).getSize(), 0x80));
-                        dest.writeByteArray(data.getStream().toByteArray());
-                    }
-                }
-                catch(IOException ex) {
-                    Main.LOGGER.severe("Exception while exporting file: " + ex.getMessage());
-                }
-            }
-        });
-        
-        importItem.setAction(new AbstractAction("Import") {
+            if(file.exists() && !file.delete())
+                Main.LOGGER.severe("Could not delete already existing " + file.getName() + ". Aborting.");
             
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser inputFileDialogue = new JFileChooser("./");
-                inputFileDialogue.setDialogTitle("Which file to import?");
-                inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                inputFileDialogue.showSaveDialog(null);
+            try (Access dest = new FileAccess(file); IResData data = new ResData()) {
+                ((ResPayload) selected).writeKCAP(dest, data);
                 
-                File file = inputFileDialogue.getSelectedFile();
-                Object selected = ((ResPayloadTreeNode) tree.getSelectionPath().getLastPathComponent()).getPayload();
-                
-                try (Access src = new FileAccess(file)) {
-                    ResFile res = new ResFile(src);
-                    
-                    if(selected instanceof ResPayload) {
-                        ResPayload selectedRes = (ResPayload) selected;
-                        
-                        if(selectedRes.hasParent()) {
-                            KCAPPayload parent = selectedRes.getParent();
-                            parent.replace(selectedRes, res.getRoot());
-                            model.update();
-                        }
-                        else
-                            model.setSelectedResource(res);
-                    }
-                }
-                catch(IOException ex) {
-                    Main.LOGGER.warning(() -> "Failed to open file for import: " + file.getName());
+                if(data.getSize() != 0) {
+                    dest.setPosition(Utils.align(((ResPayload) selected).getSize(), 0x80));
+                    dest.writeByteArray(data.getStream().toByteArray());
                 }
             }
-        });
+            catch(IOException ex) {
+                Main.LOGGER.severe("Exception while exporting file: " + ex.getMessage());
+            }
+        }));
+        
+        importItem.setAction(new FunctionAction("Import", a -> {
+            JFileChooser inputFileDialogue = new JFileChooser("./");
+            inputFileDialogue.setDialogTitle("Which file to import?");
+            inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            inputFileDialogue.showSaveDialog(null);
+            
+            File file = inputFileDialogue.getSelectedFile();
+            Object selected = ((ResPayloadTreeNode) tree.getSelectionPath().getLastPathComponent()).getPayload();
+            
+            try (Access src = new FileAccess(file)) {
+                ResFile res = new ResFile(src);
+                
+                if(selected instanceof ResPayload) {
+                    ResPayload selectedRes = (ResPayload) selected;
+                    
+                    if(selectedRes.hasParent()) {
+                        KCAPPayload parent = selectedRes.getParent();
+                        parent.replace(selectedRes, res.getRoot());
+                        model.update();
+                    }
+                    else
+                        model.setSelectedResource(res);
+                }
+            }
+            catch(IOException ex) {
+                Main.LOGGER.warning(() -> "Failed to open file for import: " + file.getName());
+            }
+        }));
         
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         

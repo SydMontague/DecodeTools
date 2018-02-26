@@ -35,6 +35,7 @@ import de.phoenixstaffel.decodetools.arcv.ARCVFile;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
+import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.ResFile;
 
@@ -145,20 +146,15 @@ public class MainWindow extends JFrame implements Observer {
         LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
         
         for (LookAndFeelInfo style : info) {
-            mnStyle.add(new JMenuItem(new AbstractAction(style.getName()) {
-                private static final long serialVersionUID = -7199990221476393001L;
-                
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        UIManager.setLookAndFeel(style.getClassName());
-                        SwingUtilities.updateComponentTreeUI(MainWindow.this);
-                    }
-                    catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {
-                        Main.LOGGER.log(Level.SEVERE, "Error while setting Look & Feel!", e1);
-                    }
+            mnStyle.add(new JMenuItem(new FunctionAction(style.getName(), a -> {
+                try {
+                    UIManager.setLookAndFeel(style.getClassName());
+                    SwingUtilities.updateComponentTreeUI(MainWindow.this);
                 }
-            }));
+                catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {
+                    Main.LOGGER.log(Level.SEVERE, "Error while setting Look & Feel!", e1);
+                }
+            })));
         }
     }
     

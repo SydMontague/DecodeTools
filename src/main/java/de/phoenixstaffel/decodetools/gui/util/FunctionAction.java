@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools.gui;
+package de.phoenixstaffel.decodetools.gui.util;
 
 import java.awt.event.ActionEvent;
 import java.util.function.Consumer;

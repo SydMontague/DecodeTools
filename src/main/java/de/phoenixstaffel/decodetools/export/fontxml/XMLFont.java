@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload.TNFOEntry;
+
 /**
  * Intermediate format for fonts read from Romsstar Font XML format.
  * 
