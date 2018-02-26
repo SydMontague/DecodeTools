@@ -118,7 +118,7 @@ public class JKPTFText extends JComponent {
                         b.dispose();
 
                         double localX = x + entry.getXTranslation() * scale;
-                        double localY = y - entry.getYTranslation() * scale - scale;
+                        double localY = y - entry.getYTranslation() * scale - scale; //TODO add tnfo#yOffset
 
                         if(localY < 0)
                             continue;

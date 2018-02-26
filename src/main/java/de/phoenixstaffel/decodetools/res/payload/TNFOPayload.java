@@ -389,6 +389,10 @@ public class TNFOPayload extends ResPayload {
     }
     
     public void addAssignment(int character, TNFOEntry entry) {
+        //filter out invisible characters and ' ' (space), since they can't be used and might cause problems
+        if(character <= 0x20) 
+            return;
+            
         if (assignments.putIfAbsent(character, entry) == null)
             entries.add(entry);
     }

@@ -7,12 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.FactoryConfigurationError;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -20,7 +17,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload.TNFOEntry;
 /**
  * Intermediate format for fonts read from Romsstar Font XML format.
@@ -30,6 +27,7 @@ import de.phoenixstaffel.decodetools.res.payload.TNFOPayload.TNFOEntry;
  */
 public class XMLFont {
     //used for calculating TNFOEntry coordinates
+    private int base;
     private int imageWidth;
     private int imageHeight;
     private int fontSize;
@@ -46,7 +44,8 @@ public class XMLFont {
         fontSize = Integer.parseInt(info.getAttributes().getNamedItem("size").getNodeValue());
         
         Node common = document.getElementsByTagName("common").item(0);
-        
+
+        base = Integer.parseInt(common.getAttributes().getNamedItem("base").getNodeValue());
         imageWidth = Integer.parseInt(common.getAttributes().getNamedItem("scaleW").getNodeValue());
         imageHeight = Integer.parseInt(common.getAttributes().getNamedItem("scaleH").getNodeValue());
         
@@ -116,6 +115,15 @@ public class XMLFont {
     }
     
     /**
+     * Get the offset of the font's baseline.
+     * 
+     * @return the y-offset of the font's baseline
+     */
+    public int getBase() {
+        return base;
+    }
+    
+    /**
      * Represents a single character within the Font.
      */
     public class Char {
@@ -124,8 +132,8 @@ public class XMLFont {
         private int y; //upper left y coordinate on the image
         private int width; //width of the character and on the sub-image
         private int height; //height of the character and on the sub-image
-        private int xTranslation; 
-        private int yTranslation;
+        private int xOffset; 
+        private int yOffset;
         private int xAdvance; //how much to advance on the X axis when printing the character
         private int page; //the index of the image to use for this character
         
@@ -137,10 +145,14 @@ public class XMLFont {
             y = Integer.parseInt(attr.getNamedItem("y").getNodeValue());
             width = Integer.parseInt(attr.getNamedItem("width").getNodeValue());
             height = Integer.parseInt(attr.getNamedItem("height").getNodeValue());
-            xTranslation = Integer.parseInt(attr.getNamedItem("xoffset").getNodeValue());
-            yTranslation = Integer.parseInt(attr.getNamedItem("yoffset").getNodeValue());
+            xOffset = Integer.parseInt(attr.getNamedItem("xoffset").getNodeValue());
+            yOffset = Integer.parseInt(attr.getNamedItem("yoffset").getNodeValue());
             xAdvance = Integer.parseInt(attr.getNamedItem("xadvance").getNodeValue());
             page = Integer.parseInt(attr.getNamedItem("page").getNodeValue());
+            
+            int yTrans = getBase() - yOffset;
+            if(yTrans > 127 || yTrans < -128) 
+                Main.LOGGER.warning("Character '" + id + "' results in a Y-Translation that out of the bounds of a byte. Reduce the font size.");
         }
         
         public TNFOEntry toTNFOEntry() {
@@ -155,11 +167,11 @@ public class XMLFont {
             entry.setY1(1 - (double) y / getImageHeight());
             entry.setY2(1 - (double) (y + height) / getImageHeight());
             
-            entry.setWidth((byte) width);
-            entry.setHeight((byte) height);
-            entry.setTextWidth((byte) xAdvance);
-            entry.setXTranslation((byte) xTranslation);
-            entry.setYTranslation((byte) (getFontSize() - yTranslation)); 
+            entry.setWidth((byte) (width));
+            entry.setHeight((byte) (height));
+            entry.setTextWidth((byte) (xAdvance));
+            entry.setXTranslation((byte) (xOffset));
+            entry.setYTranslation((byte) (getBase() - yOffset)); 
             
             return entry;
         }
@@ -205,19 +217,19 @@ public class XMLFont {
         }
         
         public int getXTranslation() {
-            return xTranslation;
+            return xOffset;
         }
         
         public void setXTranslation(int xTranslation) {
-            this.xTranslation = xTranslation;
+            this.xOffset = xTranslation;
         }
         
         public int getYTranslation() {
-            return yTranslation;
+            return yOffset;
         }
         
         public void setYTranslation(int yTranslation) {
-            this.yTranslation = yTranslation;
+            this.yOffset = yTranslation;
         }
         
         public int getXAdvance() {

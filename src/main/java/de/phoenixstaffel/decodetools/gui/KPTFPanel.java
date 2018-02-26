@@ -151,6 +151,7 @@ public class KPTFPanel extends PayloadPanel {
             catch (ParserConfigurationException | SAXException | IOException e) {
                 Main.LOGGER.severe("Error while loading font XML!" + e.getMessage());
             }
+            regenerateListModel();
         }));
         
         btnAdd.setAction(new FunctionAction("Add", a -> {
