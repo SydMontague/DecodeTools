@@ -123,8 +123,8 @@ public class JKPTFText extends JComponent {
                         if(localY < 0)
                             continue;
                         
-                        double textureScaleX = (double) entry.getWidth() / (x2 - x1);
-                        double textureScaleY = (double) entry.getHeight() / (y1 - y2);
+                        double textureScaleX = (double) Byte.toUnsignedInt(entry.getWidth()) / (x2 - x1);
+                        double textureScaleY = (double) Byte.toUnsignedInt(entry.getHeight()) / (y1 - y2);
 
                         AffineTransform t = new AffineTransform();
                         t.translate(localX, localY);
@@ -137,7 +137,7 @@ public class JKPTFText extends JComponent {
                         gg.drawImage(ii, null, null);
                     }
                     
-                    x += entry.getTextWidth() * scale;
+                    x += Byte.toUnsignedInt(entry.getTextWidth()) * scale;
                     x += widespace * resolutionScale;
             }
         }

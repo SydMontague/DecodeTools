@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +17,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -23,13 +26,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import de.phoenixstaffel.decodetools.Main;
+import de.phoenixstaffel.decodetools.export.fontxml.XMLFont;
 import de.phoenixstaffel.decodetools.res.HeaderExtension.Extensions;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
@@ -50,6 +56,7 @@ public class KPTFPanel extends PayloadPanel {
     private final JLabel lblSearch = new JLabel("Search");
     private final JButton btnAdd = new JButton("Add");
     private final JButton btnRemove = new JButton("Remove");
+    private final JButton btnImportXml = new JButton("Import XML");
     private final JList<Integer> list = new JList<>();
     private DefaultListModel<Integer> model = new DefaultListModel<>();
     
@@ -122,6 +129,30 @@ public class KPTFPanel extends PayloadPanel {
             });
         }));
         
+        btnImportXml.setAction(new FunctionAction("Import XML", a -> {
+            JFileChooser inputFileDialogue = new JFileChooser("./");
+            inputFileDialogue.setDialogTitle("Please select the Font XML to import.");
+            inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            inputFileDialogue.showOpenDialog(null);
+            
+            File file = inputFileDialogue.getSelectedFile();
+            
+            if(file == null)
+                return;
+
+            try {
+                XMLFont font = new XMLFont(file);
+
+                font.getChars().forEach(b -> {
+                    tnfo.removeAssignment(b.getChar());
+                    tnfo.addAssignment(b.getChar(), b.toTNFOEntry());
+                });
+            }
+            catch (ParserConfigurationException | SAXException | IOException e) {
+                Main.LOGGER.severe("Error while loading font XML!" + e.getMessage());
+            }
+        }));
+        
         btnAdd.setAction(new FunctionAction("Add", a -> {
             String input = JOptionPane.showInputDialog(null, "Insert character to add: ", "Add character to KPTF", JOptionPane.PLAIN_MESSAGE);
             
@@ -171,9 +202,9 @@ public class KPTFPanel extends PayloadPanel {
             tnfoEntryPanel.setVisible(true);
             xTransField.setValue(entry.getXTranslation());
             yTransField.setValue(entry.getYTranslation());
-            widthField.setValue(entry.getWidth());
-            heightField.setValue(entry.getHeight());
-            textWidthField.setValue(entry.getTextWidth());
+            widthField.setValue(Byte.toUnsignedInt(entry.getWidth()));
+            heightField.setValue(Byte.toUnsignedInt(entry.getHeight()));
+            textWidthField.setValue(Byte.toUnsignedInt(entry.getTextWidth()));
             
             BufferedImage i = gmios.get(entry.getGmioId()).getImage();
             int x1 = (int) Math.round(entry.getX1() * i.getWidth());
@@ -206,9 +237,9 @@ public class KPTFPanel extends PayloadPanel {
         
         xTransField.addChangeListener(a -> entry.setXTranslation((byte) xTransField.getValue()));
         yTransField.addChangeListener(a -> entry.setYTranslation((byte) yTransField.getValue()));
-        heightField.addChangeListener(a -> entry.setHeight((byte) heightField.getValue()));
-        widthField.addChangeListener(a -> entry.setWidth((byte) widthField.getValue()));
-        textWidthField.addChangeListener(a -> entry.setTextWidth((byte) textWidthField.getValue()));
+        heightField.addChangeListener(a -> entry.setHeight(((Integer) heightField.getValue()).byteValue()));
+        widthField.addChangeListener(a -> entry.setWidth(((Integer) widthField.getValue()).byteValue()));
+        textWidthField.addChangeListener(a -> entry.setTextWidth(((Integer) textWidthField.getValue()).byteValue()));
     }
     
     private void regenerateListModel() {
@@ -276,13 +307,14 @@ public class KPTFPanel extends PayloadPanel {
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
                             .addGroup(groupLayout.createSequentialGroup()
-                                .addComponent(lblSearch, GroupLayout.PREFERRED_SIZE, 47, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblSearch, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(ComponentPlacement.RELATED)
                                 .addComponent(searchField, 0, 0, Short.MAX_VALUE))
                             .addGroup(groupLayout.createSequentialGroup()
-                                .addComponent(btnAdd, GroupLayout.PREFERRED_SIZE, 77, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnAdd, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(btnRemove, GroupLayout.PREFERRED_SIZE, 83, GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(btnRemove, GroupLayout.PREFERRED_SIZE, 89, GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnImportXml)
                         .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 166, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
@@ -300,7 +332,9 @@ public class KPTFPanel extends PayloadPanel {
                                 .addComponent(searchField, GroupLayout.PREFERRED_SIZE, 21, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(lblSearch))
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
+                            .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(btnImportXml)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
                                 .addComponent(btnAdd)
@@ -308,7 +342,7 @@ public class KPTFPanel extends PayloadPanel {
                         .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(tnfoHeaderPanel, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(tnfoEntryPanel, GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)))
+                            .addComponent(tnfoEntryPanel, GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)))
                     .addGap(5))
         );
         GroupLayout gl_tnfoHeaderPanel = new GroupLayout(tnfoHeaderPanel);
@@ -437,9 +471,9 @@ public class KPTFPanel extends PayloadPanel {
                             .addComponent(image, GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)))
                     .addContainerGap())
         );
-        widthField.setModel(new SpinnerNumberModel((byte) 0, null, null, (byte) 1));
-        heightField.setModel(new SpinnerNumberModel((byte) 0, null, null, (byte) 1));
-        textWidthField.setModel(new SpinnerNumberModel((byte) 0, null, null, (byte) 1));
+        widthField.setModel(new SpinnerNumberModel((short) 0, 0, 255, (short) 1));
+        heightField.setModel(new SpinnerNumberModel((short) 0, 0, 255, (short) 1));
+        textWidthField.setModel(new SpinnerNumberModel((short) 0, 0, 255, (short) 1));
         yTransField.setModel(new SpinnerNumberModel((byte) 0, null, null, (byte) 1));
         xTransField.setModel(new SpinnerNumberModel((byte) 0, null, null, (byte) 1));
         tnfoEntryPanel.setLayout(gl_tnfoEntryPanel);
