@@ -10,7 +10,7 @@ import javax.swing.Icon;
  * An implementation of {@link AbstractAction} that allows passing a {@link Consumer<ActionEvent>} 
  * during construction that gets executed when actionPerformed is called.
  * 
- * This allows Lambdas and Method references to be used and makes separate classes for each Action unnecesary.
+ * This allows Lambdas and Method references to be used and makes separate classes for each Action unnecessary.
  */
 public class FunctionAction extends AbstractAction {
     private static final long serialVersionUID = 6115002314325923497L;

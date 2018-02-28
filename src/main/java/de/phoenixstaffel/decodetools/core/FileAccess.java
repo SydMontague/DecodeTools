@@ -29,7 +29,7 @@ public class FileAccess extends BufferedAccess {
     private boolean readOnly = false;
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * 
      * @param chan the FileChannel to read and write from
      * @param name the name to give this instance
@@ -43,7 +43,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * <p>
      * The byte order will be set to Little Endian.
      * </p>
@@ -56,7 +56,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * <p>
      * The name will be set to an empty String.
      * </p>
@@ -69,7 +69,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * <p>
      * The name will be set to an empty String. The byte order will be set to Little Endian.
      * </p>
@@ -81,7 +81,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
@@ -96,7 +96,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
@@ -112,7 +112,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The byte order will be set to Little
@@ -128,7 +128,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new, read and writable, instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}.
@@ -145,7 +145,7 @@ public class FileAccess extends BufferedAccess {
     
 
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
@@ -153,6 +153,7 @@ public class FileAccess extends BufferedAccess {
      * </p>
      * 
      * @param file the file to read and write from
+     * @param readOnly whether the file is opened in read only mode or not
      * @throws IOException if anything goes wrong opening the file
      */
     public FileAccess(File file, boolean readOnly) throws IOException {
@@ -160,7 +161,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The name will be set to the name of
@@ -169,6 +170,7 @@ public class FileAccess extends BufferedAccess {
      * 
      * @param file the file to read and write from
      * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
+     * @param readOnly whether the file is opened in read only mode or not
      * @throws IOException if anything goes wrong opening the file
      */
     public FileAccess(File file, ByteOrder byteOrder, boolean readOnly) throws IOException {
@@ -176,7 +178,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}. The byte order will be set to Little
@@ -185,6 +187,7 @@ public class FileAccess extends BufferedAccess {
      * 
      * @param file the file to read and write from
      * @param name the name to give this instance
+     * @param readOnly whether the file is opened in read only mode or not
      * @throws IOException if anything goes wrong opening the file
      */
     public FileAccess(File file, String name, boolean readOnly) throws IOException {
@@ -193,7 +196,7 @@ public class FileAccess extends BufferedAccess {
     }
     
     /**
-     * Initialises a new instances of this class.
+     * Initializes a new instance of this class.
      * <p>
      * A FileChannel will be opened based on the given file, using
      * {@link FileChannel#open(java.nio.file.Path, java.nio.file.OpenOption...)}.
