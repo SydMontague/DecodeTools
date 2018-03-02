@@ -1,12 +1,9 @@
 package de.phoenixstaffel.decodetools.res;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Level;
 
-import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
@@ -31,30 +28,53 @@ import de.phoenixstaffel.decodetools.res.payload.VCTMPayload;
 import de.phoenixstaffel.decodetools.res.payload.XDIOPayload;
 import de.phoenixstaffel.decodetools.res.payload.XTVOPayload;
 
+/**
+ * The abstract superclass for all different entry types inside a Re:Digitize/Decode Resource file.
+ */
 public abstract class ResPayload {
     private static final int DEFAULT_ALIGNMENT = 1;
     
     private KCAPPayload parent = null;
     
-    public ResPayload(KCAPPayload parent) {
+    protected ResPayload(KCAPPayload parent) {
         this.parent = parent;
     }
     
+    /**
+     * Gets whether the payload has a parent KCAP it is embedded in or not.
+     * 
+     * @return true when the entry has a parent KCAP, false otherwise
+     */
     public boolean hasParent() {
         return parent != null;
     }
     
+    /**
+     * Gets the parent KCAP of this entry or null if {@link #hasParent()} is false.
+     * 
+     * @return the parent KCAPPayload or null if there is none
+     */
     public KCAPPayload getParent() {
         return parent;
     }
     
+    /**
+     * Gets the entry's size when written in a Resource file, excluding ResData but including all potential children.
+     * 
+     * @return the entry's size
+     */
     public abstract int getSize();
     
+    /**
+     * Gets the type of the Payload.
+     * 
+     * @return the type of the Payload
+     */
     public abstract Payload getType();
     
     /**
      * Get the size of the uppermost parent element, which includes all the child elements. This function should only be
-     * called after the root element has been fully initialised.
+     * called after the root element has been fully initialized.
      * 
      * @return the size of the root node
      */
@@ -64,7 +84,7 @@ public abstract class ResPayload {
     
     /**
      * Gets the alignment of that data structure, so that padding gets added if necessary. For example, if the value is
-     * 0x10 then each address is dividable by 0x10.
+     * 0x10 then each address is divisible by 0x10.
      * 
      * @return the alignment
      */
@@ -72,62 +92,147 @@ public abstract class ResPayload {
         return DEFAULT_ALIGNMENT;
     }
     
+    /**
+     * Writes the resource entry to given then {@link Access} and eventual data to the given {@link IResData}
+     * starting from the current position of each.
+     * 
+     * @param dest the {@link Access} to write into
+     * @param dataStream the {@link IResData} to write into
+     */
     public abstract void writeKCAP(Access dest, IResData dataStream);
     
+    /**
+     * Creates a new ResPayload by reading the next structure from the passed {@link Access}.
+     * 
+     * @param source the {@link Access to read from}
+     * @param dataStart a pointer to the start of the data section of the file this entry exists in
+     * @param parent the parent KCAP of this entry or null if there is none
+     * @param size the size of the entry as defined by the parent KCAP or -1 if it is the root entry
+     * @param name the name of the entry as defined by the parent KCAP or null if there is none
+     * @return the newly created ResPayload
+     */
     public static ResPayload craft(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         return Payload.valueOf(parent, source.readLong(source.getPosition())).newInstance(source, dataStart, parent, size, name);
     }
     
+    /**
+     * Writes the entry's resource data to a {@link DummyResData} instance for size calculation purposes.
+     * Since it's not an actual write this allows to only perform what is necessary for the calculations, 
+     * thus improving the performance.
+     * 
+     * @param data the {@link DummyResData} to write into
+     */
+    public void fillDummyResData(DummyResData data) {
+    }
+    
+    /**
+     * Gets a list of all entries with a certain {@link Payload} in this entry, including itself.
+     * 
+     * @param type the Payload type to look for
+     * @return a list of ResPayloads with that type
+     */
+    public List<ResPayload> getElementsWithType(Payload type) {
+        List<ResPayload> list = new ArrayList<>();
+        
+        if (getType() == type)
+            list.add(this);
+        
+        return list;
+    }
+
     @Override
     public String toString() {
         return getType().name();
     }
     
-    public enum Payload {
-        GENERIC(0, GenericPayload.class),
-        GMIO(0x4F494D47, GMIOPayload.class, a -> 0x40 + a.readInteger(0x3C)),
-        KCAP(0x5041434B, KCAPPayload.class, a -> a.readInteger(0x08)),
-        XTVO(0x4F565458, XTVOPayload.class),
-        XDIO(0x4F494458, XDIOPayload.class),
-        VCTM(0x4D544356, VCTMPayload.class),
-        QSTM(0x4D545351, QSTMPayload.class),
-        BTX(0x20585442, BTXPayload.class),
-        PADH(0x48444150, PADHPayload.class),
-        HSEM(0, HSEMPayload.class),
-        LRTM(0, LRTMPayload.class),
-        CTPP(0, CTPPPayload.class),
-        LTMP(0, LTMPPayload.class),
-        TNFO(0x4F464E54, TNFOPayload.class),
-        LDMP(0, LDMPPayload.class),
-        MFTP(0, MFTPPayload.class),
-        PRGM(0, PRGMPayload.class),
-        RTCL(0, RTCLPayload.class),
-        TMEP(0, TMEPPayload.class),
-        TREP(0, TREPPayload.class),
-        TNOJ(0, TNOJPayload.class),;
+    /**
+     * A functional interface for {@link Payload}, to allow to passing Lambdas and method references.
+     */
+    @FunctionalInterface
+    private static interface ResPayloadInitializer {
+        /**
+         * See {@link ResPayload#craft(Access, int, KCAPPayload, int, String)}
+         */
+        public ResPayload initialize(Access source, int dataStart, KCAPPayload parent, int size, String name);
+    }
+    
+    /**
+     * An enumeration of all valid Payload types for resource files.
+     */
+    public static enum Payload {
+        GENERIC(0, GenericPayload::new),
+        GMIO(0x4F494D47, GMIOPayload::new, a -> 0x40 + a.readInteger(0x3C)),
+        KCAP(0x5041434B, KCAPPayload::new, a -> a.readInteger(0x08)),
+        XTVO(0x4F565458, XTVOPayload::new, a -> 0x74 + 0xC * a.readShort(0x30)),
+        XDIO(0x4F494458, XDIOPayload::new, a -> 0x20),
+        VCTM(0x4D544356, VCTMPayload::new),
+        QSTM(0x4D545351, QSTMPayload::new),
+        BTX(0x20585442, BTXPayload::new),
+        PADH(0x48444150, PADHPayload::new),
+        HSEM(0, HSEMPayload::new),
+        LRTM(0, LRTMPayload::new),
+        CTPP(0, CTPPPayload::new),
+        LTMP(0, LTMPPayload::new),
+        TNFO(0x4F464E54, TNFOPayload::new),
+        LDMP(0, LDMPPayload::new),
+        MFTP(0, MFTPPayload::new),
+        PRGM(0, PRGMPayload::new),
+        RTCL(0, RTCLPayload::new),
+        TMEP(0, TMEPPayload::new),
+        TREP(0, TREPPayload::new),
+        TNOJ(0, TNOJPayload::new);
         
         private final int magicValue;
-        private final Class<? extends ResPayload> clazz;
-        private Function<Access, Integer> method;
+        private Function<Access, Integer> sizeMethod;
+        private ResPayloadInitializer initializer;
         
-        private Payload(int magicValue, Class<? extends ResPayload> clazz) {
-            this(magicValue, clazz, a -> 0);
+        /**
+         * @param magicValue the magic value that identify the Payload or 0 there is none
+         * @param initializer a {@link ResPayloadInitializer} to instantiate the payload, e.g. a constructor reference 
+         */
+        private Payload(int magicValue, ResPayloadInitializer initializer) {
+            this(magicValue, initializer, a -> 0);
         }
         
-        private Payload(int magicValue, Class<? extends ResPayload> clazz, Function<Access, Integer> method) {
+        /**
+         * @param magicValue the magic value that identify the Payload or 0 there is none
+         * @param initializer a {@link ResPayloadInitializer} to instantiate the payload, e.g. a constructor reference 
+         * @param sizeMethod a Function that reads from a given {@link Access} the size of the given resource entry. <br /> 
+         *                   This is only relevant for payloads that can be root <b>and</b> contain resource data.
+         */
+        private Payload(int magicValue, ResPayloadInitializer initializer, Function<Access, Integer> sizeMethod) {
             this.magicValue = magicValue;
-            this.clazz = clazz;
-            this.method = method;
+            this.initializer = initializer;
+            this.sizeMethod = sizeMethod;
         }
         
+        /**
+         * Gets the magic 4-byte value that identifies this Payload.
+         * 
+         * @return the magic value of this Payload
+         */
         public int getMagicValue() {
             return magicValue;
         }
         
+        /**
+         * Returns the Payload that are identified by the first 8 bytes of it's structure as well as it's parent KCAP.
+         * 
+         * First the passed bytes 0-3 get checked if they match a magic value as well as byte 4-7 for the BTX magic value.
+         * If no magic value matches, the parent's KCAP Extension gets checked whether it implies a certain Payload type.
+         * 
+         * In case there are still no matches the payload will be considered GENERIC.
+         * 
+         * @param parent the parent {@link KCAPPayload}
+         * @param value the first 8-bytes of the Payload's structure
+         * @return the type of the Payload identified by the parent and/or the first 8-bytes of data
+         */
         public static Payload valueOf(KCAPPayload parent, long value) {
+            //split the long value to compare them to the 4-byte magic value
             int left = (int) (value >>> 32);
             int right = (int) (value & 0xFFFFFFFF);
             
+            //check if the first 4 bytes match a magic value
             for (Payload extension : values()) {
                 if (extension.magicValue == 0)
                     continue;
@@ -136,9 +241,11 @@ public abstract class ResPayload {
                     return extension;
             }
             
+            //BTX with meta entries have their magic value at 0x4 instead of 0x0
             if (left == BTX.getMagicValue())
                 return BTX;
             
+            //some payloads depend on the extension of the parent KCAP
             if (parent == null || parent.getExtension() == null)
                 return GENERIC;
             
@@ -170,34 +277,21 @@ public abstract class ResPayload {
             }
         }
         
+        /**
+         * See {@link ResPayload#craft(Access, int, KCAPPayload, int, String)}
+         */
         public ResPayload newInstance(Access source, int dataStart, KCAPPayload parent, int size, String name) {
-            try {
-                return clazz.getConstructor(Access.class, int.class, KCAPPayload.class, int.class, String.class).newInstance(source, dataStart, parent, size, name);
-            }
-            catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                Main.LOGGER.log(Level.WARNING, "Failed to instantiate HeaderExtension " + this, e);
-                throw new IllegalArgumentException();
-            }
-            catch (IllegalArgumentException e) {
-                Main.LOGGER.log(Level.WARNING, this.name());
-                throw e;
-            }
+            return initializer.initialize(source, dataStart, parent, size, name);
         }
         
+        /**
+         * Gets the address where the res data starts for this entry, if it were root
+         * 
+         * @param source the Access to read from, current at the start of a structure with this type
+         * @return the address of where the res data starts, aligned to 0x80
+         */
         public int getDataStart(Access source) {
-            return Utils.align(method.apply(source), 0x80);
+            return Utils.align(sizeMethod.apply(source), 0x80);
         }
-    }
-    
-    public void fillDummyResData(DummyResData data) {
-    }
-    
-    public List<ResPayload> getElementsWithType(Payload type) {
-        List<ResPayload> list = new ArrayList<>();
-        
-        if (getType() == type)
-            list.add(this);
-        
-        return list;
     }
 }
