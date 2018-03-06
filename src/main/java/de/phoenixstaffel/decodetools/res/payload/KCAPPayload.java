@@ -102,8 +102,8 @@ public class KCAPPayload extends ResPayload {
             value += entry.getSize();
         }
         
-        // make sure it's padded
-        value = Utils.align(value, 0x4); // FIXME really needed?
+        // unneeded padding, hopefully
+        //value = Utils.align(value, 0x4);
         
         return value;
     }
@@ -196,9 +196,9 @@ public class KCAPPayload extends ResPayload {
             a.writeKCAP(dest, dataStream);
         });
         
-        // FIXME really needed? Messes up BTX test
-        int diff = (int) (Utils.align(dest.getPosition(), 0x4) - dest.getPosition());
-        dest.writeByteArray(new byte[diff]);
+        // unneeded padding, hopefully
+        //int diff = (int) (Utils.align(dest.getPosition(), 0x4) - dest.getPosition());
+        //dest.writeByteArray(new byte[diff]);
     }
     
     public int getGenericAlignment() {
