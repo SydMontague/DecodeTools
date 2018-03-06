@@ -153,11 +153,10 @@ public class XMLFont {
             
             int yTrans = getBase() - yOffset;
             if(yTrans > 127 || yTrans < -128) 
-                Main.LOGGER.warning("Character '" + id + "' results in a Y-Translation that out of the bounds of a byte. Reduce the font size.");
+                Main.LOGGER.warning(() -> "Character '" + id + "' results in a Y-Translation that out of the bounds of a byte. Reduce the font size.");
         }
         
         public TNFOEntry toTNFOEntry() {
-            //TODO check if the calculations are correct
             TNFOEntry entry = new TNFOEntry();
             
             entry.setGmioId((short) page);
