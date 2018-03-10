@@ -79,9 +79,6 @@ public class XTVOAttribute implements Comparable<XTVOAttribute> {
 
     @Override
     public int compareTo(XTVOAttribute o) {
-        if(o.getStride() == getStride())
-            return 0;
-        
-        return o.getStride() < getStride() ? 1 : 0;
+        return getStride() - o.getStride(); 
     }
 }
