@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.core.Utils;
@@ -55,6 +56,10 @@ public class BTXPayload extends ResPayload {
             while((val = source.readChar()) != 0) {
                 builder.append(val);
             }
+            
+            char secondNull = source.readChar();
+            if(postStart == 0 && secondNull != 0x0000) // read final 0x0000
+                Main.LOGGER.warning(() -> "Tried reading the second terminator char (0x0000) but got " + secondNull);
             
             strings.add(builder.toString());
         }

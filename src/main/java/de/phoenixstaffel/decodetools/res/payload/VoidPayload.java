@@ -3,8 +3,13 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class VoidPayload extends ResPayload {
+    
+    public VoidPayload(AbstractKCAP parent) {
+        super(null); //TODO parent
+    }
     
     public VoidPayload(KCAPPayload parent) {
         super(parent);

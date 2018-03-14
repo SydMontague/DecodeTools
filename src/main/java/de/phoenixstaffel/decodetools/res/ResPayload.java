@@ -112,7 +112,7 @@ public abstract class ResPayload {
      * @return the newly created ResPayload
      */
     public static ResPayload craft(Access source, int dataStart, KCAPPayload parent, int size, String name) {
-        return Payload.valueOf(parent, source.readLong(source.getPosition())).newInstance(source, dataStart, parent, size, name);
+        return Payload.valueOf(parent, source.readLongOffset(0)).newInstance(source, dataStart, parent, size, name);
     }
     
     /**
@@ -159,7 +159,7 @@ public abstract class ResPayload {
     /**
      * An enumeration of all valid Payload types for resource files.
      */
-    public static enum Payload {
+    public enum Payload {
         GENERIC(0, GenericPayload::new),
         GMIO(0x4F494D47, GMIOPayload::new, a -> 0x40 + a.readInteger(0x3C)),
         KCAP(0x5041434B, KCAPPayload::new, a -> a.readInteger(0x08)),

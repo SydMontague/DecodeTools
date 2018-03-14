@@ -15,9 +15,7 @@ import de.phoenixstaffel.decodetools.res.extensions.VoidExtension;
 public class KCAPPayload extends ResPayload {
     private static final int VERSION = 1;
     
-    private long startAddress;
-    
-    private int unknown2; // flags?
+    private int unknown2; // flags? only 0x10000 or 0x0, only for VOID KCAPs
     
     private HeaderExtension extension = new VoidExtension();
     private List<KCAPPointer> pointer = new ArrayList<>();
@@ -34,7 +32,7 @@ public class KCAPPayload extends ResPayload {
     
     public KCAPPayload(Access source, int dataStart, KCAPPayload parent) {
         super(parent);
-        startAddress = source.getPosition();
+        long startAddress = source.getPosition();
         
         source.readInteger(); // magic value
         source.readInteger(); // version
@@ -49,17 +47,16 @@ public class KCAPPayload extends ResPayload {
         if (headerSize > 0x20)
             extension = HeaderExtension.craft(source);
         
-        if (source.getPosition() - startAddress < startAddress + headerSize)
-            source.setPosition(startAddress + headerSize);
+        source.setPosition(startAddress + headerSize);
         
         for (int i = 0; i < numEntries; i++)
             pointer.add(new KCAPPointer(source.readInteger(), source.readInteger()));
         
         if (extension != null)
             extensionPayload = extension.loadPayload(source, numPayloadEntries);
-        
-        genericAligned = !pointer.stream().anyMatch(a -> (a.getOffset() % 0x10) != 0);
-        
+
+        genericAligned = pointer.stream().allMatch(a -> (a.getOffset() % 10) == 0);
+
         for (int i = 0; i < numEntries; i++) {
             KCAPPointer entry = pointer.get(i);
             source.setPosition(entry.getOffset() + startAddress);
