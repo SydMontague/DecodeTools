@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
@@ -100,6 +101,12 @@ public abstract class ResPayload {
      * @param dataStream the {@link IResData} to write into
      */
     public abstract void writeKCAP(Access dest, IResData dataStream);
+    
+
+    //TODO temporary, replace
+    public static ResPayload craft(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
+        return craft(source, dataStart, (KCAPPayload) null, size, name);
+    }
     
     /**
      * Creates a new ResPayload by reading the next structure from the passed {@link Access}.

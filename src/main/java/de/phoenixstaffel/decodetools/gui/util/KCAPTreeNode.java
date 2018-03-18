@@ -67,6 +67,7 @@ public class KCAPTreeNode extends ResPayloadTreeNode {
         return false;
     }
 
+    // TODO update to Enumeration<? extends TreeNode>
     @Override
     public Enumeration<ResPayload> children() {
         return new IteratorEnumeration<>(getPayload().getEntries().iterator());

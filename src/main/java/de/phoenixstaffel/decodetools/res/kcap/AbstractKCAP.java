@@ -1,19 +1,20 @@
 package de.phoenixstaffel.decodetools.res.kcap;
 
+import java.util.Iterator;
 import java.util.List;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
-public abstract class AbstractKCAP extends ResPayload {
+public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPayload> {
     
     protected static final int VERSION = 1;
     
     private int unknown;
     
     protected AbstractKCAP(AbstractKCAP parent, int unknown) {
-        super(null); //TODO super(parent);
+        super(null); // TODO super(parent);
         
         this.unknown = unknown;
     }
@@ -21,15 +22,34 @@ public abstract class AbstractKCAP extends ResPayload {
     public int getUnknown() {
         return unknown;
     }
-
+    
+    /**
+     * <p>
+     * Returns an immutable List of all the entries this KCAP structure contains in their respective order.
+     * While the list itself is immutable the entries are not, so any changes on them change the KCAP itself.
+     * </p>
+     * <p>
+     * To add/remove/replace entries use the respective modification operations of the KCAP instance.
+     * </p>
+     * 
+     * @return a immutable List of entries
+     */
     public abstract List<ResPayload> getEntries();
     
+    //TODO JavaDocs
     public abstract ResPayload get(int i);
     
+    //TODO JavaDocs
     public abstract int getEntryCount();
     
+    //TODO JavaDocs
     public abstract KCAPType getKCAPType();
-
+    
+    @Override
+    public Iterator<ResPayload> iterator() {
+        return getEntries().iterator();
+    }
+    
     @Override
     public Payload getType() {
         return Payload.KCAP;
@@ -63,16 +83,20 @@ public abstract class AbstractKCAP extends ResPayload {
         }
         
         public static KCAPType valueOf(int val) {
-            for(KCAPType value : values())
-                if(value.magicValue == val)
+            for (KCAPType value : values())
+                if (value.magicValue == val)
                     return value;
-            
+                
             return NONE;
+        }
+        
+        public int getMagicValue() {
+            return magicValue;
         }
     }
     
-    //TODO temporary method to test thigns, remove it
-    public static AbstractKCAP craftKCAP(Access source, int dataStart,  KCAPPayload parent, int size, String name) {
+    // TODO temporary method to test things, remove it
+    public static AbstractKCAP craftKCAP(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         return craftKCAP(source, null, dataStart);
     }
     
@@ -80,20 +104,21 @@ public abstract class AbstractKCAP extends ResPayload {
         long startAddress = source.getPosition();
         KCAPType extension = KCAPType.valueOf(source.readIntegerOffset(0x20));
         
-        if(source.readInteger() != 0x5041434B)
+        if (source.readInteger() != 0x5041434B)
             throw new IllegalArgumentException("Given Access does not point to a KCAP element.");
         
-        if(source.readInteger() != VERSION)
+        if (source.readInteger() != VERSION)
             throw new IllegalArgumentException("The given KCAP is not of Version 1 and thus not supported.");
         
         KCAPInformation info = new KCAPInformation(startAddress, source);
         
-        switch(extension) {
+        switch (extension) {
             case CTPP:
             case GMIP:
+                return new GMIPKCAP(parent, source, dataStart, info);
             case HSEM:
             case HSMP:
-            case KPTF: 
+            case KPTF:
             case LDMP:
             case LRTM:
             case LTMP:
@@ -108,7 +133,7 @@ public abstract class AbstractKCAP extends ResPayload {
             case XFEP:
             case XTVP:
             case NONE:
-            default: 
+            default:
                 return new NormalKCAP(parent, source, dataStart, info);
             
         }
@@ -154,6 +179,24 @@ public abstract class AbstractKCAP extends ResPayload {
         
         public int getSize() {
             return size;
+        }
+    }
+    
+    static class NamePointer {
+        private final int offset;
+        private final int id;
+        
+        public NamePointer(int offset, int id) {
+            this.offset = offset;
+            this.id = id;
+        }
+        
+        public int getOffset() {
+            return offset;
+        }
+        
+        public int getID() {
+            return id;
         }
     }
 }

@@ -1,6 +1,7 @@
 package de.phoenixstaffel.decodetools.res.kcap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import de.phoenixstaffel.decodetools.Main;
@@ -18,23 +19,27 @@ public class NormalKCAP extends AbstractKCAP {
     public NormalKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
 
+        // load the KCAP pointers to the entries
         List<KCAPPointer> pointer = new ArrayList<>();
         
         for(int i = 0; i < info.entries; ++i) {
             pointer.add(new KCAPPointer(source.readInteger(), source.readInteger()));
         }
 
+        // determine how the KCAP is aligned
         genericAligned = pointer.stream().allMatch(a -> (a.getOffset() % 0x10) == 0);
         
+        // load the content
         for(KCAPPointer p : pointer) {
-            if(p.getOffset() == 0 && p.getSize() == 0) 
+            if(p.getOffset() == 0 && p.getSize() == 0) // those empty entries exist and have to be preserved
                 entries.add(new VoidPayload(this));
             else {
                 source.setPosition(info.startAddress + p.getOffset());
-                entries.add(ResPayload.craft(source, dataStart, null /* TODO parent, replace with 'this' */, p.getSize(), null));
+                entries.add(ResPayload.craft(source, dataStart, this, p.getSize(), null));
             }
         }
-        
+
+        // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
         if(source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for normal KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
@@ -46,7 +51,7 @@ public class NormalKCAP extends AbstractKCAP {
     
     @Override
     public List<ResPayload> getEntries() {
-        return entries;
+        return Collections.unmodifiableList(entries);
     }
     
     @Override

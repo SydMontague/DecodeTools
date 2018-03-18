@@ -243,4 +243,16 @@ public class GMIOPayload extends ResPayload {
     public int getHeight() {
         return image != null ? image.getHeight() : 0;
     }
+
+    public boolean hasName() {
+        return name != null;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
 }
