@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.lostevotools.NCGR.TileData;
+import de.phoenixstaffel.lostevotools.NCGR.ITileData;
 import de.phoenixstaffel.lostevotools.NCLR.PaletteData;
 import de.phoenixstaffel.lostevotools.NSCR.MapData;
 
@@ -29,7 +29,7 @@ public class GameImage {
         
         for (int h = 0; h < tileMap.getHeight(); h++) {
             for (int w = 0; w < tileMap.getWidth(); w++) {
-                TileData data = tileMap.getTileData(w, h);
+                ITileData data = tileMap.getTileData(w, h);
                 
                 BufferedImage im = data.toImage(palette.getPalette((short) 0));
                 int[] rgbArray = im.getRGB(0, 0, 8, 8, null, 0, 8);
@@ -89,10 +89,10 @@ public class GameImage {
         for (int w = 0; w < image.getWidth() / 8; w++)
             for (int h = 0; h < image.getHeight() / 8; h++) {
                 MapData mapData = getMap().getMapData(w, h);
-                TileData tileData = getTileMap().getTileData(mapData.getTileIndex());
+                ITileData tileData = getTileMap().getTileData(mapData.getTileIndex());
                 PaletteData paletteData = getPalette().getPalette(mapData.getPaletteIndex());
                 
-                byte[] data = new byte[64];
+                int[] data = new int[64];
                 BufferedImage i = image.getSubimage(w * 8, h * 8, 8, 8);
                 
                 if (mapData.isFlippedVertically())
@@ -102,7 +102,7 @@ public class GameImage {
                 
                 for (int x = 0; x < 8; x++)
                     for (int y = 0; y < 8; y++) {
-                        data[y * 8 + x] = paletteData.getIndex(i.getRGB(x, y), tileData.getIndex(x, y));
+                        data[y * 8 + x] = paletteData.getIndex(i.getRGB(x, y), (byte) tileData.getIndex(x, y));
                     }
                 
                 tileData.setData(data);

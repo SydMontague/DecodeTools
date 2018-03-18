@@ -19,7 +19,7 @@ public class NCGR {
     private int tileSize;
     private int unknown4;
     
-    private TileData[][] tileData;
+    private ITileData[][] tileData;
     
     private int magicValueCPOS;
     private int unknown5;
@@ -40,10 +40,14 @@ public class NCGR {
         tileSize = access.readInteger();
         unknown4 = access.readInteger();
         
-        this.tileData = new TileData[width][height];
+        this.tileData = depth == 3 ? new TileData[width][height] : new TileData2[width][height];
         for (int j = 0; j < height; j++)
             for (int i = 0; i < width; i++) {
-                tileData[i][j] = new TileData(access.readByteArray(64 * 4 / 8));
+                
+                if(depth == 3)
+                    tileData[i][j] = new TileData(access.readByteArray(64 * 4 / 8));
+                else if(depth == 4)
+                    tileData[i][j] = new TileData2(access.readByteArray(8 * 8));
             }
         
         magicValueCPOS = access.readInteger();
@@ -80,7 +84,56 @@ public class NCGR {
         return true;
     }
     
-    class TileData {
+    interface ITileData {
+        public void save(Access dest);
+        
+        public int getIndex(int i, int j);
+        
+        public default BufferedImage toImage(PaletteData palette) {
+            BufferedImage image = new BufferedImage(8, 8, BufferedImage.TYPE_USHORT_555_RGB);
+            
+            for(int i = 0; i < 8; i++)
+                for(int j = 0; j < 8; j++)
+                    image.setRGB(i, j, palette.getColor(getIndex(i, j)).toRGB8());
+
+            return image;
+        }
+        
+        public void setData(int[] data2);
+    }
+    
+    class TileData2 implements ITileData {
+        int[] data;
+        
+        public TileData2(byte[] data) {
+            this.data = new int[data.length];
+            
+            for(int i = 0; i < data.length; ++i)
+                this.data[i] = Byte.toUnsignedInt(data[i]);
+        }
+        
+        @Override
+        public void save(Access dest) {
+            byte[] data2 = new byte[data.length];
+            
+            for(int i = 0; i < data.length; i++)
+                data2[i] = (byte) this.data[i];
+            
+            dest.writeByteArray(data2);
+        }
+
+        @Override
+        public int getIndex(int i, int j) {
+            return data[j * 8 + i];
+        }
+
+        @Override
+        public void setData(int[] data2) {
+            this.data = data2;
+        }
+    }
+    
+    class TileData implements ITileData  {
         byte[] data;
         
         public TileData(byte[] data) {
@@ -93,6 +146,7 @@ public class NCGR {
             }
         }
 
+        @Override
         public void save(Access dest) {
             byte[] data2 = new byte[data.length / 2];
             
@@ -104,22 +158,17 @@ public class NCGR {
             dest.writeByteArray(data2);
         }
 
-        public byte getIndex(int i, int j) {
-            return data[j * 8 + i];
+        @Override
+        public int getIndex(int i, int j) {
+            return Byte.toUnsignedInt(data[j * 8 + i]);
         }
 
-        public BufferedImage toImage(PaletteData palette) {
-            BufferedImage image = new BufferedImage(8, 8, BufferedImage.TYPE_USHORT_555_RGB);
+        @Override
+        public void setData(int[] data2) {
+            this.data = new byte[data2.length];
             
-            for(int i = 0; i < 8; i++)
-                for(int j = 0; j < 8; j++)
-                    image.setRGB(i, j, palette.getColor(getIndex(i, j)).toRGB8());
-
-            return image;
-        }
-
-        public void setData(byte[] data2) {
-            this.data = data2;
+            for(int i = 0; i < data.length; ++i)
+                this.data[i] = (byte) data2[i];
         }
     }
 
@@ -131,11 +180,11 @@ public class NCGR {
         return height;
     }
 
-    public TileData getTileData(int w, int h) {
+    public ITileData getTileData(int w, int h) {
         return tileData[w][h];
     }
 
-    public TileData getTileData(short index) {
+    public ITileData getTileData(short index) {
         int x = index % width;
         int y = index / width;
 

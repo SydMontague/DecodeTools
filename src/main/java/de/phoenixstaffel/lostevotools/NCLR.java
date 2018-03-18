@@ -84,20 +84,20 @@ public class NCLR {
             }
         }
         
-        public PaletteColor getColor(byte index) {
+        public PaletteColor getColor(int index) {
             return colors[index];
         }
         
-        public byte getIndex(int rgb, byte original) {
+        public int getIndex(int rgb, byte original) {
             byte red = (byte) (Utils.getSubInteger(rgb, 0, 8) >>> 3);
             byte green = (byte) (Utils.getSubInteger(rgb, 8, 8) >>> 3);
             byte blue = (byte) (Utils.getSubInteger(rgb, 16, 8) >>> 3);
             
             short delta = 1024;
-            byte tmp = 0;
+            int tmp = 0;
             short difference;
             
-            for (byte i = 0; i < colors.length; i++) {
+            for (int i = 0; i < colors.length; i++) {
                 PaletteColor color = colors[i];
                 
                 difference = (short) Math.abs(red - color.red);
