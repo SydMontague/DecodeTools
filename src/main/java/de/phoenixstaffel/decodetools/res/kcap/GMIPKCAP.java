@@ -26,6 +26,12 @@ public class GMIPKCAP extends AbstractKCAP {
     
     private List<GMIOPayload> entries = new ArrayList<>();
 
+
+    public GMIPKCAP(AbstractKCAP parent, List<GMIOPayload> images) {
+        super(parent, 0);
+        this.entries.addAll(images);
+    }
+    
     public GMIPKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
 
@@ -41,11 +47,7 @@ public class GMIPKCAP extends AbstractKCAP {
         source.readInteger(); //padding
         
         // load the KCAP pointers to the entries
-        List<KCAPPointer> pointer = new ArrayList<>();
-        
-        for(int i = 0; i < info.entries; ++i) {
-            pointer.add(new KCAPPointer(source.readInteger(), source.readInteger()));
-        }
+        List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
         
         // make sure we're actually at the payload start
         if(info.payloadStart != 0) {
@@ -146,7 +148,7 @@ public class GMIPKCAP extends AbstractKCAP {
         dest.writeInteger(getUnknown());
         
         dest.writeInteger(getEntryCount());
-        dest.writeInteger(typeCount); // type count, always 0 for this type
+        dest.writeInteger(typeCount); // type count
         dest.writeInteger(0x30); // header size, always 0x30 for this type
         dest.writeInteger(payloadStart); // type payload start, after the pointer table or 0 if empty
         
@@ -201,7 +203,6 @@ public class GMIPKCAP extends AbstractKCAP {
             long aligned = Utils.align(dest.getPosition() - start, 0x04);
             dest.setPosition(start + aligned);
             
-            System.out.println(entry.getType());
             // write content
             entry.writeKCAP(dest, dataStream);
         }

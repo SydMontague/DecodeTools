@@ -1,5 +1,6 @@
 package de.phoenixstaffel.decodetools.res.kcap;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -7,6 +8,24 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
+/*
+ * TODO finish HSEM implementation
+ * TODO finish HSMP implementation
+ * TODO finish LDMP implementation
+ * TODO finish LRTM implementation
+ * TODO finish LTMP implementation
+ * TODO finish MFTP implementation
+ * TODO finish PRGM implementation
+ * TODO finish RTCL implementation
+ * TODO finish TDTM implementation
+ * TODO finish TMEP implementation
+ * TODO finish TNOJ implementation
+ * TODO finish XDIP implementation
+ * TODO finish XFEP implementation
+ * TODO finish XTVP implementation
+ * 
+ * TODO reduce code redundancy, especially with in reading/writing/size calculation
+ */
 public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPayload> {
     
     protected static final int VERSION = 1;
@@ -114,11 +133,13 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
         
         switch (extension) {
             case CTPP:
+                return new CTPPKCAP(parent, source, dataStart, info);
             case GMIP:
                 return new GMIPKCAP(parent, source, dataStart, info);
             case HSEM:
             case HSMP:
             case KPTF:
+                return new KPTFKCAP(parent, source, dataStart, info);
             case LDMP:
             case LRTM:
             case LTMP:
@@ -198,5 +219,13 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
         public int getID() {
             return id;
         }
+    }
+    
+    static List<KCAPPointer> loadKCAPPointer(Access source, int count) {
+        List<KCAPPointer> pointer = new ArrayList<>();
+        for(int i = 0; i < count; ++i) {
+            pointer.add(new KCAPPointer(source.readInteger(), source.readInteger()));
+        }
+        return pointer;
     }
 }
