@@ -4,6 +4,19 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
+/*
+ * 4-byte   QSTM magic value (0x4D545351) 
+ * 2-byte   unknown
+ * 2-byte   unknown, number of attributes?
+ * <QSTM entries>
+ * 
+ * QSTM entry:
+ * 2-byte   attribute ID
+ * 2-byte   data size
+ * <data>   content depending on attribute ID
+ * 
+ * TODO implement proper structure
+ */
 public class QSTMPayload extends ResPayload {
     private int[] data;
     

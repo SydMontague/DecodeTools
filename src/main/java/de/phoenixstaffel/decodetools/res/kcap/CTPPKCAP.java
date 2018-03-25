@@ -20,7 +20,7 @@ public class CTPPKCAP extends AbstractKCAP {
         
         // make sure it's actually a CTPP
         if(source.readInteger() != KCAPType.CTPP.getMagicValue())
-            throw new IllegalArgumentException("Tried to instanciate CTPP KCAP, but didn't find a GMIP header.");
+            throw new IllegalArgumentException("Tried to instanciate CTPP KCAP, but didn't find a CTPP header.");
         
         // padding, always 0
         source.readInteger();

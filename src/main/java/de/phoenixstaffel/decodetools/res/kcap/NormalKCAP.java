@@ -41,6 +41,13 @@ public class NormalKCAP extends AbstractKCAP {
             Main.LOGGER.warning(() -> "Final position for normal KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
 
+    public NormalKCAP(AbstractKCAP parent, List<? extends ResPayload> entries, boolean genericAligned) {
+        super(parent, 0);
+        
+        this.entries.addAll(entries);
+        this.genericAligned = genericAligned;
+    }
+
     private int getGenericAlignment() {
         return genericAligned ? 0x10 : 0x04;
     }

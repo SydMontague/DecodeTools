@@ -5,6 +5,23 @@ import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
+/*
+ * 4-byte       magic value
+ * 4-byte       number of entries
+ * 4-byte       offset of entries #2
+ * 4-byte       offset of entries #1
+ * 
+ * 4-byte       unknown
+ * 2-byte       size of entry #2
+ * 2-byte       size of entry #1
+ * float        unknown
+ * float        unknown
+ * 
+ * <entries #1> 
+ * <entries #2> 
+ * 
+ * TODO implement proper structure
+ */
 public class VCTMPayload extends ResPayload {
     private int numEntries;
     private int coordStart;
@@ -13,14 +30,12 @@ public class VCTMPayload extends ResPayload {
     private int unknown1;
     private short sizeValue1;
     private short sizeValue2;
-    private int unknown4;
-    private int unknown5;
+    private float unknown4;
+    private float unknown5;
     
     private VCTMEntry[] data1;
     private VCTMEntry[] data2;
     
-    // 1 byte per numEntries array
-    // 8 byte per numEntries array
     public VCTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         this(source, dataStart, parent);
     }
@@ -37,8 +52,8 @@ public class VCTMPayload extends ResPayload {
         unknown1 = source.readInteger();
         sizeValue1 = source.readShort();
         sizeValue2 = source.readShort();
-        unknown4 = source.readInteger();
-        unknown5 = source.readInteger();
+        unknown4 = source.readFloat();
+        unknown5 = source.readFloat();
         
         data1 = new VCTMEntry[numEntries];
         data2 = new VCTMEntry[numEntries];
@@ -89,8 +104,8 @@ public class VCTMPayload extends ResPayload {
         dest.writeInteger(unknown1);
         dest.writeShort(sizeValue1);
         dest.writeShort(sizeValue2);
-        dest.writeInteger(unknown4);
-        dest.writeInteger(unknown5);
+        dest.writeFloat(unknown4);
+        dest.writeFloat(unknown5);
         
         for (VCTMEntry entry : data1)
             for (byte b : entry.getData())

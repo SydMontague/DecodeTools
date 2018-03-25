@@ -115,6 +115,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     }
     
     // TODO temporary method to test things, remove it
+    @Deprecated
     public static AbstractKCAP craftKCAP(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         return craftKCAP(source, null, dataStart);
     }
@@ -147,6 +148,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
             case PRGM:
             case RTCL:
             case TDTM:
+                return new TDTMKCAP(parent, source, dataStart, info);
             case TMEP:
             case TNOJ:
             case TREP:
