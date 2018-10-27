@@ -55,7 +55,7 @@ public class KCAPPayload extends ResPayload {
         if (extension != null)
             extensionPayload = extension.loadPayload(source, numPayloadEntries);
 
-        genericAligned = pointer.stream().allMatch(a -> (a.getOffset() % 10) == 0);
+        genericAligned = pointer.stream().allMatch(a -> (a.getOffset() % 0x10) == 0);
 
         for (int i = 0; i < numEntries; i++) {
             KCAPPointer entry = pointer.get(i);
