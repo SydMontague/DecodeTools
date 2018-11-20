@@ -2,6 +2,7 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
@@ -149,6 +150,15 @@ public class BTXPayload extends ResPayload {
         return entries;
     }
     
+    public String getStringById(int id) {
+        Optional<Tuple<Integer, BTXEntry>> entry = entries.stream().filter(a -> a.getKey() == id).findFirst();
+        
+        if(entry.isPresent())
+            return entry.get().getValue().getString();
+        
+        return null;
+    }
+    
     /**
      * Contains additional information for text strings, like the speaker for text messages.
      * 
@@ -160,6 +170,7 @@ public class BTXPayload extends ResPayload {
         private int unknown2;
         private int unknown3;
         
+        // TODO voice line name?
         private int unknown4;
         private int unknown5;
         private int unknown6;
