@@ -20,7 +20,7 @@ import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload.BTXEntry;
 
-public class BXTPayloadTest {
+public class BTXPayloadTest {
     
     @Test
     public void testSpeakers() throws IOException {
@@ -30,7 +30,7 @@ public class BXTPayloadTest {
                 "まだの〜！"                
         };
         
-        try (InputStream in = BXTPayloadTest.class.getResourceAsStream("/btxSpeakers.res")) {
+        try (InputStream in = BTXPayloadTest.class.getResourceAsStream("/btxSpeakers.res")) {
             testBTX(in, compare, "Speakers", true);
         }
     }
@@ -71,7 +71,7 @@ public class BXTPayloadTest {
                 "",
                 ""
         };
-        try (InputStream in = BXTPayloadTest.class.getResourceAsStream("/btxNoSpeakers.res")) {
+        try (InputStream in = BTXPayloadTest.class.getResourceAsStream("/btxNoSpeakers.res")) {
             testBTX(in, compare, "NoSpeakers", false);
         }
     }
@@ -124,7 +124,7 @@ public class BXTPayloadTest {
     
     @Test
     public void testLanguageKeep() throws IOException {
-        try (InputStream in = BXTPayloadTest.class.getResourceAsStream("/LanguageKeep_jp.res")) {
+        try (InputStream in = BTXPayloadTest.class.getResourceAsStream("/LanguageKeep_jp.res")) {
             byte[] arr = new byte[in.available()];
             in.read(arr);
             
