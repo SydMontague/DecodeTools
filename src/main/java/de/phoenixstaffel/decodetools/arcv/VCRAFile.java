@@ -2,6 +2,7 @@ package de.phoenixstaffel.decodetools.arcv;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -59,8 +60,8 @@ public class VCRAFile {
         entries.add(entry);
     }
     
-    public void repack(File file) {
-        if (file.exists() && !file.delete())
+    public void repack(File file) throws IOException {
+        if (!Files.deleteIfExists(file.toPath()))
             return;
         try {
             if (!file.createNewFile())
