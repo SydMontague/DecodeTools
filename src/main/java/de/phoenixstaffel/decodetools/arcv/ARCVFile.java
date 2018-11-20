@@ -38,7 +38,7 @@ public class ARCVFile {
     public void saveFiles(File outputDir) throws IOException {
         File destFile = new File(outputDir, "ARCV0.BIN");
         
-        if (!Files.deleteIfExists(destFile.toPath()))
+        if (destFile.exists() && !destFile.delete())
             return;
         if (!destFile.exists() && !destFile.createNewFile())
             return;
