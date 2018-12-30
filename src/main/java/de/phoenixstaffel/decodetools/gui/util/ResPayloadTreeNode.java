@@ -51,9 +51,8 @@ public class ResPayloadTreeNode implements TreeNode {
         return true;
     }
 
-    // TODO update to Enumeration<? extends TreeNode>
     @Override
-    public Enumeration<ResPayload> children() {
+    public Enumeration<ResPayloadTreeNode> children() {
         return null;
     }
     

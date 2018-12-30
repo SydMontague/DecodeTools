@@ -1,6 +1,7 @@
 package de.phoenixstaffel.decodetools.gui.util;
 
 import java.util.Enumeration;
+import java.util.Iterator;
 
 import javax.swing.tree.TreeNode;
 
@@ -45,10 +46,10 @@ public class KCAPTreeNode extends ResPayloadTreeNode {
             return -1;
         
         int i = 0;
-        Enumeration<ResPayload> iter = children();
+        Enumeration<ResPayloadTreeNode> iter = children();
         
         while(iter.hasMoreElements()) {
-            if(iter.nextElement().equals(((ResPayloadTreeNode) node).getPayload()))
+            if(iter.nextElement().getPayload().equals(((ResPayloadTreeNode) node).getPayload()))
                 return i;
             
             i++;
@@ -67,10 +68,10 @@ public class KCAPTreeNode extends ResPayloadTreeNode {
         return false;
     }
 
-    // TODO update to Enumeration<? extends TreeNode>
     @Override
-    public Enumeration<ResPayload> children() {
-        return new IteratorEnumeration<>(getPayload().getEntries().iterator());
+    public Enumeration<ResPayloadTreeNode> children() {
+        Iterator<ResPayloadTreeNode> itr = getPayload().getEntries().stream().map(ResPayloadTreeNodeFactory::craft).iterator();
+        return new IteratorEnumeration<>(itr);
     }        
     
     @Override

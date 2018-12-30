@@ -1,7 +1,5 @@
 package de.phoenixstaffel.decodetools.gui.util;
 
-import javax.swing.tree.TreeNode;
-
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
@@ -16,7 +14,7 @@ public class ResPayloadTreeNodeFactory {
      * @param payload the payload to create a node from
      * @return the created node
      */
-    public static TreeNode craft(ResPayload payload) {
+    public static ResPayloadTreeNode craft(ResPayload payload) {
         // might be worth to adjust to switch/case if there are more node types
         
         if(payload.getType() == Payload.KCAP)
