@@ -35,7 +35,7 @@ public class RDRequirements implements StructureClass {
     
     /*-
      * Format:
-     * LL GG UU CC RR RR RR RR XX XX XX XX
+     * LL GG OO CC RR RR RR RR XX XX XX XX
      * 
      * L - Level of Requirement
      *      00 - Quota
@@ -43,7 +43,7 @@ public class RDRequirements implements StructureClass {
      *      02 - Normal
      *      03 - Bonus
      * G - Requirement Group ID
-     * U - Unknown, always 1 for non-Quota Requirements
+     * O - Operator, whether a group is AND (1) or OR (2). Always 0 for QUOTA
      * C - Comparison operation
      *      00 - Quota
      *      01 - =
@@ -77,7 +77,7 @@ public class RDRequirements implements StructureClass {
     class Requirement {
         private Level level;
         private int group;
-        private int unknown;
+        private Operator operator;
         private Comperator comperator;
         
         private Type type;
@@ -87,7 +87,7 @@ public class RDRequirements implements StructureClass {
             
             level = Level.valueOf(Byte.toUnsignedInt(source.readByte()));
             group = Byte.toUnsignedInt(source.readByte());
-            unknown = Byte.toUnsignedInt(source.readByte());
+            operator = Operator.valueOf(source.readByte());
             comperator = Comperator.valueOf(Byte.toUnsignedInt(source.readByte()));
             
             type = Type.valueOf(source.readInteger());
@@ -100,12 +100,32 @@ public class RDRequirements implements StructureClass {
             
             b.append(level).append(" ");
             b.append(group).append(" ");
-            b.append(unknown).append(" ");
+            b.append(operator).append(" ");
             b.append(comperator).append(" ");
             b.append(type).append(" ");
             b.append(value);
             
             return b.toString();
+        }
+    }
+    
+    enum Operator {
+        QUOTA(0),
+        AND(1),
+        OR(2);
+
+        private final int value;
+
+        private Operator(int value) {
+            this.value = value;
+        }
+        
+        public static Operator valueOf(int i) {
+            for(Operator t : values())
+                if(t.value == i)
+                    return t;
+            
+            throw new IllegalArgumentException("Undefined Type: " + i);
         }
     }
     
@@ -135,7 +155,7 @@ public class RDRequirements implements StructureClass {
         EQUALS(1),
         GREATER_THAN(2),
         LESS_THAN(3),
-        UNKNOWN_COM_4(4);
+        UNKNOWN_COM_4(4); // highest
         
         private final int value;
         
