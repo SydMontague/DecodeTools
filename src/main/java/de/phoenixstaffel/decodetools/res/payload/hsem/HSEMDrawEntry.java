@@ -3,11 +3,11 @@ package de.phoenixstaffel.decodetools.res.payload.hsem;
 import de.phoenixstaffel.decodetools.core.Access;
 
 public class HSEMDrawEntry implements HSEMEntryPayload {
-    private short unkn1;
+    private short unkn1; // some mode?
     private short vertexId;
     private short indexId;
     private short unkn2;
-    private short unkn3;
+    private short vertexOffset; // where to start reading the vertices from
     private short unkn4;
     private int vertexCount;
     
@@ -16,7 +16,7 @@ public class HSEMDrawEntry implements HSEMEntryPayload {
         vertexId = source.readShort();
         indexId = source.readShort();
         unkn2 = source.readShort();
-        unkn3 = source.readShort();
+        vertexOffset = source.readShort();
         unkn4 = source.readShort();
         vertexCount = source.readInteger();
     }
@@ -27,7 +27,7 @@ public class HSEMDrawEntry implements HSEMEntryPayload {
         dest.writeShort(vertexId);
         dest.writeShort(indexId);
         dest.writeShort(unkn2);
-        dest.writeShort(unkn3);
+        dest.writeShort(vertexOffset);
         dest.writeShort(unkn4);
         dest.writeInteger(vertexCount);
     }

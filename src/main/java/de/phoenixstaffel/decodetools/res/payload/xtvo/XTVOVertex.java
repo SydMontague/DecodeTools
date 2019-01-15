@@ -14,6 +14,10 @@ import de.phoenixstaffel.decodetools.core.Utils;
 public class XTVOVertex {
     private SortedMap<XTVOAttribute, List<Number>> vertexParams = new TreeMap<>();
     
+    public XTVOVertex(SortedMap<XTVOAttribute, List<Number>> vertexParams) {
+        this.vertexParams = vertexParams;
+    }
+    
     public XTVOVertex(ByteBuffer source, List<XTVOAttribute> attributes) {
         attributes.forEach(a -> {
             List<Number> list = new ArrayList<>();

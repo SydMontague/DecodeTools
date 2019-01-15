@@ -81,4 +81,16 @@ public class LRTMPayload extends ResPayload {
         dest.writeByteArray(data1);
         dest.writeByteArray(data2);
     }
+
+    public boolean hasName() {
+        return name != null;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
 }

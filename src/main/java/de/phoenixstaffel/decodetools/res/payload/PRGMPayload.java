@@ -44,4 +44,16 @@ public class PRGMPayload extends ResPayload {
         dest.writeInteger(unknown3);
         dest.writeInteger(unknown4);
     }
+    
+    public boolean hasName() {
+        return name != null;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
 }

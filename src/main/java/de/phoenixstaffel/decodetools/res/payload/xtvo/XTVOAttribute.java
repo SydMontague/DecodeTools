@@ -10,6 +10,15 @@ public class XTVOAttribute implements Comparable<XTVOAttribute> {
     private XTVOValueType valueType;
     private float scale;
     
+    public XTVOAttribute(XTVORegisterType registerId, short unknown1, short unknown2, byte count, XTVOValueType valueType, float scale) {
+        this.registerId = registerId;
+        this.unknown1 = unknown1;
+        this.unknown2 = unknown2;
+        this.count = count;
+        this.valueType = valueType;
+        this.scale = scale;
+    }
+    
     public XTVOAttribute(Access source) {
         registerId = XTVORegisterType.valueOf(source.readShort());
         unknown1 = source.readShort();

@@ -26,6 +26,14 @@ public class XDIOPayload extends ResPayload {
     
     private List<XDIOFace> data;
     
+    public XDIOPayload(KCAPPayload parent, List<XDIOFace> data, int unknown2, int unknown3) {
+        super(parent);
+        
+        this.data = data;
+        this.unknown2 = unknown2; // 0x00033001
+        this.unknown3 = unknown3; // 0x00000005
+    }
+    
     public XDIOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         this(source, dataStart, parent);
     }

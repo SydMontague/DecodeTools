@@ -127,4 +127,16 @@ public class TNOJPayload extends ResPayload {
     public String toString() {
         return name;
     }
+
+    public boolean hasName() {
+        return name != null;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
 }

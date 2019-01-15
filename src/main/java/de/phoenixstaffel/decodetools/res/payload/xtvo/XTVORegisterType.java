@@ -4,7 +4,7 @@ public enum XTVORegisterType {
     POSITION((short) 0),
     NORMAL((short) 1),
     COLOR((short) 2),
-    IDX((short) 4),
+    IDX((short) 4), // bone ID
     WEIGHT((short) 5),
     TEXTURE0((short) 6),
     TEXTURE1((short) 7);

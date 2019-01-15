@@ -3,9 +3,9 @@ package de.phoenixstaffel.decodetools.res.payload.hsem;
 import de.phoenixstaffel.decodetools.core.Access;
 
 public class HSEM07Entry implements HSEMEntryPayload {
-    private short unkn1;
+    private short unkn1; // culling mode?
     private short unkn2;
-    private short unkn3;
+    private short unkn3; // transparency mode?
     private short unkn4;
     
     public HSEM07Entry(Access source) {

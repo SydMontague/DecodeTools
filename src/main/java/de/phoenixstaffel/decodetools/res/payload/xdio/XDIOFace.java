@@ -7,6 +7,12 @@ public class XDIOFace {
     private Integer vert2;
     private Integer vert3;
     
+    public XDIOFace(Integer vert1, Integer vert2, Integer vert3) {
+        this.vert1 = vert1;
+        this.vert2 = vert2;
+        this.vert3 = vert3;
+    }
+    
     public XDIOFace(ByteBuffer source, XDIOModes mode) {
         vert1 = mode.getReadFunction().apply(source);
         vert2 = mode.getReadFunction().apply(source);
