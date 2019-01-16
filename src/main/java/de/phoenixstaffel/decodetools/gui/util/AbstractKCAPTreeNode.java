@@ -5,19 +5,19 @@ import java.util.Iterator;
 
 import javax.swing.tree.TreeNode;
 
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 /**
- * Represents a {@link KCAPPayload} as TreeNode.
+ * Represents a {@link AbstractKCAP} as TreeNode.
  */
-public class KCAPTreeNode extends ResPayloadTreeNode {
+public class AbstractKCAPTreeNode extends ResPayloadTreeNode {
 
     /**
      * Creates a new TreeNode with the given {@link KCAPPayload} as root.
      * 
      * @param root the {@link KCAPPayload} to use a root
      */
-    protected KCAPTreeNode(KCAPPayload root) {
+    protected AbstractKCAPTreeNode(AbstractKCAP root) {
         super(root);
     }
     
@@ -31,12 +31,12 @@ public class KCAPTreeNode extends ResPayloadTreeNode {
 
     @Override
     public int getChildCount() {
-        return getPayload().getNumEntries();
+        return getPayload().getEntryCount();
     }
 
     @Override
     public TreeNode getParent() {
-        return new KCAPTreeNode(getPayload().getParent());
+        return new AbstractKCAPTreeNode(null /* TODO getPayload().getParent() */);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class KCAPTreeNode extends ResPayloadTreeNode {
     }        
     
     @Override
-    public KCAPPayload getPayload() {
-        return (KCAPPayload) super.getPayload();
+    public AbstractKCAP getPayload() {
+        return (AbstractKCAP) super.getPayload();
     }
 }
