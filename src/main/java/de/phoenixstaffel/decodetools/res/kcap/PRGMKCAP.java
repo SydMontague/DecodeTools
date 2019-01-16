@@ -11,62 +11,40 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
-import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
+import de.phoenixstaffel.decodetools.res.payload.PRGMPayload;
 
-/*
- * 
- * 
- * 
- *
- */
-public class GMIPKCAP extends AbstractKCAP {
-    
-    private static final int GMIP_VERSION = 0x01;
-    
-    private List<GMIOPayload> entries = new ArrayList<>();
+public class PRGMKCAP extends AbstractKCAP {
 
-
-    public GMIPKCAP(AbstractKCAP parent, List<GMIOPayload> images) {
-        super(parent, 0);
-        this.entries.addAll(images);
-    }
+    private List<PRGMPayload> entries = new ArrayList<>();
     
-    public GMIPKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
+    public PRGMKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
-
-        // make sure it's actually a GMIP v1
-        if(source.readInteger() != KCAPType.GMIP.getMagicValue())
-            throw new IllegalArgumentException("Tried to instanciate GMIP KCAP, but didn't find a GMIP header.");
         
-        int version = source.readInteger();
-        if(version != GMIP_VERSION)
-            throw new IllegalArgumentException("Tried to instanciate GMIP KCAP and expected version 1, but got " + version);
+        // make sure it's actually a PRGM
+        if(source.readInteger() != KCAPType.PRGM.getMagicValue())
+            throw new IllegalArgumentException("Tried to instanciate PRGM KCAP, but didn't find a PRGM header.");
         
-        if(source.readInteger() != info.entries) //GMIP numEntries, always matches KCAP numEntries?
-            Main.LOGGER.warning(() -> "Number of entries in KCAP and GMIP header are not equal.");
-        source.readInteger(); //padding
+        // padding, always 0
+        source.readInteger();
+        source.readInteger();
+        source.readInteger();
         
         // load the KCAP pointers to the entries
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
-
-        // load the names
-        Map<Integer, String> names = loadNames(source, info); 
         
-        // load the entries
+        // load the names
+        Map<Integer, String> names = loadNames(source, info);
+
+        // load the content
         for(int i = 0; i < info.entries; ++i) {
             KCAPPointer p = pointer.get(i);
             String name = names.getOrDefault(i, null); // give entries a name if they have one
             
             if(p.getOffset() == 0 && p.getSize() == 0) 
-                throw new IllegalArgumentException("Got a Void pointer, but only GMIO entries are allowed.");
+                throw new IllegalArgumentException("Got a Void pointer, but only PRGM entries are allowed.");
 
             source.setPosition(info.startAddress + p.getOffset());
-            ResPayload payload = ResPayload.craft(source, dataStart, this, p.getSize(), name);
-            
-            if(payload.getType() != Payload.GMIO)
-                throw new IllegalArgumentException("Got a " + payload.getType() + " entry, but only GMIO entries are allowed.");
-            
-            entries.add((GMIOPayload) payload);
+            entries.add(new PRGMPayload(source, dataStart, null /* TODO this */, p.getSize(), name));
         }
         
         // make sure we're at the end of the KCAP
@@ -74,14 +52,13 @@ public class GMIPKCAP extends AbstractKCAP {
         if(source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for normal KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
-
     @Override
     public List<ResPayload> getEntries() {
         return Collections.unmodifiableList(entries);
     }
     
     @Override
-    public GMIOPayload get(int i) {
+    public PRGMPayload get(int i) {
         return entries.get(i);
     }
     
@@ -92,76 +69,74 @@ public class GMIPKCAP extends AbstractKCAP {
     
     @Override
     public KCAPType getKCAPType() {
-        return KCAPType.GMIP;
+        return KCAPType.PRGM;
     }
     
     @Override
     public int getSize() {
-        int size = 0x30; // side of header
+        int size = 0x30; // size of header
         size += getEntryCount() * 0x08; // size of pointer map
-
-        // size of name payload
-        size += entries.stream().filter(GMIOPayload::hasName).count() * 0x08;
-        size += entries.stream().filter(GMIOPayload::hasName).collect(Collectors.summingInt((GMIOPayload a) -> a.getName().length() + 1));
         
-        size = Utils.align(size, 0x04);
+        // size of name payload
+        size += entries.stream().filter(PRGMPayload::hasName).count() * 0x08;
+        size += entries.stream().filter(PRGMPayload::hasName).collect(Collectors.summingInt((PRGMPayload a) -> a.getName().length() + 1));
+        
+        size = Utils.align(size, 0x10);
 
         for(ResPayload entry : entries) {
             if(entry.getType() == null) // VOID type, i.e. size 0 entries
                 continue;
             
-            size = Utils.align(size, 0x04); // align to GMIP specific alignment
+            size = Utils.align(size, 0x10); // align to specific alignment
             size += entry.getSize(); // size of entry
         }
-        
+
         return size;
     }
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
         long start = dest.getPosition();
-        
-        int typeCount = (int) entries.stream().filter(GMIOPayload::hasName).count();
+
+        int typeCount = (int) entries.stream().filter(PRGMPayload::hasName).count();
         int payloadStart = typeCount > 0 ? 0x30 + getEntryCount() * 0x08 : 0;
         
-        // write KCAP/GMIP header
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(VERSION);
         dest.writeInteger(getSize());
         dest.writeInteger(getUnknown());
         
         dest.writeInteger(getEntryCount());
-        dest.writeInteger(typeCount); // type count
+        dest.writeInteger(typeCount); // type count, i.e. named entries
         dest.writeInteger(0x30); // header size, always 0x30 for this type
-        dest.writeInteger(payloadStart); // type payload start, after the pointer table or 0 if empty
-        
+        dest.writeInteger(payloadStart); // type payload start
+
         dest.writeInteger(getKCAPType().getMagicValue());
-        dest.writeInteger(GMIP_VERSION);
-        dest.writeInteger(getEntryCount());
-        dest.writeInteger(0);
+        dest.writeInteger(0x00); // padding
+        dest.writeInteger(0x00); // padding
+        dest.writeInteger(0x00); // padding
         
-        // write pointer table
         int fileStart = 0x30;
         fileStart += getEntryCount() * 0x08;
         fileStart += typeCount * 0x08;
-        fileStart += entries.stream().filter(GMIOPayload::hasName).collect(Collectors.summingInt((GMIOPayload a) -> a.getName().length() + 1));
-        fileStart = Utils.align(fileStart, 0x04);
-        
+        fileStart += entries.stream().filter(PRGMPayload::hasName).collect(Collectors.summingInt((PRGMPayload a) -> a.getName().length() + 1));
+        fileStart = Utils.align(fileStart, 0x10);
         int contentStart = fileStart;
 
+        // write pointer table
         for(ResPayload entry : entries) {
-            fileStart = Utils.align(fileStart, 0x04); // align content start
+            fileStart = Utils.align(fileStart, 0x10); // align content start
             
             dest.writeInteger(fileStart);
             dest.writeInteger(entry.getSize());
             fileStart += entry.getSize();
         }
         
-        // write GMIP payload
+        // write name payload
         int stringStart = payloadStart + typeCount * 0x08;
         int idCounter = 0;
         
-        for(GMIOPayload entry : entries) {
+        for(PRGMPayload entry : entries) {
             if(!entry.hasName())
                 continue;
             
@@ -170,20 +145,20 @@ public class GMIPKCAP extends AbstractKCAP {
             stringStart += entry.getName().length() + 1;
         }
 
-        for(GMIOPayload entry : entries) {
+        for(PRGMPayload entry : entries) {
             if(!entry.hasName())
                 continue;
             
             dest.writeString(entry.getName(), "ASCII");
             dest.writeByte((byte) 0);
         }
-
-        // write entries
+        
+        //move write pointer to start of content
         dest.setPosition(start + contentStart);
         
         for(ResPayload entry : entries) {
             // align content start
-            long aligned = Utils.align(dest.getPosition() - start, 0x04);
+            long aligned = Utils.align(dest.getPosition() - start, 0x10);
             dest.setPosition(start + aligned);
             
             // write content

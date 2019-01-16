@@ -1,30 +1,21 @@
 package de.phoenixstaffel.decodetools.res.kcap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 /*
- * TODO finish HSEM implementation
  * TODO finish HSMP implementation
- * TODO finish LDMP implementation
- * TODO finish LRTM implementation
- * TODO finish LTMP implementation
- * TODO finish MFTP implementation
- * TODO finish PRGM implementation
- * TODO finish RTCL implementation
- * TODO finish TDTM implementation
- * TODO finish TMEP implementation
- * TODO finish TNOJ implementation
- * TODO finish XDIP implementation
  * TODO finish XFEP implementation
- * TODO finish XTVP implementation
  * 
  * TODO reduce code redundancy, especially with in reading/writing/size calculation
+ * TODO unit tests
  */
 public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPayload> {
     
@@ -55,13 +46,13 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
      */
     public abstract List<ResPayload> getEntries();
     
-    //TODO JavaDocs
+    // TODO JavaDocs
     public abstract ResPayload get(int i);
     
-    //TODO JavaDocs
+    // TODO JavaDocs
     public abstract int getEntryCount();
     
-    //TODO JavaDocs
+    // TODO JavaDocs
     public abstract KCAPType getKCAPType();
     
     @Override
@@ -138,23 +129,35 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
             case GMIP:
                 return new GMIPKCAP(parent, source, dataStart, info);
             case HSEM:
+                return new HSEMKCAP(parent, source, dataStart, info);
             case HSMP:
             case KPTF:
                 return new KPTFKCAP(parent, source, dataStart, info);
             case LDMP:
+                return new LDMPKCAP(parent, source, dataStart, info);
             case LRTM:
+                return new LRTMKCAP(parent, source, dataStart, info);
             case LTMP:
+                return new LTMPKCAP(parent, source, dataStart, info);
             case MFTP:
+                return new MFTPKCAP(parent, source, dataStart, info);
             case PRGM:
+                return new PRGMKCAP(parent, source, dataStart, info);
             case RTCL:
+                return new RTCLKCAP(parent, source, dataStart, info);
             case TDTM:
                 return new TDTMKCAP(parent, source, dataStart, info);
             case TMEP:
+                return new TMEPKCAP(parent, source, dataStart, info);
             case TNOJ:
+                return new TNOJKCAP(parent, source, dataStart, info);
             case TREP:
+                return new TREPKCAP(parent, source, dataStart, info);
             case XDIP:
+                return new XDIPKCAP(parent, source, dataStart, info);
             case XFEP:
             case XTVP:
+                return new XTVPKCAP(parent, source, dataStart, info);
             case NONE:
             default:
                 return new NormalKCAP(parent, source, dataStart, info);
@@ -225,9 +228,33 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     
     static List<KCAPPointer> loadKCAPPointer(Access source, int count) {
         List<KCAPPointer> pointer = new ArrayList<>();
-        for(int i = 0; i < count; ++i) {
+        for (int i = 0; i < count; ++i)
             pointer.add(new KCAPPointer(source.readInteger(), source.readInteger()));
-        }
+        
         return pointer;
+    }
+    
+    static Map<Integer, String> loadNames(Access source, KCAPInformation info) {
+        // make sure we're actually at the payload start
+        long expectedPayloadStart = info.startAddress + info.payloadStart;
+        if (info.payloadStart != 0 && source.getPosition() != expectedPayloadStart)
+            throw new IllegalArgumentException(
+                    "Tried started reading LRTM Payload at " + source.getPosition() + " but expected it to be " + expectedPayloadStart);
+        
+        // load the payload
+        NamePointer[] namePointer = new NamePointer[info.typeEntries];
+        for (int i = 0; i < info.typeEntries; ++i)
+            namePointer[i] = new NamePointer(source.readInteger(), source.readInteger());
+        
+        Map<Integer, String> names = new HashMap<>();
+        for (NamePointer name : namePointer) {
+            long expectedStringStart = info.startAddress + name.getOffset();
+            if (source.getPosition() != expectedStringStart)
+                throw new IllegalArgumentException(
+                        "Tried reading a String from " + source.getPosition() + " but expected it to be from " + expectedStringStart);
+            
+            names.put(name.getID(), source.readASCIIString());
+        }
+        return names;
     }
 }

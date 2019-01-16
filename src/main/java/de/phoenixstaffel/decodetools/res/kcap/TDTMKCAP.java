@@ -34,7 +34,7 @@ public class TDTMKCAP extends AbstractKCAP {
             throw new IllegalArgumentException("Tried to instanciate TDTM KCAP, but didn't find a TDTM header.");
         
         int version = source.readInteger();
-        if(version != 0x02)
+        if(version != TDTM_VERSION)
             throw new IllegalArgumentException("Tried to instanciate TDTM KCAP and expected version 2, but got " + version);
         
         int numEntries = source.readInteger();
@@ -45,6 +45,7 @@ public class TDTMKCAP extends AbstractKCAP {
         time3 = source.readFloat();
         time4 = source.readFloat();
         
+        // one TDTM entry per QSTM in qstmKCAP?
         for(int i = 0; i < numEntries; ++i)
             tdtmEntry.add(new TDTMEntry(source));
         

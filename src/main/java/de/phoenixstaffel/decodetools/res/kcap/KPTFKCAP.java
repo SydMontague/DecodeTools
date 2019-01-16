@@ -25,7 +25,7 @@ public class KPTFKCAP extends AbstractKCAP {
         
         // make sure it's actually a KPTF
         if(source.readInteger() != KCAPType.KPTF.getMagicValue())
-            throw new IllegalArgumentException("Tried to instanciate KPTF KCAP, but didn't find a GMIP header.");
+            throw new IllegalArgumentException("Tried to instanciate KPTF KCAP, but didn't find a KPTF header.");
         
         source.readInteger(); //version? always 0x100
         unknown = source.readInteger(); 
@@ -59,7 +59,6 @@ public class KPTFKCAP extends AbstractKCAP {
         long expectedEnd = info.startAddress + info.size;
         if(source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for normal KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
-
     }
     
     @Override
