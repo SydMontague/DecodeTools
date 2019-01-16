@@ -7,8 +7,9 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 public class LDMPPayload extends ResPayload {
     private int unknown1;
     private int unknown2;
-    private int unknown3;
-    private int unknown4;
+    private float unknown3;
+    private float unknown4;
+    
     private int unknown5;
     private int unknown6;
     private int unknown7;
@@ -19,8 +20,8 @@ public class LDMPPayload extends ResPayload {
         
         unknown1 = source.readInteger();
         unknown2 = source.readInteger();
-        unknown3 = source.readInteger();
-        unknown4 = source.readInteger();
+        unknown3 = source.readFloat();
+        unknown4 = source.readFloat();
         unknown5 = source.readInteger();
         unknown6 = source.readInteger();
         unknown7 = source.readInteger();
@@ -46,8 +47,8 @@ public class LDMPPayload extends ResPayload {
     public void writeKCAP(Access dest, IResData dataStream) {
         dest.writeInteger(unknown1);
         dest.writeInteger(unknown2);
-        dest.writeInteger(unknown3);
-        dest.writeInteger(unknown4);
+        dest.writeFloat(unknown3);
+        dest.writeFloat(unknown4);
         dest.writeInteger(unknown5);
         dest.writeInteger(unknown6);
         dest.writeInteger(unknown7);

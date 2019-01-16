@@ -6,21 +6,30 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 
 public class RTCLPayload extends ResPayload {
     private String name;
-    private int[] data;
+    
+    private int unknown1;
+    private int unknown2;
+    private int unknown3;
+    private int unknown4;
+    
+    private float[] matrix = new float[16];
     
     public RTCLPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
         this.name = name;
         
-        data = new int[size / 4];
+        unknown1 = source.readInteger();
+        unknown2 = source.readInteger();
+        unknown3 = source.readInteger();
+        unknown4 = source.readInteger();
         
-        for (int i = 0; i < data.length; i++)
-            data[i] = source.readInteger();
+        for (int i = 0; i < matrix.length; i++)
+            matrix[i] = source.readFloat();
     }
     
     @Override
     public int getSize() {
-        return data.length * 4;
+        return 0x50;
     }
     
     @Override
@@ -35,7 +44,24 @@ public class RTCLPayload extends ResPayload {
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
-        for (int i : data)
-            dest.writeInteger(i);
+        dest.writeInteger(unknown1);
+        dest.writeInteger(unknown2);
+        dest.writeInteger(unknown3);
+        dest.writeInteger(unknown4);
+        
+        for (float i : matrix)
+            dest.writeFloat(i);
+    }
+
+    public boolean hasName() {
+        return name != null;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 }

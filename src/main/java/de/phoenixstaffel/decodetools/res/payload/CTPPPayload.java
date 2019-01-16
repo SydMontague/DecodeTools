@@ -5,7 +5,7 @@ import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
 public class CTPPPayload extends ResPayload {
-    private int[] data;
+    private int[] data; // TODO structure
     
     public CTPPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
         super(parent);
