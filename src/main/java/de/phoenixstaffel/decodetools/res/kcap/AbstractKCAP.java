@@ -1,17 +1,18 @@
 package de.phoenixstaffel.decodetools.res.kcap;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.res.NameablePayload;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 /*
- * TODO finish HSMP implementation
  * TODO finish XFEP implementation
  * 
  * TODO reduce code redundancy, especially with in reading/writing/size calculation
@@ -131,6 +132,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
             case HSEM:
                 return new HSEMKCAP(parent, source, dataStart, info);
             case HSMP:
+                return new HSMPKCAP(parent, source, dataStart, info);
             case KPTF:
                 return new KPTFKCAP(parent, source, dataStart, info);
             case LDMP:
@@ -256,5 +258,30 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
             names.put(name.getID(), source.readASCIIString());
         }
         return names;
+    }
+    
+    static void writeNames(Access dest, int stringStart, List<? extends NameablePayload> entries) {
+        Iterator<? extends NameablePayload> itr = entries.stream().filter(NameablePayload::hasName).sorted(Comparator.comparing(NameablePayload::getName)).iterator();
+        
+        // write name table
+        while(itr.hasNext()) {
+            NameablePayload entry = itr.next();
+            int id = entries.indexOf(entry);
+
+            dest.writeInteger(stringStart);
+            dest.writeInteger(id);
+            stringStart += entry.getName().length() + 1;
+        }
+        
+        // write names
+        entries.stream().filter(NameablePayload::hasName).sorted(Comparator.comparing(NameablePayload::getName)).forEachOrdered(a -> {
+            dest.writeString(a.getName(), "ASCII");
+            dest.writeByte((byte) 0);
+        });
+    }
+    
+    @Override
+    public String toString() {
+        return getType().name() + " " + getKCAPType().name();
     }
 }

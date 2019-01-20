@@ -133,7 +133,6 @@ public class KPTFKCAP extends AbstractKCAP {
         dest.writeInteger(unknown); // padding
         dest.writeInteger(0x00); // padding
         
-
         // write pointer table
         int fileStart = Utils.align(0x30 + getEntryCount() * 0x08, 0x10);
         int contentStart = fileStart;

@@ -2,12 +2,10 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.NameablePayload;
 
 //FIXME implements colors and shininess
-public class LRTMPayload extends ResPayload {
-    private String name;
-    
+public class LRTMPayload extends NameablePayload {
     private int index;
     private short unknown1; //shading type? 4 = unshaded?
     private short unknown2; //??? type?
@@ -27,8 +25,7 @@ public class LRTMPayload extends ResPayload {
     //shininess?
     
     public LRTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
-        super(parent);
-        this.name = name;
+        super(parent, name);
         
         index = source.readInteger();
         unknown1 = source.readShort();
@@ -80,17 +77,5 @@ public class LRTMPayload extends ResPayload {
         
         dest.writeByteArray(data1);
         dest.writeByteArray(data2);
-    }
-
-    public boolean hasName() {
-        return name != null;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
     }
 }

@@ -110,7 +110,7 @@ public class NormalKCAP extends AbstractKCAP {
             if(entry.getType() != null) // null entries don't get aligned but still have a pointer
                 fileStart = Utils.align(fileStart, getGenericAlignment()); // align content start
             
-            dest.writeInteger(fileStart);
+            dest.writeInteger(entry.getType() == null ? 0 : fileStart);
             dest.writeInteger(entry.getSize());
             fileStart += entry.getSize();
         }

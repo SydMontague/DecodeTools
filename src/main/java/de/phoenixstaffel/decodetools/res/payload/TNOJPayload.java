@@ -2,11 +2,9 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.NameablePayload;
 
-public class TNOJPayload extends ResPayload {
-    private String name;
-    
+public class TNOJPayload extends NameablePayload {
     private int nameId;
     private int parentId;
     private int unknown1;
@@ -35,8 +33,7 @@ public class TNOJPayload extends ResPayload {
     // padding
     
     public TNOJPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
-        super(parent);
-        this.name = name;
+        super(parent, name);
         
         nameId = source.readInteger();
         parentId = source.readInteger();
@@ -121,22 +118,5 @@ public class TNOJPayload extends ResPayload {
         dest.writeInteger(0); // padding
         dest.writeInteger(0); // padding
         dest.writeInteger(0); // padding
-    }
-    
-    @Override
-    public String toString() {
-        return name;
-    }
-
-    public boolean hasName() {
-        return name != null;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
     }
 }

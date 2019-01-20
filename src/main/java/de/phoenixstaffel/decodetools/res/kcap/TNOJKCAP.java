@@ -134,24 +134,7 @@ public class TNOJKCAP extends AbstractKCAP {
         
         // write name payload
         int stringStart = payloadStart + typeCount * 0x08;
-        int idCounter = 0;
-        
-        for(TNOJPayload entry : entries) {
-            if(!entry.hasName())
-                continue;
-            
-            dest.writeInteger(stringStart);
-            dest.writeInteger(idCounter++);
-            stringStart += entry.getName().length() + 1;
-        }
-
-        for(TNOJPayload entry : entries) {
-            if(!entry.hasName())
-                continue;
-            
-            dest.writeString(entry.getName(), "ASCII");
-            dest.writeByte((byte) 0);
-        }
+        writeNames(dest, stringStart, entries);
         
         //move write pointer to start of content
         dest.setPosition(start + contentStart);

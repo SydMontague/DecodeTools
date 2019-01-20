@@ -159,24 +159,7 @@ public class GMIPKCAP extends AbstractKCAP {
         
         // write GMIP payload
         int stringStart = payloadStart + typeCount * 0x08;
-        int idCounter = 0;
-        
-        for(GMIOPayload entry : entries) {
-            if(!entry.hasName())
-                continue;
-            
-            dest.writeInteger(stringStart);
-            dest.writeInteger(idCounter++);
-            stringStart += entry.getName().length() + 1;
-        }
-
-        for(GMIOPayload entry : entries) {
-            if(!entry.hasName())
-                continue;
-            
-            dest.writeString(entry.getName(), "ASCII");
-            dest.writeByte((byte) 0);
-        }
+        writeNames(dest, stringStart, entries);
 
         // write entries
         dest.setPosition(start + contentStart);

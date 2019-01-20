@@ -26,6 +26,7 @@ import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNOJPayload;
 import de.phoenixstaffel.decodetools.res.payload.TREPPayload;
 import de.phoenixstaffel.decodetools.res.payload.VCTMPayload;
+import de.phoenixstaffel.decodetools.res.payload.VoidPayload;
 import de.phoenixstaffel.decodetools.res.payload.XDIOPayload;
 import de.phoenixstaffel.decodetools.res.payload.XTVOPayload;
 
@@ -119,6 +120,9 @@ public abstract class ResPayload {
      * @return the newly created ResPayload
      */
     public static ResPayload craft(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+        if(size == 0)
+            return new VoidPayload(parent);
+        
         return Payload.valueOf(parent, source.readLongOffset(0)).newInstance(source, dataStart, parent, size, name);
     }
     
@@ -170,6 +174,7 @@ public abstract class ResPayload {
         GENERIC(0, GenericPayload::new),
         GMIO(0x4F494D47, GMIOPayload::new, a -> 0x40 + a.readInteger(0x3C)),
         KCAP(0x5041434B, KCAPPayload::new, a -> a.readInteger(0x08)),
+        //KCAP(0x5041434B, AbstractKCAP::craftKCAP, a -> a.readInteger(0x08)),
         XTVO(0x4F565458, XTVOPayload::new, a -> 0x74 + 0xC * a.readShort(0x30)),
         XDIO(0x4F494458, XDIOPayload::new, a -> 0x20),
         VCTM(0x4D544356, VCTMPayload::new),

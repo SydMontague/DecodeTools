@@ -9,12 +9,10 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.NameablePayload;
 
-public class GMIOPayload extends ResPayload {
+public class GMIOPayload extends NameablePayload {
     private static final int VERSION = 6;
-    
-    private String name;
     
     private short unknown1;
     private byte unknown1_1;
@@ -49,9 +47,7 @@ public class GMIOPayload extends ResPayload {
     }
     
     private GMIOPayload(Access source, int dataStart, KCAPPayload parent, String name) {
-        super(parent);
-        
-        this.name = name;
+        super(parent, name);
         
         source.readInteger(); // magic value
         int version = source.readInteger();
@@ -168,11 +164,11 @@ public class GMIOPayload extends ResPayload {
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
             if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
-                Main.LOGGER.warning(() -> "Saving image " + name + " with illegal resolution. \n" + "Resolution: " + image.getWidth() + "x" + image.getHeight()
+                Main.LOGGER.warning(() -> "Saving image " + getName() + " with illegal resolution. \n" + "Resolution: " + image.getWidth() + "x" + image.getHeight()
                         + " | This file will cause problems!");
         
             byte[] pixelData = format.convertToFormat(image);
-            dataAddress = dataStream.add(pixelData, name != null, getParent());
+            dataAddress = dataStream.add(pixelData, hasName(), getParent());
         }
         
         dest.writeInteger(getType().getMagicValue());
@@ -223,7 +219,7 @@ public class GMIOPayload extends ResPayload {
             size = pixelData.length;
         }
         
-        data.add(pixelData, size, name != null, getParent());
+        data.add(pixelData, size, hasName(), getParent());
     }
     
     @Override
@@ -233,7 +229,7 @@ public class GMIOPayload extends ResPayload {
     
     @Override
     public String toString() {
-        return name != null ? name : "GMIO " + " " + format + " " + getWidth() + " " + getHeight();
+        return hasName() ? getName() : "GMIO " + " " + format + " " + getWidth() + " " + getHeight();
     }
 
     public int getWidth() {
@@ -242,17 +238,5 @@ public class GMIOPayload extends ResPayload {
     
     public int getHeight() {
         return image != null ? image.getHeight() : 0;
-    }
-
-    public boolean hasName() {
-        return name != null;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
     }
 }

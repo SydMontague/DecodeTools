@@ -2,20 +2,17 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
-import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.NameablePayload;
 
-public class PRGMPayload extends ResPayload {
-    private String name;
-    
+public class PRGMPayload extends NameablePayload {
     private int unknown1;
     private int unknown2;
     private int unknown3;
     private int unknown4;
     
     public PRGMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
-        super(parent);
-        this.name = name;
-        
+        super(parent, name);
+
         unknown1 = source.readInteger();
         unknown2 = source.readInteger();
         unknown3 = source.readInteger();
@@ -43,17 +40,5 @@ public class PRGMPayload extends ResPayload {
         dest.writeInteger(unknown2);
         dest.writeInteger(unknown3);
         dest.writeInteger(unknown4);
-    }
-    
-    public boolean hasName() {
-        return name != null;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
     }
 }
