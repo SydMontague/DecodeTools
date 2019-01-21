@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
 import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
@@ -14,8 +15,6 @@ import de.phoenixstaffel.decodetools.core.Utils;
 
 public class PixelFormatEncoder {
     private static final String ENCODER_PATH = "./3dstex";
-    private static final String TMP_SOURCE = "tmp.png";
-    private static final String TMP_TARGET = "tmp.etc1";
     
     private PixelFormatEncoder() {
     }
@@ -26,7 +25,7 @@ public class PixelFormatEncoder {
         
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             buffer.put((byte) ((i >>> 24) & 0xFF));
             buffer.put((byte) ((i) & 0xFF));
             buffer.put((byte) ((i >>> 8) & 0xFF));
@@ -42,7 +41,7 @@ public class PixelFormatEncoder {
         
         int[] pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             buffer.put((byte) ((i >>> 24) & 0xFF));
             buffer.put((byte) ((i) & 0xFF));
             buffer.put((byte) ((i >>> 8) & 0xFF));
@@ -55,10 +54,10 @@ public class PixelFormatEncoder {
     public static byte[] convertToRGB8(BufferedImage image) {
         byte[] data = new byte[image.getWidth() * image.getHeight() * 3];
         ByteBuffer buffer = ByteBuffer.wrap(data);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             buffer.put((byte) ((i) & 0xFF));
             buffer.put((byte) ((i >>> 8) & 0xFF));
             buffer.put((byte) ((i >>> 16) & 0xFF));
@@ -71,10 +70,10 @@ public class PixelFormatEncoder {
         byte[] data = new byte[image.getWidth() * image.getHeight() * 2];
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             short value = 0;
             value |= (i >>> 31) & 0x1;
             value |= ((i >>> 19) & 0x1F) << 11;
@@ -90,10 +89,10 @@ public class PixelFormatEncoder {
         byte[] data = new byte[image.getWidth() * image.getHeight() * 2];
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             short value = 0;
             value |= ((i >>> 19) & 0x1F) << 11;
             value |= ((i >>> 10) & 0x3F) << 5;
@@ -104,15 +103,14 @@ public class PixelFormatEncoder {
         return data;
     }
     
-    
     public static byte[] convertToRGBA4(BufferedImage image) {
         byte[] data = new byte[image.getWidth() * image.getHeight() * 2];
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             short value = 0;
             value |= (short) ((i >>> 28) & 0xF);
             value |= (short) ((i >>> 20) & 0xF) << 12;
@@ -127,10 +125,10 @@ public class PixelFormatEncoder {
     public static byte[] convertToLA8(BufferedImage image) {
         byte[] data = new byte[image.getWidth() * image.getHeight() * 2];
         ByteBuffer buffer = ByteBuffer.wrap(data);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             buffer.put((byte) ((i >>> 24) & 0xFF));
             buffer.put((byte) ((i) & 0xFF));
         }
@@ -141,10 +139,10 @@ public class PixelFormatEncoder {
     public static byte[] convertToLA4(BufferedImage image) {
         byte[] data = new byte[image.getWidth() * image.getHeight()];
         ByteBuffer buffer = ByteBuffer.wrap(data);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             byte value = 0;
             value |= (byte) ((i >>> 28) & 0xF);
             value |= (byte) (i & 0xF0);
@@ -157,10 +155,10 @@ public class PixelFormatEncoder {
     public static byte[] convertToA8(BufferedImage image) {
         byte[] data = new byte[image.getWidth() * image.getHeight()];
         ByteBuffer buffer = ByteBuffer.wrap(data);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             buffer.put((byte) ((i >>> 24) & 0xFF));
         }
         
@@ -170,10 +168,10 @@ public class PixelFormatEncoder {
     public static byte[] convertToL8(BufferedImage image) {
         byte[] data = new byte[image.getWidth() * image.getHeight()];
         ByteBuffer buffer = ByteBuffer.wrap(data);
-
+        
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
         
-        for(int i : pixels) {
+        for (int i : pixels) {
             buffer.put((byte) ((i) & 0xFF));
         }
         
@@ -185,7 +183,7 @@ public class PixelFormatEncoder {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
-        for(int i = 0; i < pixels.length / 2; i++) {
+        for (int i = 0; i < pixels.length / 2; i++) {
             byte value = 0;
             value |= (pixels[i * 2 + 1]) & 0xF0;
             value |= (pixels[i * 2 + 0] >>> 4) & 0xF;
@@ -200,7 +198,7 @@ public class PixelFormatEncoder {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         
         int[] pixels = Utils.tile(image.getWidth(), image.getHeight(), image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()));
-        for(int i = 0; i < pixels.length / 2; i++) {
+        for (int i = 0; i < pixels.length / 2; i++) {
             byte value = 0;
             value |= pixels[i * 2 + 1] >>> 24 & 0xF0;
             value |= (pixels[i * 2 + 0] >>> 28) & 0xF;
@@ -212,17 +210,19 @@ public class PixelFormatEncoder {
     
     public static byte[] convertToETC1(BufferedImage image) {
         try {
-            ImageIO.write(image, "PNG", new File(TMP_SOURCE));
+            File source = File.createTempFile("etc1Source", null);
+            File target = File.createTempFile("etc1Target", null);
+            ImageIO.write(image, "PNG", source);
             
-            Process process = new ProcessBuilder().command(ENCODER_PATH, "-r", "-o", "etc1", TMP_SOURCE, TMP_TARGET).start();
+            Process process = new ProcessBuilder().command(ENCODER_PATH, "-r", "-o", "etc1", source.getPath(), target.getPath()).start();
             process.waitFor();
-
-            try(FileAccess tmp = new FileAccess(new File(TMP_TARGET))) {
+            
+            try (FileAccess tmp = new FileAccess(target)) {
                 return tmp.readByteArray(image.getHeight() * image.getWidth() / 2);
             }
             finally {
-                if(!(new File(TMP_SOURCE).delete() && new File(TMP_TARGET).delete()))
-                    Main.LOGGER.warning("Could not delete temporary files after converting to ETC1.");
+                Files.delete(source.toPath());
+                Files.delete(target.toPath());
             }
         }
         catch (InterruptedException e) {
@@ -235,20 +235,22 @@ public class PixelFormatEncoder {
         
         return new byte[0];
     }
-
+    
     public static byte[] convertToETC1A4(BufferedImage image) {
         try {
-            ImageIO.write(image, "PNG", new File("tmp.png"));
+            File source = File.createTempFile("etc1Source", null);
+            File target = File.createTempFile("etc1Target", null);
+            ImageIO.write(image, "PNG", source);
             
-            Process process = new ProcessBuilder().command(ENCODER_PATH, "-r", "-o", "etc1a4", TMP_SOURCE, TMP_TARGET).start();
+            Process process = new ProcessBuilder().command(ENCODER_PATH, "-r", "-o", "etc1a4", source.getPath(), target.getPath()).start();
             process.waitFor();
             
-            try(FileAccess tmp = new FileAccess(new File(TMP_TARGET))) {
+            try (FileAccess tmp = new FileAccess(target)) {
                 return tmp.readByteArray(image.getHeight() * image.getWidth());
             }
             finally {
-                if(!(new File(TMP_SOURCE).delete() && new File(TMP_TARGET).delete()))
-                    Main.LOGGER.warning("Could not delete temporary files after converting to ETC1A4.");
+                Files.delete(source.toPath());
+                Files.delete(target.toPath());
             }
         }
         catch (InterruptedException e) {
