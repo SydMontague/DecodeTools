@@ -65,6 +65,8 @@ public class VCTMPayload extends ResPayload {
         source.setPosition(start + coordStart);
         for (int i = 0; i < numEntries; i++)
             data2[i] = new VCTMEntry(source.readByteArray(sizeValue1));
+        
+        source.setPosition(Utils.align(source.getPosition(), 0x04));
     }
     
     class VCTMEntry {
@@ -81,7 +83,7 @@ public class VCTMPayload extends ResPayload {
     
     @Override
     public int getSize() {
-        return 0x20 + Utils.align(data1.length * sizeValue2, 4) + Utils.align(data2.length * sizeValue1, 4);
+        return 0x20 + Utils.align(data1.length * sizeValue2, 0x04) + Utils.align(data2.length * sizeValue1, 0x04);
     }
     
     @Override
@@ -116,5 +118,8 @@ public class VCTMPayload extends ResPayload {
         for (VCTMEntry entry : data2)
             for (byte b : entry.getData())
                 dest.writeByte(b);
+
+        long diff = Utils.align(dest.getPosition(), 0x04) - dest.getPosition();
+        dest.writeByteArray(new byte[(int) diff]);
     }
 }

@@ -24,6 +24,8 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     
     private int unknown;
     
+    private AbstractKCAP parentTMP; // TODO temporary!
+    
     protected AbstractKCAP(AbstractKCAP parent, int unknown) {
         super(null); // TODO super(parent);
         
@@ -55,6 +57,10 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     
     // TODO JavaDocs
     public abstract KCAPType getKCAPType();
+    
+    public AbstractKCAP getParentTMP() {
+        return parentTMP;
+    }
     
     @Override
     public Iterator<ResPayload> iterator() {
@@ -158,6 +164,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
             case XDIP:
                 return new XDIPKCAP(parent, source, dataStart, info);
             case XFEP:
+                return new XFEPKCAP(parent, source, dataStart, info);
             case XTVP:
                 return new XTVPKCAP(parent, source, dataStart, info);
             case NONE:

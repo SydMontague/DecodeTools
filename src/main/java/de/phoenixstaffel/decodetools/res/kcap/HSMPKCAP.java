@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
@@ -24,6 +25,9 @@ import de.phoenixstaffel.decodetools.res.payload.VoidPayload;
  */
 public class HSMPKCAP extends AbstractKCAP {
     private static final int HSMP_VERSION = 0x100;
+    private static final KCAPType TYPE_ORDER[] = { KCAPType.XTVP, KCAPType.XDIP, KCAPType.GMIP, 
+                                                   KCAPType.HSEM, KCAPType.PRGM, KCAPType.LRTM, 
+                                                   KCAPType.TNOJ, KCAPType.RTCL, KCAPType.TDTM };
     
     private float unknown2;
     private float unknown3;
@@ -68,7 +72,7 @@ public class HSMPKCAP extends AbstractKCAP {
         
         long diff = source.getPosition() - info.startAddress;
         diff = Utils.align(diff, 0x10) - diff;
-        source.readByteArray((int) diff); // padding
+        source.readByteArray(diff == 0 ? 0x10 : (int) diff); // padding
         
         // load the KCAP pointers to the entries
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
@@ -101,23 +105,29 @@ public class HSMPKCAP extends AbstractKCAP {
         int arrayPtr = 2;
         for (int i = 2; i < pointer.size(); i++) {
             KCAPPointer p = pointer.get(i);
+            
+            if(p.getOffset() == 0 && p.getSize() == 0)
+                continue; // TODO test null TDTM 
+            
             source.setPosition(info.startAddress + p.getOffset());
             AbstractKCAP payload = AbstractKCAP.craftKCAP(source, parent, dataStart);
             
-            if(arrayPtr >= typeOrder.length)
+            if(arrayPtr >= TYPE_ORDER.length)
                 throw new IllegalArgumentException("HSMP KCAP still has unexpected child entries. Is the order messed up?");
             
-            while(arrayPtr < typeOrder.length)
-                if(payload.getKCAPType() == typeOrder[arrayPtr++]) {
+            while(arrayPtr < TYPE_ORDER.length)
+                if(payload.getKCAPType() == TYPE_ORDER[arrayPtr++]) {
                     setChild(payload);
                     break;
                 }
         }
+        
+        // make sure we're at the end of the KCAP
+        long expectedEnd = info.startAddress + info.size;
+        if(source.getPosition() != expectedEnd)
+            Main.LOGGER.warning(() -> "Final position for HSMP KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
+
     }
-    
-    private static KCAPType typeOrder[] = { KCAPType.XTVP, KCAPType.XDIP, KCAPType.GMIP, 
-                                            KCAPType.HSEM, KCAPType.PRGM, KCAPType.LRTM, 
-                                            KCAPType.TNOJ, KCAPType.RTCL, KCAPType.TDTM };
     
     private void setChild(AbstractKCAP value) {
         if(value == null)
@@ -167,7 +177,7 @@ public class HSMPKCAP extends AbstractKCAP {
         list.add(lrtm);
         list.add(tnoj);
         list.add(rtcl);
-        list.add(tdtm);
+        list.add(tdtm == null && getParentTMP().getKCAPType() == KCAPType.XFEP && tnoj != null ? new VoidPayload(this) : tdtm);
         list.removeIf(Objects::isNull);
         return Collections.unmodifiableList(list);
     }

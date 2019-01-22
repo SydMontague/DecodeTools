@@ -25,6 +25,10 @@ public class NormalKCAP extends AbstractKCAP {
         // determine how the KCAP is aligned
         genericAligned = pointer.stream().allMatch(a -> (a.getOffset() % 0x10) == 0);
         
+        long diff = source.getPosition() - info.startAddress;
+        diff = Utils.align(diff, 0x10) - diff;
+        source.readByteArray((int) diff); // padding
+        
         // load the content
         for(KCAPPointer p : pointer) {
             if(p.getOffset() == 0 && p.getSize() == 0) // those empty entries exist and have to be preserved

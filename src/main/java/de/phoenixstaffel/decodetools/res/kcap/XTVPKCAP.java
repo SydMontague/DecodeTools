@@ -49,7 +49,7 @@ public class XTVPKCAP extends AbstractKCAP {
         // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
         if (source.getPosition() != expectedEnd)
-            Main.LOGGER.warning(() -> "Final position for normal KCAP does not match the header. Current: " + source.getPosition() + " Expected: "
+            Main.LOGGER.warning(() -> "Final position for XTVP KCAP does not match the header. Current: " + source.getPosition() + " Expected: "
                     + expectedEnd);
     }
     

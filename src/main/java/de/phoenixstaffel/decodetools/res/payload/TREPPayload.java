@@ -51,14 +51,19 @@ public class TREPPayload extends ResPayload {
         unknown14 = source.readInteger();
         unknown15 = source.readInteger();
         
-        unknown16 = source.readShort();
-        source.readShort(); // align(arraySize * 2, 0x04)
-        source.readInteger(); // arraySize * 2
+        if(arraySize != 0) {
+            unknown16 = source.readShort();
+            source.readShort(); // align(arraySize * 2, 0x04)
+            source.readInteger(); // arraySize * 2
+        }
         
         array = new short[arraySize];
         
         for (int i = 0; i < arraySize; i++)
             array[i] = source.readShort();
+
+        if(array.length % 2 == 1)
+            source.readShort();
     }
     
     @Override

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
@@ -49,7 +50,8 @@ public class TDTMKCAP extends AbstractKCAP {
         for(int i = 0; i < numEntries; ++i)
             tdtmEntry.add(new TDTMEntry(source));
         
-        if(numEntries % 2 == 1)
+        // TODO inconsistent by design?
+        if(numEntries % 2 == 1 && info.headerSize % 0x10 == 0x00)
             source.readLong(); // padding
         
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
@@ -76,6 +78,11 @@ public class TDTMKCAP extends AbstractKCAP {
             
             vctm.add((VCTMPayload) entry);
         }
+        
+        // make sure we're at the end of the KCAP
+        long expectedEnd = info.startAddress + info.size;
+        if(source.getPosition() != expectedEnd)
+            Main.LOGGER.warning(() -> "Final position for TDTM KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
 
     @Override
