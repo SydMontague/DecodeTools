@@ -23,17 +23,16 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
  * HSMP
  */
 public class XFEPKCAP extends AbstractKCAP {
-    private static final int HSMP_VERSION = 0x100;
-    private static final KCAPType TYPE_ORDER[] = { KCAPType.TREP, KCAPType.GMIP, KCAPType.MFTP, 
-                                                   KCAPType.TMEP, KCAPType.CTPP, KCAPType.LTMP, 
-                                                   KCAPType.TDTM, KCAPType.LDMP, KCAPType.HSMP };
+    private static final int XFEP_VERSION = 0x100;
+    private static final KCAPType[] TYPE_ORDER = { KCAPType.TREP, KCAPType.GMIP, KCAPType.MFTP, KCAPType.TMEP, KCAPType.CTPP, KCAPType.LTMP, KCAPType.TDTM,
+            KCAPType.LDMP, KCAPType.HSMP };
     
     private short unknown1;
-    private short unknown2;
+    // short unknownData2Size;
     
     private int[] unknownData1 = new int[5];
     private int[] unknownData2;
-
+    
     private String name;
     
     private TREPKCAP trep;
@@ -49,23 +48,23 @@ public class XFEPKCAP extends AbstractKCAP {
     protected XFEPKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
         
-        // make sure it's actually a HSMP
+        // make sure it's actually a XFEP
         if (source.readInteger() != KCAPType.XFEP.getMagicValue())
             throw new IllegalArgumentException("Tried to instanciate XFEP KCAP, but didn't find a XFEP header.");
         
         source.readInteger(); // version, always 0x0100
         unknown1 = source.readShort();
-        unknown2 = source.readShort();
+        short unk2DataArraySize = source.readShort();
         
-        for(int i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
             unknownData1[i] = source.readInteger();
         
-        unknownData2 = new int[unknown2];
-        for(int i = 0; i < unknown2; i++)
+        unknownData2 = new int[unk2DataArraySize];
+        for (int i = 0; i < unk2DataArraySize; i++)
             unknownData2[i] = source.readInteger();
-
+        
         name = source.readASCIIString();
-
+        
         long diff = source.getPosition() - info.startAddress;
         diff = Utils.align(diff, 0x10) - diff;
         source.readByteArray(diff == 0 ? 0x10 : (int) diff); // padding
@@ -80,19 +79,19 @@ public class XFEPKCAP extends AbstractKCAP {
             source.setPosition(info.startAddress + p.getOffset());
             AbstractKCAP payload = AbstractKCAP.craftKCAP(source, parent, dataStart);
             
-            while(arrayPtr < TYPE_ORDER.length - 1)
-                if(payload.getKCAPType() == TYPE_ORDER[arrayPtr++]) {
+            while (arrayPtr < TYPE_ORDER.length - 1)
+                if (payload.getKCAPType() == TYPE_ORDER[arrayPtr++]) {
                     setChild(payload);
                     break;
                 }
         }
         
-        for(; i < pointer.size(); i++) {
+        for (; i < pointer.size(); i++) {
             KCAPPointer p = pointer.get(i);
             source.setPosition(info.startAddress + p.getOffset());
             AbstractKCAP payload = AbstractKCAP.craftKCAP(source, parent, dataStart);
             
-            if(payload.getKCAPType() != KCAPType.HSMP)
+            if (payload.getKCAPType() != KCAPType.HSMP)
                 throw new IllegalArgumentException("XFEP KCAP still has unexpected child entries. Is the order messed up?");
             
             hsmp.add((HSMPKCAP) payload);
@@ -100,13 +99,13 @@ public class XFEPKCAP extends AbstractKCAP {
         
         // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
-        if(source.getPosition() != expectedEnd)
+        if (source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for XFEP KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
-
+        
     }
-
+    
     private void setChild(AbstractKCAP value) {
-        switch(value.getKCAPType()) {
+        switch (value.getKCAPType()) {
             case TREP:
                 trep = (TREPKCAP) value;
                 break;
@@ -170,14 +169,75 @@ public class XFEPKCAP extends AbstractKCAP {
     
     @Override
     public int getSize() {
-        // TODO Auto-generated method stub
-        return 0;
+        int size = 0x40 + unknownData2.length * 4;
+        size += name.length(); // TODO check for special case
+        size = Utils.align(size, 0x10);
+        size += getEntryCount() * 0x08;
+        
+        for (ResPayload entry : getEntries()) {
+            if (entry.getType() == null) // VOID type, i.e. size 0 entries
+                continue;
+            
+            size = Utils.align(size, 0x10); // align to specific alignment
+            size += entry.getSize(); // size of entry
+        }
+        
+        return size;
     }
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
-        // TODO Auto-generated method stub
+        long start = dest.getPosition();
         
+        // KCAP head
+        dest.writeInteger(getType().getMagicValue());
+        dest.writeInteger(VERSION);
+        dest.writeInteger(getSize());
+        dest.writeInteger(getUnknown());
+        
+        dest.writeInteger(getEntryCount());
+        dest.writeInteger(0x00); // type count, always 0 for this type
+        dest.writeInteger(Utils.align(0x40 + unknownData2.length * 4 + name.length(), 0x10)); // header size
+        dest.writeInteger(0x00); // type payload start, always 0 for this type
+        
+        // XFEP head
+        dest.writeInteger(getKCAPType().getMagicValue());
+        dest.writeInteger(XFEP_VERSION);
+        dest.writeShort(unknown1);
+        dest.writeShort((short) unknownData2.length);
+        for (int val : unknownData1)
+            dest.writeInteger(val);
+        for (int val : unknownData2)
+            dest.writeInteger(val);
+        
+        dest.writeString(name, "ASCII");
+        
+        long diff = dest.getPosition() - start;
+        diff = Utils.align(diff, 0x10) - diff;
+        dest.writeByteArray(new byte[(int) diff]); // padding
+        
+        // pointer table
+        int fileStart = (int) Utils.align(dest.getPosition() - start, 0x10) + getEntryCount() * 0x08;
+        int contentStart = fileStart;
+
+        //write pointer table
+        for(ResPayload entry : getEntries()) {
+            fileStart = Utils.align(fileStart, 0x10); // align content start
+            
+            dest.writeInteger(entry.getType() == null ? 0 : fileStart);
+            dest.writeInteger(entry.getSize());
+            fileStart += entry.getSize();
+        }
+        
+        dest.setPosition(start + contentStart);
+        
+        for(ResPayload entry : getEntries()) {
+            // align content start
+            long aligned = Utils.align(dest.getPosition() - start, 0x10);
+            dest.setPosition(start + aligned);
+            
+            // write content
+            entry.writeKCAP(dest, dataStream);
+        }
     }
-    
 }

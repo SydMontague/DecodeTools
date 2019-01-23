@@ -68,7 +68,11 @@ public class TREPPayload extends ResPayload {
     
     @Override
     public int getSize() {
-        return Utils.align(0x38 + array.length * 2, 0x04);
+        int size = 0x30;
+        size += array.length == 0 ? 0 : 8;
+        size += array.length * 2;
+        
+        return Utils.align(size, 0x04);
     }
     
     @Override
@@ -101,9 +105,11 @@ public class TREPPayload extends ResPayload {
         dest.writeInteger(unknown14);
         dest.writeInteger(unknown15);
 
-        dest.writeShort(unknown16);
-        dest.writeShort((short) Utils.align(array.length * 2, 0x04));
-        dest.writeInteger(array.length * 2);
+        if(array.length != 0) {
+            dest.writeShort(unknown16);
+            dest.writeShort((short) Utils.align(array.length * 2, 0x04));
+            dest.writeInteger(array.length * 2);
+        }
         
         for(short val : array)
             dest.writeShort(val);

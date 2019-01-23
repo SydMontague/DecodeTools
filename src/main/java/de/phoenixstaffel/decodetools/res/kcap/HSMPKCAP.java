@@ -177,7 +177,7 @@ public class HSMPKCAP extends AbstractKCAP {
         list.add(lrtm);
         list.add(tnoj);
         list.add(rtcl);
-        list.add(tdtm == null && getParentTMP().getKCAPType() == KCAPType.XFEP && tnoj != null ? new VoidPayload(this) : tdtm);
+        list.add(tdtm == null && getParentTMP() != null && getParentTMP().getKCAPType() == KCAPType.XFEP && tnoj != null ? new VoidPayload(this) : tdtm);
         list.removeIf(Objects::isNull);
         return Collections.unmodifiableList(list);
     }
@@ -200,7 +200,7 @@ public class HSMPKCAP extends AbstractKCAP {
     @Override
     public int getSize() {
         int size = 0x4C;
-        size += name.length();
+        size += name.length(); //TODO check for special case?
         size = Utils.align(size, 0x10);
         size += getEntryCount() * 0x08;
         
