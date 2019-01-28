@@ -36,7 +36,7 @@
       </activation>
       <properties>
         <platform>linux</platform>
-        <etc1tool.url>https://github.com/Cruel/3dstex/releases/download/1.1/3dstex-linux-x64.exe</etc1tool.url>
+        <etc1tool.url>https://github.com/Cruel/3dstex/releases/download/1.1/3dstex-linux-x64</etc1tool.url>
         <etc1tool.name>3dstex</etc1tool.name>
       </properties>
     </profile>
@@ -50,7 +50,7 @@
       </activation>
       <properties>
         <platform>macos</platform>
-        <etc1tool.url>https://github.com/Cruel/3dstex/releases/download/1.1/3dstex-osx-x86.exe</etc1tool.url>
+        <etc1tool.url>https://github.com/Cruel/3dstex/releases/download/1.1/3dstex-osx-x64</etc1tool.url>
         <etc1tool.name>3dstex</etc1tool.name>
       </properties>
     </profile>
