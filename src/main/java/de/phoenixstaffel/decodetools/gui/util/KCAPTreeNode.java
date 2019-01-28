@@ -36,7 +36,7 @@ public class KCAPTreeNode extends ResPayloadTreeNode {
 
     @Override
     public TreeNode getParent() {
-        return new KCAPTreeNode(getPayload().getParent());
+        return new KCAPTreeNode(null); //getPayload().getParent());
     }
 
     @Override

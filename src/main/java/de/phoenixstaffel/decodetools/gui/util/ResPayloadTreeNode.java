@@ -33,7 +33,7 @@ public class ResPayloadTreeNode implements TreeNode {
 
     @Override
     public TreeNode getParent() {
-        return new KCAPTreeNode(root.getParent());
+        return new AbstractKCAPTreeNode(root.getParent()); // KCAPTreeNode(root.getParent());
     }
 
     @Override

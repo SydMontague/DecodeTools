@@ -25,7 +25,7 @@ import de.phoenixstaffel.decodetools.res.payload.VoidPayload;
  */
 public class HSMPKCAP extends AbstractKCAP {
     private static final int HSMP_VERSION = 0x100;
-    private static final KCAPType TYPE_ORDER[] = { KCAPType.XTVP, KCAPType.XDIP, KCAPType.GMIP, 
+    private static final KCAPType[] TYPE_ORDER = { KCAPType.XTVP, KCAPType.XDIP, KCAPType.GMIP, 
                                                    KCAPType.HSEM, KCAPType.PRGM, KCAPType.LRTM, 
                                                    KCAPType.TNOJ, KCAPType.RTCL, KCAPType.TDTM };
     
@@ -41,6 +41,7 @@ public class HSMPKCAP extends AbstractKCAP {
     
     private String name;
     
+    // TODO abstrahize, don't use KCAPs directly
     private XTVPKCAP xtvp = null;
     private XDIPKCAP xdip = null;
     private GMIPKCAP gmip;
@@ -84,7 +85,7 @@ public class HSMPKCAP extends AbstractKCAP {
             ResPayload payload = ResPayload.craft(source, dataStart, this, xtvpPtr.getSize(), name);
             
             if (payload.getType() != Payload.KCAP || ((AbstractKCAP) payload).getKCAPType() != KCAPType.XTVP)
-                throw new IllegalArgumentException("Tried to instanciate HSMP KCAP, but first child was not VOID or XTVP.");
+                throw new IllegalArgumentException("Tried to instanciate HSMP KCAP, but first child was not VOID or XTVP." + source.getPosition());
             
             xtvp = (XTVPKCAP) payload;
         }
@@ -101,22 +102,21 @@ public class HSMPKCAP extends AbstractKCAP {
             xdip = (XDIPKCAP) payload;
         }
         
-        
         int arrayPtr = 2;
         for (int i = 2; i < pointer.size(); i++) {
             KCAPPointer p = pointer.get(i);
             
-            if(p.getOffset() == 0 && p.getSize() == 0)
-                continue; // TODO test null TDTM 
+            if (p.getOffset() == 0 && p.getSize() == 0)
+                continue;
             
             source.setPosition(info.startAddress + p.getOffset());
-            AbstractKCAP payload = AbstractKCAP.craftKCAP(source, parent, dataStart);
+            AbstractKCAP payload = AbstractKCAP.craftKCAP(source, this, dataStart);
             
-            if(arrayPtr >= TYPE_ORDER.length)
+            if (arrayPtr >= TYPE_ORDER.length)
                 throw new IllegalArgumentException("HSMP KCAP still has unexpected child entries. Is the order messed up?");
             
-            while(arrayPtr < TYPE_ORDER.length)
-                if(payload.getKCAPType() == TYPE_ORDER[arrayPtr++]) {
+            while (arrayPtr < TYPE_ORDER.length)
+                if (payload.getKCAPType() == TYPE_ORDER[arrayPtr++]) {
                     setChild(payload);
                     break;
                 }
@@ -124,13 +124,13 @@ public class HSMPKCAP extends AbstractKCAP {
         
         // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
-        if(source.getPosition() != expectedEnd)
+        if (source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for HSMP KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
-
+        
     }
     
     private void setChild(AbstractKCAP value) {
-        if(value == null)
+        if (value == null)
             throw new IllegalArgumentException("Value is null, but can't be null!");
         
         switch (value.getKCAPType()) {
@@ -177,7 +177,7 @@ public class HSMPKCAP extends AbstractKCAP {
         list.add(lrtm);
         list.add(tnoj);
         list.add(rtcl);
-        list.add(tdtm == null && getParentTMP() != null && getParentTMP().getKCAPType() == KCAPType.XFEP && tnoj != null ? new VoidPayload(this) : tdtm);
+        list.add(tdtm == null && getParent() != null && getParent().getKCAPType() == KCAPType.XFEP && tnoj != null ? new VoidPayload(this) : tdtm);
         list.removeIf(Objects::isNull);
         return Collections.unmodifiableList(list);
     }
@@ -200,18 +200,18 @@ public class HSMPKCAP extends AbstractKCAP {
     @Override
     public int getSize() {
         int size = 0x4C;
-        size += name.length(); //TODO check for special case?
+        size += name.length() + 2;
         size = Utils.align(size, 0x10);
         size += getEntryCount() * 0x08;
         
-        for(ResPayload entry : getEntries()) {
-            if(entry.getType() == null) // VOID type, i.e. size 0 entries
+        for (ResPayload entry : getEntries()) {
+            if (entry.getType() == null) // VOID type, i.e. size 0 entries
                 continue;
             
             size = Utils.align(size, 0x10); // align to specific alignment
             size += entry.getSize(); // size of entry
         }
-
+        
         return size;
     }
     
@@ -227,7 +227,7 @@ public class HSMPKCAP extends AbstractKCAP {
         
         dest.writeInteger(getEntryCount());
         dest.writeInteger(0x00); // type count, always 0 for this type
-        dest.writeInteger(Utils.align(0x4C + name.length(), 0x10)); // header size
+        dest.writeInteger(Utils.align(0x4C + name.length() + 2, 0x10)); // header size
         dest.writeInteger(0x00); // type payload start, always 0 for this type
         
         // HSMP head
@@ -244,17 +244,18 @@ public class HSMPKCAP extends AbstractKCAP {
         dest.writeInteger(0); // padding
         
         dest.writeString(name, "ASCII");
-
+        dest.writeByte((byte) 0);
+        
         long diff = dest.getPosition() - start;
         diff = Utils.align(diff, 0x10) - diff;
-        dest.writeByteArray(new byte[(int) diff]); // padding
+        dest.writeByteArray(new byte[diff == 0 ? 0x10 : (int) diff]); // padding
         
         // pointer table
         int fileStart = (int) Utils.align(dest.getPosition() - start, 0x10) + getEntryCount() * 0x08;
         int contentStart = fileStart;
-
-        //write pointer table
-        for(ResPayload entry : getEntries()) {
+        
+        // write pointer table
+        for (ResPayload entry : getEntries()) {
             fileStart = Utils.align(fileStart, 0x10); // align content start
             
             dest.writeInteger(entry.getType() == null ? 0 : fileStart);
@@ -264,7 +265,7 @@ public class HSMPKCAP extends AbstractKCAP {
         
         dest.setPosition(start + contentStart);
         
-        for(ResPayload entry : getEntries()) {
+        for (ResPayload entry : getEntries()) {
             // align content start
             long aligned = Utils.align(dest.getPosition() - start, 0x10);
             dest.setPosition(start + aligned);
@@ -274,4 +275,8 @@ public class HSMPKCAP extends AbstractKCAP {
         }
     }
     
+    @Override
+    public String toString() {
+        return getKCAPType().name() + " " + name;
+    }
 }

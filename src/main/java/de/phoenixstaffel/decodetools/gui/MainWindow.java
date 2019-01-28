@@ -299,10 +299,16 @@ public class MainWindow extends JFrame implements Observer {
             List<File> files = Utils.listFiles(inputFileDialogue.getSelectedFile());
             
             MainWindow.this.setEnabled(false);
+            JProgressFrame progressFrame = new JProgressFrame("Re-Exporting in progress");
+            progressFrame.setVisible(true);
+            
             SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {
+                private int filesHandled = 0;
+                private int filesTotal = files.size();
+                
                 @Override
                 protected Void doInBackground() throws Exception {
-                    for (File f : files) {
+                    files.parallelStream().forEach(f -> {
                         try {
                             String local = f.getPath().replace(path, "");
                             
@@ -324,20 +330,31 @@ public class MainWindow extends JFrame implements Observer {
                                 ff.getParentFile().mkdirs();
                                 res.repack(ff);
                             }
+                            
+                            publish(0);
                         }
                         catch (IOException e) {
                             Main.LOGGER.log(Level.SEVERE, "IOException while trying to re-export " + f, e);
                         }
-                    }
+                    });
                     return null;
+                }
+                
+                @Override
+                protected void process(List<Object> chunks) {
+                    filesHandled += chunks.size();
+                    setProgress((filesHandled * 100) / filesTotal);
+                    firePropertyChange(JProgressFrame.MESSAGE_PROPERTY, "", filesHandled + " of " + filesTotal);
                 }
                 
                 @Override
                 protected void done() {
                     MainWindow.this.setEnabled(true);
+                    progressFrame.dispose();
                 }
             };
             
+            worker.addPropertyChangeListener(progressFrame.getProgressListener());
             worker.execute();
         }
         

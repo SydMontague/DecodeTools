@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Optional;
 
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class DummyResData implements IResData {
     private List<ResDataEntry> list = new ArrayList<>();
     private int count = 0;
     private int currentAddress = 0;
     
-    public int add(byte[] data, int size, boolean onlyOnce, KCAPPayload parent) {
+    public int add(byte[] data, int size, boolean onlyOnce, AbstractKCAP parent) {
 
         Optional<ResDataEntry> entry = list.stream().filter(a -> onlyOnce && a.isEqual(data, parent)).findFirst();
         
@@ -37,7 +37,7 @@ public class DummyResData implements IResData {
     }
     
     @Override
-    public int add(byte[] data, boolean onlyOnce, KCAPPayload parent) {
+    public int add(byte[] data, boolean onlyOnce, AbstractKCAP parent) {
         return add(data, data.length, onlyOnce, parent);
     }
     

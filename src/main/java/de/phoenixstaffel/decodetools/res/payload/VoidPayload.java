@@ -8,10 +8,6 @@ import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 public class VoidPayload extends ResPayload {
     
     public VoidPayload(AbstractKCAP parent) {
-        super(null); //TODO parent
-    }
-    
-    public VoidPayload(KCAPPayload parent) {
         super(parent);
     }
     

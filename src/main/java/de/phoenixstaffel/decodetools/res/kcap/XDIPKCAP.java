@@ -16,31 +16,31 @@ public class XDIPKCAP extends AbstractKCAP {
     private static final int XDIP_VERSION = 0x01;
     
     private List<XDIOPayload> entries = new ArrayList<>();
-
+    
     public XDIPKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
         
-        if(source.readInteger() != KCAPType.XDIP.getMagicValue())
+        if (source.readInteger() != KCAPType.XDIP.getMagicValue())
             throw new IllegalArgumentException("Tried to instanciate XDIP KCAP, but didn't find a XDIP header.");
         
         int version = source.readInteger();
-        if(version != XDIP_VERSION)
+        if (version != XDIP_VERSION)
             throw new IllegalArgumentException("Tried to instanciate XDIP KCAP and expected version 1, but got " + version);
-
-        if(source.readInteger() != info.entries) // XDIP numEntries, always matches KCAP numEntries?
+        
+        if (source.readInteger() != info.entries) // XDIP numEntries, always matches KCAP numEntries?
             Main.LOGGER.warning(() -> "Number of entries in KCAP and XDIP header are not equal.");
         source.readInteger(); // padding
         
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
         
-        for(KCAPPointer p : pointer) {
-            if(p.getOffset() == 0 && p.getSize() == 0) 
+        for (KCAPPointer p : pointer) {
+            if (p.getOffset() == 0 && p.getSize() == 0)
                 throw new IllegalArgumentException("Got a Void pointer, but only XDIO entries are allowed.");
             
             source.setPosition(info.startAddress + p.getOffset());
             ResPayload payload = ResPayload.craft(source, dataStart, this, p.getSize(), null);
             
-            if(payload.getType() != Payload.XDIO)
+            if (payload.getType() != Payload.XDIO)
                 throw new IllegalArgumentException("Got a " + payload.getType() + " entry, but only XDIO entries are allowed.");
             
             entries.add((XDIOPayload) payload);
@@ -48,7 +48,7 @@ public class XDIPKCAP extends AbstractKCAP {
         
         // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
-        if(source.getPosition() != expectedEnd)
+        if (source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for XDIP KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
     
@@ -76,9 +76,9 @@ public class XDIPKCAP extends AbstractKCAP {
     public int getSize() {
         int size = 0x30;
         size += getEntryCount() * 0x08;
-
-        for(ResPayload entry : entries) {
-            if(entry.getType() == null) // VOID type, i.e. size 0 entries
+        
+        for (ResPayload entry : entries) {
+            if (entry.getType() == null) // VOID type, i.e. size 0 entries
                 continue;
             
             size = Utils.align(size, 0x10); // align to specific alignment
@@ -102,7 +102,7 @@ public class XDIPKCAP extends AbstractKCAP {
         dest.writeInteger(0x00); // type count, always 0 for this type
         dest.writeInteger(0x30); // header size, always 0x30 for this type
         dest.writeInteger(0x00); // type payload start, always 0 for this type
-
+        
         // write XDIP header
         dest.writeInteger(getKCAPType().getMagicValue());
         dest.writeInteger(XDIP_VERSION); // XDIP Version
@@ -111,9 +111,9 @@ public class XDIPKCAP extends AbstractKCAP {
         
         int fileStart = Utils.align(0x30 + getEntryCount() * 0x08, 0x10);
         int contentStart = fileStart;
-
-        //write pointer table
-        for(ResPayload entry : entries) {
+        
+        // write pointer table
+        for (ResPayload entry : entries) {
             fileStart = Utils.align(fileStart, 0x10); // align content start
             
             dest.writeInteger(fileStart);
@@ -121,10 +121,10 @@ public class XDIPKCAP extends AbstractKCAP {
             fileStart += entry.getSize();
         }
         
-        //move write pointer to start of content
+        // move write pointer to start of content
         dest.setPosition(start + contentStart);
         
-        for(ResPayload entry : entries) {
+        for (ResPayload entry : entries) {
             // align content start
             long aligned = Utils.align(dest.getPosition() - start, 0x10);
             dest.setPosition(start + aligned);

@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class PRGMPayload extends NameablePayload {
     private int unknown1;
@@ -10,9 +11,9 @@ public class PRGMPayload extends NameablePayload {
     private int unknown3;
     private int unknown4;
     
-    public PRGMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public PRGMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent, name);
-
+        
         unknown1 = source.readInteger();
         unknown2 = source.readInteger();
         unknown3 = source.readInteger();
@@ -21,11 +22,6 @@ public class PRGMPayload extends NameablePayload {
     
     @Override
     public int getSize() {
-        return 0x10;
-    }
-    
-    @Override
-    public int getAlignment() {
         return 0x10;
     }
     

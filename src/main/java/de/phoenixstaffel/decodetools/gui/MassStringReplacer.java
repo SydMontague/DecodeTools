@@ -32,6 +32,7 @@ public class MassStringReplacer extends JFrame {
     
     private static final long serialVersionUID = -5343568132395772145L;
     private static final String MESSAGE_PROPERTY = "message";
+    private static final String PROGRESS_PROPERTY = "progress";
     
     transient Map<String, ResFile> files = new HashMap<>();
     
@@ -49,7 +50,7 @@ public class MassStringReplacer extends JFrame {
     final JLabel pathLabel = new JLabel("(none)");
     
     transient PropertyChangeListener progressListener = b -> {
-        if ("progress".equals(b.getPropertyName())) {
+        if (PROGRESS_PROPERTY.equals(b.getPropertyName())) {
             progressBar.setValue((int) b.getNewValue());
         }
         if (MESSAGE_PROPERTY.equals(b.getPropertyName())) {

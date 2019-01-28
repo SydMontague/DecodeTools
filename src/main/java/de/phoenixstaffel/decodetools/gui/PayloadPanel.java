@@ -5,8 +5,8 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
-import de.phoenixstaffel.decodetools.res.HeaderExtension.Extensions;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public abstract class PayloadPanel extends JPanel {
     private static final long serialVersionUID = -889159315719439977L;
@@ -26,7 +26,7 @@ public abstract class PayloadPanel extends JPanel {
         Map<Enum<?>, PayloadPanel> tempPanels = new HashMap<>();
         
         tempPanels.put(Payload.GMIO, new GMIOPanel(null));
-        tempPanels.put(Extensions.KPTF, new KPTFPanel(null));
+        tempPanels.put(AbstractKCAP.KCAPType.KPTF, new KPTFPanel(null));
         tempPanels.put(Payload.HSEM, new HSEMPanel(null));
         
         return tempPanels;

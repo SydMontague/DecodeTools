@@ -4,6 +4,7 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 /*
  * 4-byte       magic value
@@ -36,11 +37,11 @@ public class VCTMPayload extends ResPayload {
     private VCTMEntry[] data1;
     private VCTMEntry[] data2;
     
-    public VCTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public VCTMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         this(source, dataStart, parent);
     }
     
-    public VCTMPayload(Access source, int dataStart, KCAPPayload parent) {
+    public VCTMPayload(Access source, int dataStart, AbstractKCAP parent) {
         super(parent);
         long start = source.getPosition();
         
@@ -87,11 +88,6 @@ public class VCTMPayload extends ResPayload {
     }
     
     @Override
-    public int getAlignment() {
-        return 0x10;
-    }
-    
-    @Override
     public Payload getType() {
         return Payload.VCTM;
     }
@@ -118,7 +114,7 @@ public class VCTMPayload extends ResPayload {
         for (VCTMEntry entry : data2)
             for (byte b : entry.getData())
                 dest.writeByte(b);
-
+            
         long diff = Utils.align(dest.getPosition(), 0x04) - dest.getPosition();
         dest.writeByteArray(new byte[(int) diff]);
     }

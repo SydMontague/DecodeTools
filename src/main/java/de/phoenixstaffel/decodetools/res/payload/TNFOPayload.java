@@ -12,6 +12,7 @@ import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 /*
  * 4 byte - magic TNFO
@@ -87,7 +88,7 @@ public class TNFOPayload extends ResPayload {
     private List<TNFOEntry> entries = new ArrayList<>();
     private SortedMap<Integer, TNFOEntry> assignments = new TreeMap<>();
     
-    public TNFOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public TNFOPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         
         long startPosition = source.getPosition();
@@ -153,11 +154,6 @@ public class TNFOPayload extends ResPayload {
     }
     
     @Override
-    public int getAlignment() {
-        return 0x10;
-    }
-    
-    @Override
     public Payload getType() {
         return Payload.TNFO;
     }
@@ -220,7 +216,7 @@ public class TNFOPayload extends ResPayload {
             assignments.forEach((a, b) -> {
                 short entryId = (short) entries.indexOf(b);
                 
-                if(entryId == -1)
+                if (entryId == -1)
                     Main.LOGGER.warning("Tried to write assignment for " + ((char) a.shortValue()) + " but couldn't find a TNFO. TNFO is " + b);
                 
                 dest.writeShort(a.shortValue());
@@ -389,10 +385,10 @@ public class TNFOPayload extends ResPayload {
     }
     
     public void addAssignment(int character, TNFOEntry entry) {
-        //filter out invisible characters and ' ' (space), since they can't be used and might cause problems
-        if(character <= 0x20) 
+        // filter out invisible characters and ' ' (space), since they can't be used and might cause problems
+        if (character <= 0x20)
             return;
-            
+        
         if (assignments.putIfAbsent(character, entry) == null)
             entries.add(entry);
     }

@@ -1,0 +1,33 @@
+The tool is unable to reproduce KCAP files with 100% accuracy for several reasons, 
+the main one the files being inconsistent in the first place.
+
+This document is intended to list all known inaccuracies, their severity and how to deal with them.
+
+=====
+Name: GMIO data alignment
+Description: In some rare cases GMIO data is not properly aligned to 0x80
+Severity: Minor
+Handling: The flaw has no noticeable effects. Reading works flawlessly, re-exported files will be aligned properly.
+
+=====
+Name: life01.res/life02.res format
+Description: The maps life01 and life02 are using and old version of the KCAP format (probably from Re:Digitize), 
+             that is following different rules. The new KCAP implementation does not support those rules.
+Severity: Moderate
+Handling: Re-Export both maps with the old KCAP implementation, to convert them.
+Proper fix: change new KCAP implementation to support the life files, by reading the headerSize field?
+
+=====
+Name: ETC1 re-export
+Description: When exported ETC1 and ETC1A4 textures will not match up byte perfectly with the input data.
+             This is because ETC1 is a compressed format and the re-compression simply produces a different result.
+Severity: Very Minor
+Handling: It's unavoidable and can be neglected 
+
+=====
+Name: Irregular MipMaps
+Description: Some files have textures with MipMaps for Human characters, without there being any indication in the
+             corresponding GMIO. They also don't seem to be used (by Citra), so they may be a left-over.
+Severity: Moderate
+Handling: The affected files need to be re-exported to remove the MipMaps in order for ARCV rebuilds to succeed.
+          Use the dedicated Tools -> Re-Export malformatted files function.

@@ -1,6 +1,6 @@
 package de.phoenixstaffel.decodetools.res;
 
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 /**
  * Represents a ResPayload that can have a name, but doesn't have to be.
@@ -9,8 +9,7 @@ public abstract class NameablePayload extends ResPayload {
 
     private String name;
     
-    // TODO AbstractKCAP
-    public NameablePayload(KCAPPayload parent, String name) {
+    public NameablePayload(AbstractKCAP parent, String name) {
         super(parent);
         this.name = name;
     }

@@ -29,9 +29,8 @@ import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.gui.util.ResPayloadTreeNode;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResData;
-import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.ResPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class KCAPPanel extends EditorPanel {
     private static final long serialVersionUID = -8718473237761608043L;
@@ -39,7 +38,6 @@ public class KCAPPanel extends EditorPanel {
     private JScrollPane scrollPane = new JScrollPane();
     private JTree tree = new JTree((TreeModel) null);
     private JPopupMenu popupMenu = new JPopupMenu();
-    private JMenuItem importItem = new JMenuItem("Import");
     private JMenuItem exportItem = new JMenuItem("Export");
     
     private Map<Enum<?>, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
@@ -50,7 +48,6 @@ public class KCAPPanel extends EditorPanel {
         super(model);
         
 
-        popupMenu.add(importItem);
         popupMenu.add(exportItem);
         
         exportItem.setAction(new FunctionAction("Export", a -> {
@@ -80,35 +77,6 @@ public class KCAPPanel extends EditorPanel {
             }
         }));
         
-        importItem.setAction(new FunctionAction("Import", a -> {
-            JFileChooser inputFileDialogue = new JFileChooser("./");
-            inputFileDialogue.setDialogTitle("Which file to import?");
-            inputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            inputFileDialogue.showSaveDialog(null);
-            
-            File file = inputFileDialogue.getSelectedFile();
-            Object selected = ((ResPayloadTreeNode) tree.getSelectionPath().getLastPathComponent()).getPayload();
-            
-            try (Access src = new FileAccess(file)) {
-                ResFile res = new ResFile(src);
-                
-                if(selected instanceof ResPayload) {
-                    ResPayload selectedRes = (ResPayload) selected;
-                    
-                    if(selectedRes.hasParent()) {
-                        KCAPPayload parent = selectedRes.getParent();
-                        parent.replace(selectedRes, res.getRoot());
-                        model.update();
-                    }
-                    else
-                        model.setSelectedResource(res);
-                }
-            }
-            catch(IOException ex) {
-                Main.LOGGER.warning(() -> "Failed to open file for import: " + file.getName());
-            }
-        }));
-        
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         
         tree.setShowsRootHandles(true);
@@ -118,8 +86,8 @@ public class KCAPPanel extends EditorPanel {
             
             if (selected instanceof ResPayload && panels.containsKey(((ResPayload) selected).getType()))
                 type = ((ResPayload) selected).getType();
-            else if (selected instanceof KCAPPayload && panels.containsKey(((KCAPPayload) selected).getExtension().getType()))
-                type = ((KCAPPayload) selected).getExtension().getType();
+            else if (selected instanceof AbstractKCAP && panels.containsKey(((AbstractKCAP) selected).getKCAPType()))
+                type = ((AbstractKCAP) selected).getKCAPType();
             
             if (type != null) {
                 cardLayout.show(panel, type.name());

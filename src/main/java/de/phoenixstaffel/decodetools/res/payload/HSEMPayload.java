@@ -10,6 +10,7 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.QuadConsumer;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.hsem.HSEM03Entry;
 import de.phoenixstaffel.decodetools.res.payload.hsem.HSEM07Entry;
 import de.phoenixstaffel.decodetools.res.payload.hsem.HSEMDrawEntry;
@@ -81,7 +82,7 @@ public class HSEMPayload extends ResPayload {
         
         public Vector4() {
         }
-
+        
         public Vector4(float x, float y, float z, float w) {
             this.x = x;
             this.y = y;
@@ -105,7 +106,7 @@ public class HSEMPayload extends ResPayload {
     
     private List<HSEMEntry> entries = new ArrayList<>();
     
-    public HSEMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public HSEMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         
         long start = source.getPosition();
@@ -130,11 +131,6 @@ public class HSEMPayload extends ResPayload {
     @Override
     public int getSize() {
         return 0x40 + entries.stream().collect(Collectors.summingInt(HSEMEntry::getSize));
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x10;
     }
     
     @Override
@@ -178,9 +174,9 @@ public class HSEMPayload extends ResPayload {
                 
                 boolean hasNorm = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.NORMAL);
                 boolean hasUV = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.TEXTURE0);
-
+                
                 out.println("g group_" + groupIndex++);
-
+                
                 // vertex, normal, uv
                 xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.POSITION, "v ", out));
                 xtvo.getVertices().forEach(a -> VERTEX_TO_OBJ_FUNCTION.accept(a, XTVORegisterType.NORMAL, "vn ", out));

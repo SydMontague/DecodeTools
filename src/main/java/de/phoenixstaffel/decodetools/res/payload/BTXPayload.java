@@ -10,6 +10,7 @@ import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class BTXPayload extends ResPayload {
     private static final String WRITE_ENCODING = "UTF-16LE";
@@ -18,7 +19,7 @@ public class BTXPayload extends ResPayload {
     private int unknown;
     
     // TODO make cleaner/nicer
-    public BTXPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public BTXPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         long start = source.getPosition();
         int postStart = 0;
@@ -34,7 +35,7 @@ public class BTXPayload extends ResPayload {
         
         source.setPosition(start + headerSize + (postStart == 0 ? 0 : 4));
         
-        unknown = source.readInteger(); 
+        unknown = source.readInteger();
         int numEntries = source.readInteger();
         
         List<Tuple<Integer, Long>> pointers = new LinkedList<>();
@@ -54,12 +55,12 @@ public class BTXPayload extends ResPayload {
             source.setPosition(pointer);
             
             char val;
-            while((val = source.readChar()) != 0) {
+            while ((val = source.readChar()) != 0) {
                 builder.append(val);
             }
             
             char secondNull = source.readChar();
-            if(postStart == 0 && secondNull != 0x0000) // read final 0x0000
+            if (postStart == 0 && secondNull != 0x0000) // read final 0x0000
                 Main.LOGGER.warning(() -> "Tried reading the second terminator char (0x0000) but got " + secondNull);
             
             strings.add(builder.toString());
@@ -94,11 +95,6 @@ public class BTXPayload extends ResPayload {
         }
         
         return size;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x4;
     }
     
     @Override
@@ -153,7 +149,7 @@ public class BTXPayload extends ResPayload {
     public String getStringById(int id) {
         Optional<Tuple<Integer, BTXEntry>> entry = entries.stream().filter(a -> a.getKey() == id).findFirst();
         
-        if(entry.isPresent())
+        if (entry.isPresent())
             return entry.get().getValue().getString();
         
         return null;
@@ -216,7 +212,7 @@ public class BTXPayload extends ResPayload {
         }
         
         /**
-         * Get the ID of the message this meta is associated with. 
+         * Get the ID of the message this meta is associated with.
          * 
          * @return the ID of the message this meta belong to
          */

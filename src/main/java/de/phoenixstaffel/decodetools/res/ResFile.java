@@ -8,14 +8,14 @@ import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class ResFile {
     private ResPayload root;
     
     public ResFile(Access source) {
         int dataStart = ResPayload.Payload.valueOf(null, source.readLong(0)).getDataStart(source);
-        root = ResPayload.craft(source, dataStart, (KCAPPayload) null, -1, null);
+        root = ResPayload.craft(source, dataStart, (AbstractKCAP) null, -1, null);
     }
     
     public ResPayload getRoot() {

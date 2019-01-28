@@ -16,7 +16,7 @@ import de.phoenixstaffel.decodetools.res.payload.VCTMPayload;
 //TODO figure out how TDTM works and abstrahize it per entry
 public class TDTMKCAP extends AbstractKCAP {
     private static final int TDTM_VERSION = 2;
-
+    
     private List<TDTMEntry> tdtmEntry = new ArrayList<>();
     
     private List<QSTMPayload> qstm = new ArrayList<>();
@@ -29,13 +29,13 @@ public class TDTMKCAP extends AbstractKCAP {
     
     protected TDTMKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
-
+        
         // make sure it's actually a TDTM
-        if(source.readInteger() != KCAPType.TDTM.getMagicValue())
+        if (source.readInteger() != KCAPType.TDTM.getMagicValue())
             throw new IllegalArgumentException("Tried to instanciate TDTM KCAP, but didn't find a TDTM header.");
         
         int version = source.readInteger();
-        if(version != TDTM_VERSION)
+        if (version != TDTM_VERSION)
             throw new IllegalArgumentException("Tried to instanciate TDTM KCAP and expected version 2, but got " + version);
         
         int numEntries = source.readInteger();
@@ -47,33 +47,33 @@ public class TDTMKCAP extends AbstractKCAP {
         time4 = source.readFloat();
         
         // one TDTM entry per QSTM in qstmKCAP?
-        for(int i = 0; i < numEntries; ++i)
+        for (int i = 0; i < numEntries; ++i)
             tdtmEntry.add(new TDTMEntry(source));
         
         // TODO inconsistent by design?
-        if(numEntries % 2 == 1 && info.headerSize % 0x10 == 0x00)
+        if (numEntries % 2 == 1 && info.headerSize % 0x10 == 0x00)
             source.readLong(); // padding
-        
+            
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
-
-        if(pointer.size() != 2)
+        
+        if (pointer.size() != 2)
             throw new IllegalArgumentException("A TDTM KCAP has always two elements, but this one has " + pointer.size() + "!");
         
         source.setPosition(info.startAddress + pointer.get(0).getOffset());
         NormalKCAP qstmKCAP = (NormalKCAP) AbstractKCAP.craftKCAP(source, this, dataStart);
-
+        
         source.setPosition(info.startAddress + pointer.get(1).getOffset());
         NormalKCAP vctmKCAP = (NormalKCAP) AbstractKCAP.craftKCAP(source, this, dataStart);
         
-        for(ResPayload entry : qstmKCAP) {
-            if(entry.getType() != Payload.QSTM) 
+        for (ResPayload entry : qstmKCAP) {
+            if (entry.getType() != Payload.QSTM)
                 throw new IllegalArgumentException("Got a " + entry.getType() + " entry, but only QSTM entries are allowed.");
             
             qstm.add((QSTMPayload) entry);
         }
         
-        for(ResPayload entry : vctmKCAP) {
-            if(entry.getType() != Payload.VCTM) 
+        for (ResPayload entry : vctmKCAP) {
+            if (entry.getType() != Payload.VCTM)
                 throw new IllegalArgumentException("Got a " + entry.getType() + " entry, but only VCTM entries are allowed.");
             
             vctm.add((VCTMPayload) entry);
@@ -81,25 +81,28 @@ public class TDTMKCAP extends AbstractKCAP {
         
         // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
-        if(source.getPosition() != expectedEnd)
+        if (source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for TDTM KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
-
+    
     @Override
     public List<ResPayload> getEntries() {
         List<ResPayload> entries = new ArrayList<>();
         entries.add(new NormalKCAP(this, qstm, true));
         entries.add(new NormalKCAP(this, vctm, true));
-
+        
         return Collections.unmodifiableList(entries);
     }
     
     @Override
     public ResPayload get(int i) {
-        switch(i) {
-            case 0: return new NormalKCAP(this, qstm, true);
-            case 1: return new NormalKCAP(this, vctm, true);
-            default: throw new NoSuchElementException();
+        switch (i) {
+            case 0:
+                return new NormalKCAP(this, qstm, true);
+            case 1:
+                return new NormalKCAP(this, vctm, true);
+            default:
+                throw new NoSuchElementException();
         }
     }
     
@@ -150,22 +153,22 @@ public class TDTMKCAP extends AbstractKCAP {
         dest.writeInteger(TDTM_VERSION);
         dest.writeInteger(tdtmEntry.size());
         dest.writeInteger(0); // padding
-
+        
         dest.writeFloat(time1);
         dest.writeFloat(time2);
         dest.writeFloat(time3);
         dest.writeFloat(time4);
         
         // write TDTM entries
-        for(TDTMEntry entry : tdtmEntry) {
+        for (TDTMEntry entry : tdtmEntry) {
             dest.writeShort(entry.unknown1);
             dest.writeShort(entry.unknown2);
             dest.writeInteger(entry.unknown3);
         }
         
-        if(tdtmEntry.size() % 2 == 1)
+        if (tdtmEntry.size() % 2 == 1)
             dest.writeLong(0); // padding
-        
+            
         // write pointer table
         int fileStart = (int) (dest.getPosition() - start + 0x10);
         
@@ -175,17 +178,17 @@ public class TDTMKCAP extends AbstractKCAP {
         fileStart += qstmKCAP.getSize();
         
         fileStart = Utils.align(fileStart, 0x10); // align content start
-
+        
         ResPayload vctmKCAP = get(1);
         dest.writeInteger(fileStart);
         dest.writeInteger(vctmKCAP.getSize());
         
         // write entries
         qstmKCAP.writeKCAP(dest, dataStream);
-
+        
         long aligned = Utils.align(dest.getPosition() - start, 0x10);
         dest.setPosition(start + aligned);
-
+        
         vctmKCAP.writeKCAP(dest, dataStream);
     }
     

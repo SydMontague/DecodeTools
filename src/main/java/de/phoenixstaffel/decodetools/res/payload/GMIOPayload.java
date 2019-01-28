@@ -10,6 +10,7 @@ import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class GMIOPayload extends NameablePayload {
     private static final int VERSION = 6;
@@ -17,10 +18,11 @@ public class GMIOPayload extends NameablePayload {
     private short unknown1;
     private byte unknown1_1;
     private byte unknown1_2;
-    private int dataPointer;
+    // dataPointer (4 byte)
     
     private int unknown2;
-    // uv height and width (4 byte)
+    // uv width (2 byte)
+    // uv height (2 byte)
     private int unknown3;
     private int unknown4;
     
@@ -37,16 +39,16 @@ public class GMIOPayload extends NameablePayload {
     
     private byte[] extraData;
     
-    // TODO remove all variables that can be deducted from the image
+    // helper members
     private float uvWidth;
     private float uvHeight;
     private BufferedImage image;
     
-    public GMIOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public GMIOPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         this(source, dataStart, parent, name);
     }
     
-    private GMIOPayload(Access source, int dataStart, KCAPPayload parent, String name) {
+    private GMIOPayload(Access source, int dataStart, AbstractKCAP parent, String name) {
         super(parent, name);
         
         source.readInteger(); // magic value
@@ -54,7 +56,7 @@ public class GMIOPayload extends NameablePayload {
         unknown1 = source.readShort(); // always 0x3001
         unknown1_1 = source.readByte();
         unknown1_2 = source.readByte();
-        dataPointer = source.readInteger();
+        int dataPointer = source.readInteger();
         
         unknown2 = source.readInteger();
         short uvSizeX = source.readShort();
@@ -164,9 +166,9 @@ public class GMIOPayload extends NameablePayload {
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
             if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
-                Main.LOGGER.warning(() -> "Saving image " + getName() + " with illegal resolution. \n" + "Resolution: " + image.getWidth() + "x" + image.getHeight()
-                        + " | This file will cause problems!");
-        
+                Main.LOGGER.warning(() -> "Saving image " + getName() + " with illegal resolution. \n" + "Resolution: " + image.getWidth() + "x"
+                        + image.getHeight() + " | This file will cause problems!");
+            
             byte[] pixelData = format.convertToFormat(image);
             dataAddress = dataStream.add(pixelData, hasName(), getParent());
         }
@@ -223,15 +225,10 @@ public class GMIOPayload extends NameablePayload {
     }
     
     @Override
-    public int getAlignment() {
-        return 4;
-    }
-    
-    @Override
     public String toString() {
         return hasName() ? getName() : "GMIO " + " " + format + " " + getWidth() + " " + getHeight();
     }
-
+    
     public int getWidth() {
         return image != null ? image.getWidth() : 0;
     }

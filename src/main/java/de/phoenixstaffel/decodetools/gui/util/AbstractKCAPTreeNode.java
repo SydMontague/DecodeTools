@@ -13,9 +13,9 @@ import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 public class AbstractKCAPTreeNode extends ResPayloadTreeNode {
 
     /**
-     * Creates a new TreeNode with the given {@link KCAPPayload} as root.
+     * Creates a new TreeNode with the given {@link AbstractKCAP} as root.
      * 
-     * @param root the {@link KCAPPayload} to use a root
+     * @param root the {@link AbstractKCAP} to use a root
      */
     protected AbstractKCAPTreeNode(AbstractKCAP root) {
         super(root);
@@ -36,7 +36,7 @@ public class AbstractKCAPTreeNode extends ResPayloadTreeNode {
 
     @Override
     public TreeNode getParent() {
-        return new AbstractKCAPTreeNode(null /* TODO getPayload().getParent() */);
+        return new AbstractKCAPTreeNode(getPayload().getParent());
     }
 
     @Override

@@ -12,14 +12,14 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.HSEMPayload;
 
 public class HSEMKCAP extends AbstractKCAP {
-
+    
     private List<HSEMPayload> entries = new ArrayList<>();
     
     public HSEMKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
         
         // make sure it's actually a HSEM
-        if(source.readInteger() != KCAPType.HSEM.getMagicValue())
+        if (source.readInteger() != KCAPType.HSEM.getMagicValue())
             throw new IllegalArgumentException("Tried to instanciate HSEM KCAP, but didn't find a HSEM header.");
         
         // padding, always 0
@@ -31,16 +31,17 @@ public class HSEMKCAP extends AbstractKCAP {
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
         
         // load the content
-        for(KCAPPointer p : pointer) {
+        for (KCAPPointer p : pointer) {
             source.setPosition(info.startAddress + p.getOffset());
-            entries.add(new HSEMPayload(source, dataStart, null /* TODO this */, p.getSize(), null));
+            entries.add(new HSEMPayload(source, dataStart, this, p.getSize(), null));
         }
         
         // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
-        if(source.getPosition() != expectedEnd)
+        if (source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for HSEM KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
+    
     @Override
     public List<ResPayload> getEntries() {
         return Collections.unmodifiableList(entries);
@@ -66,14 +67,14 @@ public class HSEMKCAP extends AbstractKCAP {
         int size = 0x30; // size of header
         size += getEntryCount() * 0x08; // size of pointer map
         
-        for(ResPayload entry : entries) {
-            if(entry.getType() == null) // VOID type, i.e. size 0 entries
+        for (ResPayload entry : entries) {
+            if (entry.getType() == null) // VOID type, i.e. size 0 entries
                 continue;
             
             size = Utils.align(size, 0x10); // align to specific alignment
             size += entry.getSize(); // size of entry
         }
-
+        
         return size;
     }
     
@@ -90,7 +91,7 @@ public class HSEMKCAP extends AbstractKCAP {
         dest.writeInteger(0x00); // type count, always 0 for this type
         dest.writeInteger(0x30); // header size, always 0x30 for this type
         dest.writeInteger(0x00); // type payload start, always 0 for this type
-
+        
         dest.writeInteger(getKCAPType().getMagicValue());
         dest.writeInteger(0x00); // padding
         dest.writeInteger(0x00); // padding
@@ -98,9 +99,9 @@ public class HSEMKCAP extends AbstractKCAP {
         
         int fileStart = Utils.align(0x30 + getEntryCount() * 0x08, 0x10);
         int contentStart = fileStart;
-
-        //write pointer table
-        for(ResPayload entry : entries) {
+        
+        // write pointer table
+        for (ResPayload entry : entries) {
             fileStart = Utils.align(fileStart, 0x10); // align content start
             
             dest.writeInteger(fileStart);
@@ -108,10 +109,10 @@ public class HSEMKCAP extends AbstractKCAP {
             fileStart += entry.getSize();
         }
         
-        //move write pointer to start of content
+        // move write pointer to start of content
         dest.setPosition(start + contentStart);
         
-        for(ResPayload entry : entries) {
+        for (ResPayload entry : entries) {
             // align content start
             long aligned = Utils.align(dest.getPosition() - start, 0x10);
             dest.setPosition(start + aligned);

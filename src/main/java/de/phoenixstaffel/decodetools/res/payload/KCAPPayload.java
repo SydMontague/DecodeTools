@@ -11,6 +11,7 @@ import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.extensions.VoidExtension;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class KCAPPayload extends ResPayload {
     private static final int VERSION = 1;
@@ -25,12 +26,12 @@ public class KCAPPayload extends ResPayload {
     
     private boolean genericAligned;
     
-    public KCAPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public KCAPPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         // ignore size and name
         this(source, dataStart, parent);
     }
     
-    public KCAPPayload(Access source, int dataStart, KCAPPayload parent) {
+    public KCAPPayload(Access source, int dataStart, AbstractKCAP parent) {
         super(parent);
         long startAddress = source.getPosition();
         
@@ -54,9 +55,9 @@ public class KCAPPayload extends ResPayload {
         
         if (extension != null)
             extensionPayload = extension.loadPayload(source, numPayloadEntries);
-
+        
         genericAligned = pointer.stream().allMatch(a -> (a.getOffset() % 0x10) == 0);
-
+        
         for (int i = 0; i < numEntries; i++) {
             KCAPPointer entry = pointer.get(i);
             source.setPosition(entry.getOffset() + startAddress);
@@ -64,7 +65,7 @@ public class KCAPPayload extends ResPayload {
             if (entry.getOffset() == 0 && entry.getLength() == 0)
                 entries.add(new VoidPayload(parent));
             else
-                entries.add(ResPayload.craft(source, dataStart, this, entry.getLength(), extensionPayload.get(i)));
+                entries.add(ResPayload.craft(source, dataStart, (AbstractKCAP) null, entry.getLength(), extensionPayload.get(i)));
         }
         
         source.setPosition(Utils.align(source.getPosition(), 0x10));
@@ -100,7 +101,7 @@ public class KCAPPayload extends ResPayload {
         }
         
         // unneeded padding, hopefully
-        //value = Utils.align(value, 0x4);
+        // value = Utils.align(value, 0x4);
         
         return value;
     }
@@ -125,11 +126,6 @@ public class KCAPPayload extends ResPayload {
     
     public HeaderExtension getExtension() {
         return extension;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return getParent().getGenericAlignment();
     }
     
     public HeaderExtensionPayload getExtensionPayload() {
@@ -194,8 +190,8 @@ public class KCAPPayload extends ResPayload {
         });
         
         // unneeded padding, hopefully
-        //int diff = (int) (Utils.align(dest.getPosition(), 0x4) - dest.getPosition());
-        //dest.writeByteArray(new byte[diff]);
+        // int diff = (int) (Utils.align(dest.getPosition(), 0x4) - dest.getPosition());
+        // dest.writeByteArray(new byte[diff]);
     }
     
     public int getGenericAlignment() {
@@ -232,7 +228,7 @@ public class KCAPPayload extends ResPayload {
     public void replace(ResPayload current, ResPayload replacement) {
         entries.replaceAll(a -> a == current ? replacement : a);
     }
-
+    
     public List<ResPayload> getEntries() {
         return entries;
     }

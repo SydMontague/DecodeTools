@@ -24,8 +24,7 @@ public class GMIPKCAP extends AbstractKCAP {
     private static final int GMIP_VERSION = 0x01;
     
     private List<GMIOPayload> entries = new ArrayList<>();
-
-
+    
     public GMIPKCAP(AbstractKCAP parent, List<GMIOPayload> images) {
         super(parent, 0);
         this.entries.addAll(images);
@@ -33,37 +32,37 @@ public class GMIPKCAP extends AbstractKCAP {
     
     public GMIPKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
-
+        
         // make sure it's actually a GMIP v1
-        if(source.readInteger() != KCAPType.GMIP.getMagicValue())
+        if (source.readInteger() != KCAPType.GMIP.getMagicValue())
             throw new IllegalArgumentException("Tried to instanciate GMIP KCAP, but didn't find a GMIP header.");
         
         int version = source.readInteger();
-        if(version != GMIP_VERSION)
+        if (version != GMIP_VERSION)
             throw new IllegalArgumentException("Tried to instanciate GMIP KCAP and expected version 1, but got " + version);
         
-        if(source.readInteger() != info.entries) //GMIP numEntries, always matches KCAP numEntries?
+        if (source.readInteger() != info.entries) // GMIP numEntries, always matches KCAP numEntries?
             Main.LOGGER.warning(() -> "Number of entries in KCAP and GMIP header are not equal.");
-        source.readInteger(); //padding
+        source.readInteger(); // padding
         
         // load the KCAP pointers to the entries
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
-
+        
         // load the names
-        Map<Integer, String> names = loadNames(source, info); 
+        Map<Integer, String> names = loadNames(source, info);
         
         // load the entries
-        for(int i = 0; i < info.entries; ++i) {
+        for (int i = 0; i < info.entries; ++i) {
             KCAPPointer p = pointer.get(i);
             String name = names.getOrDefault(i, null); // give entries a name if they have one
             
-            if(p.getOffset() == 0 && p.getSize() == 0) 
+            if (p.getOffset() == 0 && p.getSize() == 0)
                 throw new IllegalArgumentException("Got a Void pointer, but only GMIO entries are allowed.");
-
+            
             source.setPosition(info.startAddress + p.getOffset());
             ResPayload payload = ResPayload.craft(source, dataStart, this, p.getSize(), name);
             
-            if(payload.getType() != Payload.GMIO)
+            if (payload.getType() != Payload.GMIO)
                 throw new IllegalArgumentException("Got a " + payload.getType() + " entry, but only GMIO entries are allowed.");
             
             entries.add((GMIOPayload) payload);
@@ -71,10 +70,10 @@ public class GMIPKCAP extends AbstractKCAP {
         
         // make sure we're at the end of the KCAP
         long expectedEnd = info.startAddress + info.size;
-        if(source.getPosition() != expectedEnd)
+        if (source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for GMIP KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
-
+    
     @Override
     public List<ResPayload> getEntries() {
         return Collections.unmodifiableList(entries);
@@ -99,15 +98,15 @@ public class GMIPKCAP extends AbstractKCAP {
     public int getSize() {
         int size = 0x30; // side of header
         size += getEntryCount() * 0x08; // size of pointer map
-
+        
         // size of name payload
         size += entries.stream().filter(GMIOPayload::hasName).count() * 0x08;
         size += entries.stream().filter(GMIOPayload::hasName).collect(Collectors.summingInt((GMIOPayload a) -> a.getName().length() + 1));
         
         size = Utils.align(size, 0x04);
-
-        for(ResPayload entry : entries) {
-            if(entry.getType() == null) // VOID type, i.e. size 0 entries
+        
+        for (ResPayload entry : entries) {
+            if (entry.getType() == null) // VOID type, i.e. size 0 entries
                 continue;
             
             size = Utils.align(size, 0x04); // align to GMIP specific alignment
@@ -148,8 +147,8 @@ public class GMIPKCAP extends AbstractKCAP {
         fileStart = Utils.align(fileStart, 0x04);
         
         int contentStart = fileStart;
-
-        for(ResPayload entry : entries) {
+        
+        for (ResPayload entry : entries) {
             fileStart = Utils.align(fileStart, 0x04); // align content start
             
             dest.writeInteger(fileStart);
@@ -160,11 +159,11 @@ public class GMIPKCAP extends AbstractKCAP {
         // write GMIP payload
         int stringStart = payloadStart + typeCount * 0x08;
         writeNames(dest, stringStart, entries);
-
+        
         // write entries
         dest.setPosition(start + contentStart);
         
-        for(ResPayload entry : entries) {
+        for (ResPayload entry : entries) {
             // align content start
             long aligned = Utils.align(dest.getPosition() - start, 0x04);
             dest.setPosition(start + aligned);

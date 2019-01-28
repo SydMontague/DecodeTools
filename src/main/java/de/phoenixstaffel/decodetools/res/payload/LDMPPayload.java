@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class LDMPPayload extends ResPayload {
     private int unknown1;
@@ -15,7 +16,7 @@ public class LDMPPayload extends ResPayload {
     private int unknown7;
     private int unknown8;
     
-    public LDMPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public LDMPPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         
         unknown1 = source.readInteger();
@@ -31,11 +32,6 @@ public class LDMPPayload extends ResPayload {
     @Override
     public int getSize() {
         return 0x20;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x10;
     }
     
     @Override

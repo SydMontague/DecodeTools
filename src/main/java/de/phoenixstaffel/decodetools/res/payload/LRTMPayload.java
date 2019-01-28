@@ -3,28 +3,29 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 //FIXME implements colors and shininess
 public class LRTMPayload extends NameablePayload {
     private int index;
-    private short unknown1; //shading type? 4 = unshaded?
-    private short unknown2; //??? type?
-    private int colorFilter; //?
-    private short lightingSize; //lighting size
-    private short lightingPointer; //lighting point
+    private short unknown1; // shading type? 4 = unshaded?
+    private short unknown2; // ??? type?
+    private int colorFilter; // ?
+    private short lightingSize; // lighting size
+    private short lightingPointer; // lighting point
     
-    private short unknownSize; //??? size
-    private short unknownPointer; //??? pointer
+    private short unknownSize; // ??? size
+    private short unknownPointer; // ??? pointer
     
-    private byte[] data1; //more lighting  diffuse - specular - constant? always 0xC
-    //ambient
-    //specular
-    //emit??
-    private byte[] data2; //??? always 0x8
-    //color
-    //shininess?
+    private byte[] data1; // more lighting diffuse - specular - constant? always 0xC
+    // ambient
+    // specular
+    // emit??
+    private byte[] data2; // ??? always 0x8
+    // color
+    // shininess?
     
-    public LRTMPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public LRTMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent, name);
         
         index = source.readInteger();
@@ -48,11 +49,6 @@ public class LRTMPayload extends NameablePayload {
     @Override
     public int getSize() {
         return 0x20 + data1.length + data2.length;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x10;
     }
     
     @Override

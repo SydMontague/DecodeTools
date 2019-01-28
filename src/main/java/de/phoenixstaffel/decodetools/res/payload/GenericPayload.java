@@ -3,11 +3,12 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class GenericPayload extends ResPayload {
     private int[] data;
     
-    public GenericPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public GenericPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         
         data = new int[(int) ((size == -1 ? source.getSize() : size) / 4)];
@@ -24,11 +25,6 @@ public class GenericPayload extends ResPayload {
     @Override
     public Payload getType() {
         return Payload.GENERIC;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return getParent().getGenericAlignment();
     }
     
     @Override

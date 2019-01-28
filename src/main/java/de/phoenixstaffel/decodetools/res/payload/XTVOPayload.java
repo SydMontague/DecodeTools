@@ -10,41 +10,39 @@ import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 
 public class XTVOPayload extends ResPayload {
     private final long dataStartOnLoad;
     
-    //int magic value
+    // int magic value
     private int unknown1; // 5? version?
     private short unknown2; // 0x3001?
-    private short id; //?
-    //int dataPointer
+    private short id; // ?
+    // int dataPointer
     
-    //int numEntries
-    //int entrySize
-    //int dataSize
+    // int numEntries
+    // int entrySize
+    // int dataSize
     private int unknown7; // 0x00010309?
     
     private int shaderId;
     private int unknown9; // 0x73?
     private int unknown10; // 1?
-    //int shaderVariablesSize
+    // int shaderVariablesSize
     
-    //short attributeCount
-    //short attributePtr, always 0x74?
-    
+    // short attributeCount
+    // short attributePtr, always 0x74?
     
     /*
      * Each mTex array gets used to build a mTex matrix in the shader.
-     * 
      * The final texture coordinate is calculated by creating the dot product of each
-     * 
-     * [ mTex[2],       0, 0, mTex[0] ]
-     * [       0, mTex[3], 0, mTex[1] ]
-     * [       0,       0, 0,       0 ]
-     * [       0,       0, 0,       0 ]
+     * [ mTex[2], 0, 0, mTex[0] ]
+     * [ 0, mTex[3], 0, mTex[1] ]
+     * [ 0, 0, 0, 0 ]
+     * [ 0, 0, 0, 0 ]
      */
     private float[] mTex0 = { 0.0f, 0.0f, 1.0f, 1.0f };
     private float[] mTex1 = { 0.0f, 0.0f, 1.0f, 1.0f };
@@ -55,7 +53,8 @@ public class XTVOPayload extends ResPayload {
     
     private List<XTVOVertex> data = new ArrayList<>();
     
-    public XTVOPayload(KCAPPayload parent, List<XTVOAttribute> attributes, List<XTVOVertex> data, int shaderId, int unknown1, short unknown2, short id, int unknown7, int unknown9, int unknown10) {
+    public XTVOPayload(AbstractKCAP parent, List<XTVOAttribute> attributes, List<XTVOVertex> data, int shaderId, int unknown1, short unknown2, short id,
+            int unknown7, int unknown9, int unknown10) {
         super(parent);
         
         this.attributes = attributes;
@@ -71,11 +70,11 @@ public class XTVOPayload extends ResPayload {
         dataStartOnLoad = 0;
     }
     
-    public XTVOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public XTVOPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         this(source, dataStart, parent);
     }
     
-    private XTVOPayload(Access source, int dataStart, KCAPPayload parent) {
+    private XTVOPayload(Access source, int dataStart, AbstractKCAP parent) {
         super(parent);
         
         source.readInteger(); // magic value
@@ -112,7 +111,7 @@ public class XTVOPayload extends ResPayload {
         ByteBuffer b = ByteBuffer.wrap(source.readByteArray(dataSize, (long) dataStart + dataPointer));
         b.order(ByteOrder.LITTLE_ENDIAN);
         
-        for(int i = 0; i < numEntries; i++) {
+        for (int i = 0; i < numEntries; i++) {
             byte[] buffArray = new byte[entrySize];
             b.get(buffArray);
             ByteBuffer buff = ByteBuffer.wrap(buffArray);
@@ -126,11 +125,6 @@ public class XTVOPayload extends ResPayload {
     @Override
     public int getSize() {
         return 0x74 + attributes.size() * 0xC;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x10;
     }
     
     @Override
@@ -171,7 +165,7 @@ public class XTVOPayload extends ResPayload {
         dest.writeInteger(getSize() - 0x30);
         
         dest.writeShort((short) attributes.size());
-        dest.writeShort((short) 0x74); // 
+        dest.writeShort((short) 0x74); //
         
         for (float f : mTex0)
             dest.writeFloat(f);
@@ -211,7 +205,7 @@ public class XTVOPayload extends ResPayload {
     public short getId() {
         return id;
     }
-
+    
     public float[] getMTex0() {
         return mTex0;
     }

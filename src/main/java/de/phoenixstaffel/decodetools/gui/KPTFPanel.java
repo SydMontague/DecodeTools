@@ -37,17 +37,16 @@ import org.xml.sax.SAXException;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.export.fontxml.XMLFont;
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
-import de.phoenixstaffel.decodetools.res.HeaderExtension.Extensions;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload.TNFOEntry;
 
 public class KPTFPanel extends PayloadPanel {
     private static final long serialVersionUID = 4410795681047271875L;
     
-    private transient KCAPPayload kptf;
+    private transient AbstractKCAP kptf;
     private transient TNFOPayload tnfo;
     private transient TNFOEntry entry;
     private transient List<GMIOPayload> gmios;
@@ -258,17 +257,17 @@ public class KPTFPanel extends PayloadPanel {
         if (file == null)
             return;
         
-        if (!(file instanceof KCAPPayload)) {
+        if (!(file instanceof AbstractKCAP)) {
             Main.LOGGER.warning("Tried to select non-KCAP File in KPTFPanel.");
             return;
         }
         
-        if (((KCAPPayload) file).getExtension().getType() != Extensions.KPTF) {
+        if (((AbstractKCAP) file).getKCAPType() != AbstractKCAP.KCAPType.KPTF) {
             Main.LOGGER.warning("Tried to select non-KPTF KCAP File in KPTFPanel.");
             return;
         }
         
-        kptf = (KCAPPayload) file;
+        kptf = (AbstractKCAP) file;
         tnfo = (TNFOPayload) kptf.get(0);
         entry = null;
         tnfoEntryPanel.setVisible(false);
@@ -276,9 +275,9 @@ public class KPTFPanel extends PayloadPanel {
         
         if (gmio instanceof GMIOPayload)
             gmios = Arrays.asList((GMIOPayload) gmio);
-        else if (gmio instanceof KCAPPayload && ((KCAPPayload) gmio).getExtension().getType() == Extensions.GMIP) {
+        else if (gmio instanceof AbstractKCAP && ((AbstractKCAP) gmio).getKCAPType() == AbstractKCAP.KCAPType.GMIP) {
             gmios = new ArrayList<>();
-            ((KCAPPayload) gmio).getElementsWithType(Payload.GMIO).forEach(a -> gmios.add((GMIOPayload) a));
+            ((AbstractKCAP) gmio).getElementsWithType(Payload.GMIO).forEach(a -> gmios.add((GMIOPayload) a));
         }
         
         List<Image> images = new ArrayList<>();

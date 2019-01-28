@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class RTCLPayload extends NameablePayload {
     private int unknown1;
@@ -12,7 +13,7 @@ public class RTCLPayload extends NameablePayload {
     
     private float[] matrix = new float[16];
     
-    public RTCLPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public RTCLPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent, name);
         
         unknown1 = source.readInteger();
@@ -27,11 +28,6 @@ public class RTCLPayload extends NameablePayload {
     @Override
     public int getSize() {
         return 0x50;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x10;
     }
     
     @Override

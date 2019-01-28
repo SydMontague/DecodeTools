@@ -12,7 +12,6 @@ import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 import de.phoenixstaffel.decodetools.res.payload.GenericPayload;
 import de.phoenixstaffel.decodetools.res.payload.HSEMPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 import de.phoenixstaffel.decodetools.res.payload.LDMPPayload;
 import de.phoenixstaffel.decodetools.res.payload.LRTMPayload;
 import de.phoenixstaffel.decodetools.res.payload.LTMPPayload;
@@ -36,9 +35,9 @@ import de.phoenixstaffel.decodetools.res.payload.XTVOPayload;
 public abstract class ResPayload {
     private static final int DEFAULT_ALIGNMENT = 1;
     
-    private KCAPPayload parent = null;
+    private AbstractKCAP parent = null;
     
-    protected ResPayload(KCAPPayload parent) {
+    protected ResPayload(AbstractKCAP parent) {
         this.parent = parent;
     }
     
@@ -56,7 +55,7 @@ public abstract class ResPayload {
      * 
      * @return the parent KCAPPayload or null if there is none
      */
-    public KCAPPayload getParent() {
+    public AbstractKCAP getParent() {
         return parent;
     }
     
@@ -85,16 +84,6 @@ public abstract class ResPayload {
     }
     
     /**
-     * Gets the alignment of that data structure, so that padding gets added if necessary. For example, if the value is
-     * 0x10 then each address is divisible by 0x10.
-     * 
-     * @return the alignment
-     */
-    public int getAlignment() {
-        return DEFAULT_ALIGNMENT;
-    }
-    
-    /**
      * Writes the resource entry to given then {@link Access} and eventual data to the given {@link IResData}
      * starting from the current position of each.
      * 
@@ -102,12 +91,6 @@ public abstract class ResPayload {
      * @param dataStream the {@link IResData} to write into
      */
     public abstract void writeKCAP(Access dest, IResData dataStream);
-    
-
-    //TODO temporary, replace
-    public static ResPayload craft(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
-        return craft(source, dataStart, (KCAPPayload) null, size, name);
-    }
     
     /**
      * Creates a new ResPayload by reading the next structure from the passed {@link Access}.
@@ -119,7 +102,7 @@ public abstract class ResPayload {
      * @param name the name of the entry as defined by the parent KCAP or null if there is none
      * @return the newly created ResPayload
      */
-    public static ResPayload craft(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public static ResPayload craft(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         if(size == 0)
             return new VoidPayload(parent);
         
@@ -162,9 +145,9 @@ public abstract class ResPayload {
     @FunctionalInterface
     private static interface ResPayloadInitializer {
         /**
-         * See {@link ResPayload#craft(Access, int, KCAPPayload, int, String)}
+         * See {@link ResPayload#craft(Access, int, AbstractKCAP, int, String)}
          */
-        public ResPayload initialize(Access source, int dataStart, KCAPPayload parent, int size, String name);
+        public ResPayload initialize(Access source, int dataStart, AbstractKCAP parent, int size, String name);
     }
     
     /**
@@ -173,8 +156,8 @@ public abstract class ResPayload {
     public enum Payload {
         GENERIC(0, GenericPayload::new),
         GMIO(0x4F494D47, GMIOPayload::new, a -> 0x40 + a.readInteger(0x3C)),
-        KCAP(0x5041434B, KCAPPayload::new, a -> a.readInteger(0x08)),
-        //KCAP(0x5041434B, AbstractKCAP::craftKCAP, a -> a.readInteger(0x08)),
+        //KCAP(0x5041434B, KCAPPayload::new, a -> a.readInteger(0x08)),
+        KCAP(0x5041434B, AbstractKCAP::craftKCAP, a -> a.readInteger(0x08)),
         XTVO(0x4F565458, XTVOPayload::new, a -> 0x74 + 0xC * a.readShort(0x30)),
         XDIO(0x4F494458, XDIOPayload::new, a -> 0x20),
         VCTM(0x4D544356, VCTMPayload::new),
@@ -235,11 +218,11 @@ public abstract class ResPayload {
          * 
          * In case there are still no matches the payload will be considered GENERIC.
          * 
-         * @param parent the parent {@link KCAPPayload}
+         * @param parent the parent {@link AbstractKCAP}
          * @param value the first 8-bytes of the Payload's structure
          * @return the type of the Payload identified by the parent and/or the first 8-bytes of data
          */
-        public static Payload valueOf(KCAPPayload parent, long value) {
+        public static Payload valueOf(AbstractKCAP parent, long value) {
             //split the long value to compare them to the 4-byte magic value
             int left = (int) (value >>> 32);
             int right = (int) (value & 0xFFFFFFFF);
@@ -258,10 +241,10 @@ public abstract class ResPayload {
                 return BTX;
             
             //some payloads depend on the extension of the parent KCAP
-            if (parent == null || parent.getExtension() == null)
+            if (parent == null || parent.getKCAPType() == null)
                 return GENERIC;
             
-            switch (parent.getExtension().getType()) {
+            switch (parent.getKCAPType()) {
                 case HSEM:
                     return HSEM;
                 case LRTM:
@@ -290,9 +273,9 @@ public abstract class ResPayload {
         }
         
         /**
-         * See {@link ResPayload#craft(Access, int, KCAPPayload, int, String)}
+         * See {@link ResPayload#craft(Access, int, AbstractKCAP, int, String)}
          */
-        public ResPayload newInstance(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+        public ResPayload newInstance(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
             return initializer.initialize(source, dataStart, parent, size, name);
         }
         

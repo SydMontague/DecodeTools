@@ -40,8 +40,8 @@ public class VoidExtension implements HeaderExtension {
     
     @Override
     public int getContentAlignment(KCAPPayload parent) {
-        if (parent.hasParent() && parent.getParent().getExtension().getType() == Extensions.TDTM)
-            return 0x10;
+        //if (parent.hasParent() && parent.getParent().getExtension().getType() == Extensions.TDTM)
+        //    return 0x10;
         
         return parent.getGenericAlignment();
     }

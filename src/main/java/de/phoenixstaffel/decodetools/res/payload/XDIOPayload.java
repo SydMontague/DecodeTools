@@ -10,23 +10,24 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
-import de.phoenixstaffel.decodetools.res.payload.xdio.XDIOModes;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.xdio.XDIOFace;
+import de.phoenixstaffel.decodetools.res.payload.xdio.XDIOModes;
 
 public class XDIOPayload extends ResPayload {
-    //Magic Value
+    // Magic Value
     private static final int VERSION = 2;
     private int unknown2;
-    //Data Pointer
+    // Data Pointer
     
-    //Num Entries
-    //Entry Size
-    //Data Size -> Num Entries * Entry Size
+    // Num Entries
+    // Entry Size
+    // Data Size -> Num Entries * Entry Size
     private int unknown3;
     
     private List<XDIOFace> data;
     
-    public XDIOPayload(KCAPPayload parent, List<XDIOFace> data, int unknown2, int unknown3) {
+    public XDIOPayload(AbstractKCAP parent, List<XDIOFace> data, int unknown2, int unknown3) {
         super(parent);
         
         this.data = data;
@@ -34,11 +35,11 @@ public class XDIOPayload extends ResPayload {
         this.unknown3 = unknown3; // 0x00000005
     }
     
-    public XDIOPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public XDIOPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         this(source, dataStart, parent);
     }
     
-    private XDIOPayload(Access source, int dataStart, KCAPPayload parent) {
+    private XDIOPayload(Access source, int dataStart, AbstractKCAP parent) {
         super(parent);
         
         source.readInteger(); // magic value
@@ -57,7 +58,7 @@ public class XDIOPayload extends ResPayload {
         ByteBuffer b = ByteBuffer.wrap(source.readByteArray(dataSize, (long) dataPointer + dataStart));
         b.order(ByteOrder.LITTLE_ENDIAN);
         
-        for(int i = 0; i < numEntries / 3; i++)
+        for (int i = 0; i < numEntries / 3; i++)
             data.add(new XDIOFace(b, mode));
     }
     
@@ -97,7 +98,7 @@ public class XDIOPayload extends ResPayload {
     public void fillDummyResData(DummyResData resData) {
         int max = data.stream().flatMapToInt(a -> IntStream.builder().add(a.getVert1()).add(a.getVert2()).add(a.getVert3()).build()).max().orElse(0);
         XDIOModes mode = XDIOModes.getFittingMode(max);
-    
+        
         byte[] array = new byte[data.size() * 3 * mode.getSize()];
         resData.add(array, false, getParent());
     }
@@ -106,5 +107,3 @@ public class XDIOPayload extends ResPayload {
         return data;
     }
 }
-
-

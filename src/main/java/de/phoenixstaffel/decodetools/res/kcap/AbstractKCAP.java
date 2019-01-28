@@ -8,13 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
 import de.phoenixstaffel.decodetools.res.ResPayload;
-import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 /*
- * TODO finish XFEP implementation
- * 
  * TODO reduce code redundancy, especially with in reading/writing/size calculation
  * TODO unit tests
  */
@@ -24,10 +22,8 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     
     private int unknown;
     
-    private AbstractKCAP parentTMP; // TODO temporary!
-    
     protected AbstractKCAP(AbstractKCAP parent, int unknown) {
-        super(null); // TODO super(parent);
+        super(parent);
         
         this.unknown = unknown;
     }
@@ -58,8 +54,18 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     // TODO JavaDocs
     public abstract KCAPType getKCAPType();
     
-    public AbstractKCAP getParentTMP() {
-        return parentTMP;
+    @Override
+    public void fillDummyResData(DummyResData data) {
+        getEntries().forEach(a -> a.fillDummyResData(data));
+    }
+    
+    @Override
+    public List<ResPayload> getElementsWithType(Payload type) {
+        List<ResPayload> list = super.getElementsWithType(type);
+        
+        getEntries().forEach(a -> list.addAll(a.getElementsWithType(type)));
+        
+        return list;
     }
     
     @Override
@@ -72,7 +78,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
         return Payload.KCAP;
     }
     
-    enum KCAPType {
+    public enum KCAPType {
         CTPP(0x50505443),
         GMIP(0x50494D47),
         HSEM(0x4D455348),
@@ -112,10 +118,8 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
         }
     }
     
-    // TODO temporary method to test things, remove it
-    @Deprecated
-    public static AbstractKCAP craftKCAP(Access source, int dataStart, KCAPPayload parent, int size, String name) {
-        return craftKCAP(source, null, dataStart);
+    public static AbstractKCAP craftKCAP(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
+        return craftKCAP(source, parent, dataStart);
     }
     
     public static AbstractKCAP craftKCAP(Access source, AbstractKCAP parent, int dataStart) {
@@ -247,8 +251,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
         // make sure we're actually at the payload start
         long expectedPayloadStart = info.startAddress + info.payloadStart;
         if (info.payloadStart != 0 && source.getPosition() != expectedPayloadStart)
-            throw new IllegalArgumentException(
-                    "Tried started reading LRTM Payload at " + source.getPosition() + " but expected it to be " + expectedPayloadStart);
+            throw new IllegalArgumentException("Tried started reading Payload at " + source.getPosition() + " but expected it to be " + expectedPayloadStart);
         
         // load the payload
         NamePointer[] namePointer = new NamePointer[info.typeEntries];
@@ -268,13 +271,14 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     }
     
     static void writeNames(Access dest, int stringStart, List<? extends NameablePayload> entries) {
-        Iterator<? extends NameablePayload> itr = entries.stream().filter(NameablePayload::hasName).sorted(Comparator.comparing(NameablePayload::getName)).iterator();
+        Iterator<? extends NameablePayload> itr = entries.stream().filter(NameablePayload::hasName).sorted(Comparator.comparing(NameablePayload::getName))
+                                                         .iterator();
         
         // write name table
-        while(itr.hasNext()) {
+        while (itr.hasNext()) {
             NameablePayload entry = itr.next();
             int id = entries.indexOf(entry);
-
+            
             dest.writeInteger(stringStart);
             dest.writeInteger(id);
             stringStart += entry.getName().length() + 1;

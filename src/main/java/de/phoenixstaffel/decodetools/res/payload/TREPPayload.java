@@ -4,6 +4,7 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class TREPPayload extends ResPayload {
     private int unknown1;
@@ -18,7 +19,7 @@ public class TREPPayload extends ResPayload {
     private float unknown9;
     private short unknown10;
     private short unknown11;
-
+    
     private int unknown12; // always 0?
     private int unknown13; // always 0?
     private int unknown14; // always 0?
@@ -30,7 +31,7 @@ public class TREPPayload extends ResPayload {
     
     private short[] array;
     
-    public TREPPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public TREPPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         
         unknown1 = source.readInteger();
@@ -51,7 +52,7 @@ public class TREPPayload extends ResPayload {
         unknown14 = source.readInteger();
         unknown15 = source.readInteger();
         
-        if(arraySize != 0) {
+        if (arraySize != 0) {
             unknown16 = source.readShort();
             source.readShort(); // align(arraySize * 2, 0x04)
             source.readInteger(); // arraySize * 2
@@ -61,8 +62,8 @@ public class TREPPayload extends ResPayload {
         
         for (int i = 0; i < arraySize; i++)
             array[i] = source.readShort();
-
-        if(array.length % 2 == 1)
+        
+        if (array.length % 2 == 1)
             source.readShort();
     }
     
@@ -73,11 +74,6 @@ public class TREPPayload extends ResPayload {
         size += array.length * 2;
         
         return Utils.align(size, 0x04);
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x10;
     }
     
     @Override
@@ -93,28 +89,28 @@ public class TREPPayload extends ResPayload {
         dest.writeShort((short) array.length);
         dest.writeShort(unknown5);
         dest.writeFloat(unknown6);
-
+        
         dest.writeFloat(unknown7);
         dest.writeFloat(unknown8);
         dest.writeFloat(unknown9);
         dest.writeShort(unknown10);
         dest.writeShort(unknown11);
-
+        
         dest.writeInteger(unknown12);
         dest.writeInteger(unknown13);
         dest.writeInteger(unknown14);
         dest.writeInteger(unknown15);
-
-        if(array.length != 0) {
+        
+        if (array.length != 0) {
             dest.writeShort(unknown16);
             dest.writeShort((short) Utils.align(array.length * 2, 0x04));
             dest.writeInteger(array.length * 2);
         }
         
-        for(short val : array)
+        for (short val : array)
             dest.writeShort(val);
         
-        if(array.length % 2 == 1)
+        if (array.length % 2 == 1)
             dest.writeShort((short) 0);
     }
 }

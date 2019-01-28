@@ -3,11 +3,12 @@ package de.phoenixstaffel.decodetools.res.payload;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class PADHPayload extends ResPayload {
     private int[] data; // TODO structure
     
-    public PADHPayload(Access source, int dataStart, KCAPPayload parent, int size, String name) {
+    public PADHPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         
         data = new int[size / 4];
@@ -19,11 +20,6 @@ public class PADHPayload extends ResPayload {
     @Override
     public int getSize() {
         return data.length * 4;
-    }
-    
-    @Override
-    public int getAlignment() {
-        return 0x10;
     }
     
     @Override
