@@ -78,7 +78,7 @@ public class JKPTFText extends JComponent {
         }
         
         double x = startX * resolutionScale;
-        int y = (int) ((lineHeight + startY) * resolutionScale);
+        int y = lineHeight + startY;
         
         double scale = resolutionScale * fontSize / tnfo.getReferenceSize();
 
@@ -91,7 +91,7 @@ public class JKPTFText extends JComponent {
                     break;
                 case '\n':
                     x = startX * resolutionScale;
-                    y += lineHeight * resolutionScale;
+                    y += lineHeight;
                     break;
                 case ' ':
                     x += tnfo.getSpaceWidth() * scale;

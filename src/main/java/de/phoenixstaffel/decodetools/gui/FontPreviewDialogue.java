@@ -88,7 +88,7 @@ public class FontPreviewDialogue extends JFrame {
             lineHeightSpinner.setValue(24);
             fontSizeSpinner.setValue(10);
             startXSpinner.setValue(72);
-            startYSpinner.setValue(171);
+            startYSpinner.setValue(323);
             bgColorField.setText("#000000");
             fontColorField.setText("#FFFFFF");
         }));
@@ -121,7 +121,7 @@ public class FontPreviewDialogue extends JFrame {
         InputVerifier hexVerifier = new InputVerifier() {
             @Override
             public boolean verify(JComponent input) {
-                return ((JTextField) input).getText().matches("^#?[0-9a-fA-F]{6}$");
+                return ((JTextField) input).getText().matches(HEX_REGEX);
             }
         };
         
