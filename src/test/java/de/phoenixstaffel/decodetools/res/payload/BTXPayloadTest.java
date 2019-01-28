@@ -140,9 +140,6 @@ public class BTXPayloadTest {
                 
                 assertTrue(Arrays.equals(arr, output));
                 outputFile.delete();
-                
-                File out = new File("output/langkeep.res");
-                f.repack(out);
             }
         }
     }
