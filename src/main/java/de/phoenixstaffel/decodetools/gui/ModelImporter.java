@@ -175,6 +175,11 @@ public class ModelImporter extends PayloadPanel {
                 
                 scene = Assimp.aiImportFileExWithProperties(fileDialogue.getSelectedFile().getPath(), IMPORT_FLAGS, null, importProperties);
 
+                if(scene == null) {
+                    Main.LOGGER.severe(() -> "assimp Error while importing model: " + Assimp.aiGetErrorString());
+                    return;
+                }
+                
                 jointNodes = nodeList(scene.mRootNode());
                 spinner.setValue(calculateModelScale());
                 lblnone.setText(fileDialogue.getSelectedFile().getPath());
@@ -407,6 +412,7 @@ public class ModelImporter extends PayloadPanel {
             hsemPayload.add(new HSEMDrawEntry((short) 4, i, i, (short) 0, (short) 0, (short) 0, faces.size() * 3));
         }
         
+        float[] headerArray = rootKCAP.getHSEM().get(0).getHeaderData();
         HSEMPayload hsemEntry = new HSEMPayload(null, hsemPayload, -1, 0, hsemHeaderArray, 1, 0);
         
         rootKCAP.setHSEM(new HSEMKCAP(rootKCAP, List.of(hsemEntry)));

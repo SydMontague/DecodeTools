@@ -301,6 +301,10 @@ public class HSMPKCAP extends AbstractKCAP {
         return gmip;
     }
     
+    public HSEMKCAP getHSEM() {
+        return hsem;
+    }
+    
     @Override
     public String toString() {
         return getKCAPType().name() + " " + name;

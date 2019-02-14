@@ -181,6 +181,10 @@ public class HSEMPayload extends ResPayload {
         return entries;
     }
     
+    public float[] getHeaderData() {
+        return headerData;
+    }
+    
     // FIXME add COLLADA im-/exporter
     // FIXME make cleaner and stuff
     public void toObj(PrintStream out) {
