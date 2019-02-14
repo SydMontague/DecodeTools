@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.core;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Utils {
@@ -351,5 +352,17 @@ public class Utils {
         i = (i ^ (i << 1)) & 0x1515;
         i = (i | (i >>> 7)) & 0x3F;
         return i;
+    }
+    
+    /**
+     * Fills a collection up to a set size with a given value.
+     * 
+     * @param list the collection to pad
+     * @param size the size to pad to
+     * @param value the value to pad with
+     */
+    public static <T> void padList(Collection<T> list, int size, T value) {
+        for (int i = list.size(); i < size; i++)
+            list.add(value);
     }
 }

@@ -2,10 +2,12 @@ package de.phoenixstaffel.decodetools.res.payload;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.QuadConsumer;
 import de.phoenixstaffel.decodetools.res.IResData;
@@ -96,15 +98,33 @@ public class HSEMPayload extends ResPayload {
     }
     
     private int id;
-    private int size;
-    private int unknown1;
+    // int size
+    // int numEntries;
     private int unknown2;
     
+    /*
+     * visible distance X?
+     * visible rotation? 0?
+     * visible distance Y?
+     * rotation something?
+     * 
+     */
     private float[] headerData = new float[10];
     private int unknown3;
     private int unknown4;
     
     private List<HSEMEntry> entries = new ArrayList<>();
+    
+    public HSEMPayload(AbstractKCAP parent, List<HSEMEntry> entries, int id, int unknown2, float[] headerData, int unknown3, int unknown4) {
+        super(parent);
+        
+        this.id = id;
+        this.unknown2 = unknown2;
+        this.headerData = Arrays.copyOf(headerData, 10);
+        this.unknown3 = unknown3;
+        this.unknown4 = unknown4;
+        this.entries.addAll(entries);
+    }
     
     public HSEMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
@@ -112,8 +132,8 @@ public class HSEMPayload extends ResPayload {
         long start = source.getPosition();
         
         this.id = source.readInteger();
-        this.size = source.readInteger();
-        this.unknown1 = source.readInteger();
+        source.readInteger();
+        int numEntries = source.readInteger();
         this.unknown2 = source.readInteger();
         
         for (int i = 0; i < 10; i++) {
@@ -123,9 +143,11 @@ public class HSEMPayload extends ResPayload {
         this.unknown3 = source.readInteger();
         this.unknown4 = source.readInteger();
         
-        while (source.getPosition() - start < size) {
-            entries.add(new HSEMEntry(source));
-        }
+        for(int i = 0; i < numEntries; i++)
+            entries.add(HSEMEntry.loadEntry(source));
+        
+        if(source.getPosition() - start != size)
+            Main.LOGGER.warning("HSEM Payload was smaller than advertised.");
     }
     
     @Override
@@ -141,9 +163,9 @@ public class HSEMPayload extends ResPayload {
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
         dest.writeInteger(id);
-        dest.writeInteger(size);
+        dest.writeInteger(getSize());
         
-        dest.writeInteger(unknown1);
+        dest.writeInteger(entries.size());
         dest.writeInteger(unknown2);
         
         for (float f : headerData)
@@ -153,6 +175,10 @@ public class HSEMPayload extends ResPayload {
         dest.writeInteger(unknown4);
         
         entries.forEach(a -> a.writeKCAP(dest));
+    }
+    
+    public List<HSEMEntry> getEntries() {
+        return entries;
     }
     
     // FIXME add COLLADA im-/exporter
@@ -167,8 +193,9 @@ public class HSEMPayload extends ResPayload {
         List<ResPayload> xdios = getParent().getParent().getElementsWithType(Payload.XDIO);
         
         for (HSEMEntry entry : entries) {
-            if (entry.getPayload() instanceof HSEMDrawEntry) {
-                HSEMDrawEntry e = (HSEMDrawEntry) entry.getPayload();
+            
+            if (entry instanceof HSEMDrawEntry) {
+                HSEMDrawEntry e = (HSEMDrawEntry) entry;
                 XTVOPayload xtvo = (XTVOPayload) xtvos.get(e.getVertexId());
                 XDIOPayload xdio = (XDIOPayload) xdios.get(e.getIndexId());
                 
@@ -192,16 +219,16 @@ public class HSEMPayload extends ResPayload {
             // FIXME implement texture/material export
             // FIXME implement UV import
             // TODO build model export GUI
-            if (entry.getPayload() instanceof HSEMTextureEntry)
+            if (entry instanceof HSEMTextureEntry)
                 continue; // TODO activate texture
-            if (entry.getPayload() instanceof HSEMMaterialEntry)
+            if (entry instanceof HSEMMaterialEntry)
                 continue; // TODO store/activate material
                 
-            if (entry.getPayload() instanceof HSEM07Entry)
+            if (entry instanceof HSEM07Entry)
                 continue; // TODO figure out use?
-            if (entry.getPayload() instanceof HSEM03Entry)
+            if (entry instanceof HSEM03Entry)
                 continue; // not needed/supported?
-            if (entry.getPayload() instanceof HSEMJointEntry)
+            if (entry instanceof HSEMJointEntry)
                 continue; // Not supported by OBJ
         }
     }

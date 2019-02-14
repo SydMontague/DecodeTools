@@ -1,16 +1,24 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
+
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
+import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP.KCAPType;
+import de.phoenixstaffel.decodetools.res.kcap.TNOJKCAP;
 
 public class TNOJPayload extends NameablePayload {
-    private int nameId;
-    private int parentId;
+    
+    // private int nameId
+    private int parentId; // TODO replace with reference of actual TNOJ, calculate this stuff when necessary
     private int unknown1;
     private int unknown2;
     
+    // combined rotation+translation of this node and all parent node until root
     private float[] matrix = new float[16]; // rotation+translation matrix?
     
     private float xOffset;
@@ -33,10 +41,45 @@ public class TNOJPayload extends NameablePayload {
     private float localScaleZ; // ?
     // padding
     
+    public TNOJPayload(AbstractKCAP parent, int parentBone, String name, int unknown1, int unknown2, float[] parentMatrix, 
+                       float[] offsetVector, float[] unknownVector, float[] scaleVector, float[] localScaleVector) {
+        super(parent, name);
+        
+        this.parentId = parentBone;
+        this.unknown1 = unknown1;
+        this.unknown2 = unknown2;
+        
+        this.matrix = Arrays.copyOf(parentMatrix, 16);
+        
+        this.xOffset = offsetVector[0];
+        this.yOffset = offsetVector[1];
+        this.zOffset = offsetVector[2];
+        this.unknown3 = offsetVector[3];
+        
+        this.unknown4 = unknownVector[0];
+        this.unknown5 = unknownVector[1];
+        this.unknown6 = unknownVector[2];
+        this.unknown7 = unknownVector[3];
+        
+        this.scaleX = scaleVector[0];
+        this.scaleY = scaleVector[1];
+        this.scaleZ = scaleVector[2];
+
+        this.localScaleX = localScaleVector[0];
+        this.localScaleY = localScaleVector[1];
+        this.localScaleZ = localScaleVector[2];
+        
+        matrix[3] -= xOffset;
+        matrix[7] -= yOffset;
+        matrix[11] -= zOffset;
+        
+        // TODO proper modification of the matrix, taking into account scale and rotation
+    }
+    
     public TNOJPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent, name);
         
-        nameId = source.readInteger();
+        source.readInteger(); // nameId
         parentId = source.readInteger();
         unknown1 = source.readInteger();
         unknown2 = source.readInteger();
@@ -81,7 +124,27 @@ public class TNOJPayload extends NameablePayload {
     }
     
     @Override
+    public TNOJKCAP getParent() {
+        return (TNOJKCAP) super.getParent();
+    }
+    
+    @Override
     public void writeKCAP(Access dest, IResData dataStream) {
+        int nameId = -1;
+        if(getParent() != null && getParent().getKCAPType() == KCAPType.TNOJ) {
+            Iterator<? extends NameablePayload> itr = getParent().getEntries().stream().filter(a -> a instanceof NameablePayload)
+                                                                 .map(a -> (NameablePayload) a).filter(NameablePayload::hasName)
+                                                                 .sorted(Comparator.comparing(NameablePayload::getName)).iterator();
+            
+            while (itr.hasNext()) {
+                nameId++;
+                NameablePayload payload = itr.next();
+                if(payload.getName().equalsIgnoreCase(getName()))
+                    break;
+            }
+        }
+        
+        
         dest.writeInteger(nameId);
         dest.writeInteger(parentId);
         dest.writeInteger(unknown1);
@@ -114,5 +177,21 @@ public class TNOJPayload extends NameablePayload {
         dest.writeInteger(0); // padding
         dest.writeInteger(0); // padding
         dest.writeInteger(0); // padding
+    }
+
+    public float[] getOffsetMatrix() {
+        return matrix;
+    }
+    
+    public float getXOffset() {
+        return xOffset;
+    }
+    
+    public float getYOffset() {
+        return yOffset;
+    }
+    
+    public float getZOffset() {
+        return zOffset;
     }
 }

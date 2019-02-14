@@ -58,7 +58,7 @@ public class XTVOPayload extends ResPayload {
         super(parent);
         
         this.attributes = attributes;
-        this.data = data;
+        this.data = new ArrayList<>(data);
         this.shaderId = shaderId;
         this.id = id;
         this.unknown1 = unknown1;

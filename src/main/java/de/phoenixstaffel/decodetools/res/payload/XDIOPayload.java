@@ -17,7 +17,8 @@ import de.phoenixstaffel.decodetools.res.payload.xdio.XDIOModes;
 public class XDIOPayload extends ResPayload {
     // Magic Value
     private static final int VERSION = 2;
-    private int unknown2;
+    private short unknown2_1;
+    private short unknown2_2;
     // Data Pointer
     
     // Num Entries
@@ -27,12 +28,13 @@ public class XDIOPayload extends ResPayload {
     
     private List<XDIOFace> data;
     
-    public XDIOPayload(AbstractKCAP parent, List<XDIOFace> data, int unknown2, int unknown3) {
+    public XDIOPayload(AbstractKCAP parent, List<XDIOFace> data, short unknown2_1, short unknown2_2, int unknown3) {
         super(parent);
         
-        this.data = data;
-        this.unknown2 = unknown2; // 0x00033001
-        this.unknown3 = unknown3; // 0x00000005
+        this.data = new ArrayList<>(data);
+        this.unknown2_1 = unknown2_1; // 0x00033001
+        this.unknown2_2 = unknown2_2;
+        this.unknown3 = unknown3; // 0x00000005 or 0x00000004
     }
     
     public XDIOPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
@@ -44,7 +46,8 @@ public class XDIOPayload extends ResPayload {
         
         source.readInteger(); // magic value
         source.readInteger(); // Version
-        unknown2 = source.readInteger();
+        unknown2_1 = source.readShort();
+        unknown2_2 = source.readShort();
         int dataPointer = source.readInteger();
         
         int numEntries = source.readInteger();
@@ -85,7 +88,8 @@ public class XDIOPayload extends ResPayload {
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(VERSION);
-        dest.writeInteger(unknown2);
+        dest.writeShort(unknown2_1);
+        dest.writeShort(unknown2_2);
         dest.writeInteger(dataAddress);
         
         dest.writeInteger(data.size() * 3);

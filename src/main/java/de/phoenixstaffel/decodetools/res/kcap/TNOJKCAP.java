@@ -17,6 +17,13 @@ public class TNOJKCAP extends AbstractKCAP {
     
     private List<TNOJPayload> entries = new ArrayList<>();
     
+    public TNOJKCAP(HSMPKCAP parent, List<TNOJPayload> entries) {
+        super(parent, 0);
+        
+        this.entries.addAll(entries);
+        entries.forEach(a -> a.setParent(this));
+    }
+    
     public TNOJKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
         

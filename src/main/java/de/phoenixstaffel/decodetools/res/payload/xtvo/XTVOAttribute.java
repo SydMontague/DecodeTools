@@ -1,19 +1,19 @@
 package de.phoenixstaffel.decodetools.res.payload.xtvo;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 
 public class XTVOAttribute implements Comparable<XTVOAttribute> {
     private XTVORegisterType registerId;
     private short unknown1; //stride/offset
-    private short unknown2; //attrib ID?
+    // short unknown2, attrib ID?
     private byte count;
     private XTVOValueType valueType;
     private float scale;
     
-    public XTVOAttribute(XTVORegisterType registerId, short unknown1, short unknown2, byte count, XTVOValueType valueType, float scale) {
+    public XTVOAttribute(XTVORegisterType registerId, short unknown1, byte count, XTVOValueType valueType, float scale) {
         this.registerId = registerId;
         this.unknown1 = unknown1;
-        this.unknown2 = unknown2;
         this.count = count;
         this.valueType = valueType;
         this.scale = scale;
@@ -22,7 +22,11 @@ public class XTVOAttribute implements Comparable<XTVOAttribute> {
     public XTVOAttribute(Access source) {
         registerId = XTVORegisterType.valueOf(source.readShort());
         unknown1 = source.readShort();
-        unknown2 = source.readShort();
+        
+        short unknown2 = source.readShort();
+        if(unknown2 != registerId.getUnknown2())
+            Main.LOGGER.warning(() -> "XTVOAttribute, expected to read " + registerId.getUnknown2() + ", but got " + unknown2);
+        
         count = source.readByte();
         valueType = XTVOValueType.valueOf(source.readByte());
         scale = source.readFloat();
@@ -31,7 +35,7 @@ public class XTVOAttribute implements Comparable<XTVOAttribute> {
     public void writeKCAP(Access dest) {
         dest.writeShort(registerId.getRegisterId());
         dest.writeShort(unknown1);
-        dest.writeShort(unknown2);
+        dest.writeShort(registerId.getUnknown2());
         dest.writeByte(count);
         dest.writeByte(valueType.getValue());
         dest.writeFloat(scale);

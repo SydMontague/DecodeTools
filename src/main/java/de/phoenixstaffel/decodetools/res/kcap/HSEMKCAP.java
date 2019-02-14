@@ -15,6 +15,12 @@ public class HSEMKCAP extends AbstractKCAP {
     
     private List<HSEMPayload> entries = new ArrayList<>();
     
+    public HSEMKCAP(AbstractKCAP parent, List<HSEMPayload> entries) {
+        super(parent, 0);
+        
+        this.entries = new ArrayList<>(entries);
+    }
+    
     public HSEMKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
         

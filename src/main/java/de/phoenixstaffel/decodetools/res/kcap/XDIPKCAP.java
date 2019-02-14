@@ -17,6 +17,12 @@ public class XDIPKCAP extends AbstractKCAP {
     
     private List<XDIOPayload> entries = new ArrayList<>();
     
+    public XDIPKCAP(AbstractKCAP parent, List<XDIOPayload> entries) {
+        super(parent, 0);
+        
+        this.entries = new ArrayList<>(entries);
+    }
+    
     public XDIPKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
         

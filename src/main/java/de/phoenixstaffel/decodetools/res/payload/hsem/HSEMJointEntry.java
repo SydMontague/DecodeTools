@@ -5,15 +5,19 @@ import java.util.Map;
 
 import de.phoenixstaffel.decodetools.core.Access;
 
-public class HSEMJointEntry implements HSEMEntryPayload {
+public class HSEMJointEntry implements HSEMEntry {
     private short unkn1;
-    private short jointCount;
+    // short jointCount
     
     private Map<Short, Short> jointAssignment = new HashMap<>();
     
+    public HSEMJointEntry(Map<Short, Short> assignment) {
+        unkn1 = 0;
+        jointAssignment.putAll(assignment);
+    }    
     public HSEMJointEntry(Access source) {
         unkn1 = source.readShort();
-        jointCount = source.readShort();
+        short jointCount = source.readShort();
         
         for (int i = 0; i < jointCount; i++)
             jointAssignment.put(source.readShort(), source.readShort());
@@ -21,6 +25,9 @@ public class HSEMJointEntry implements HSEMEntryPayload {
     
     @Override
     public void writeKCAP(Access dest) {
+        dest.writeShort((short) getHSEMType().getId());
+        dest.writeShort((short) getSize());
+        
         dest.writeShort(unkn1);
         dest.writeShort((short) jointAssignment.size());
         
@@ -32,6 +39,16 @@ public class HSEMJointEntry implements HSEMEntryPayload {
     
     @Override
     public int getSize() {
-        return 0x04 + 0x04 * jointAssignment.size();
+        return 0x08 + 0x04 * jointAssignment.size();
+    }
+    
+    @Override
+    public HSEMEntryType getHSEMType() {
+        return HSEMEntryType.JOINT;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("Joint | U1: %s | JCnt: %s", unkn1, jointAssignment.size());
     }
 }

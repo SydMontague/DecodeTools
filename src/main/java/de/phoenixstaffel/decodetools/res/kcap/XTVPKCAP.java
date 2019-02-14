@@ -17,6 +17,12 @@ public class XTVPKCAP extends AbstractKCAP {
     
     private List<XTVOPayload> entries = new ArrayList<>();
     
+    public XTVPKCAP(AbstractKCAP parent, List<XTVOPayload> entries) {
+        super(parent, 0);
+        
+        this.entries = new ArrayList<>(entries);
+    }
+    
     public XTVPKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
         

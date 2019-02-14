@@ -271,7 +271,9 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     }
     
     static void writeNames(Access dest, int stringStart, List<? extends NameablePayload> entries) {
-        Iterator<? extends NameablePayload> itr = entries.stream().filter(NameablePayload::hasName).sorted(Comparator.comparing(NameablePayload::getName))
+        Iterator<? extends NameablePayload> itr = entries.stream()
+                                                         .filter(NameablePayload::hasName)
+                                                         .sorted(Comparator.comparing(NameablePayload::getName))
                                                          .iterator();
         
         // write name table

@@ -5,9 +5,11 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Utils;
 
 //TODO allow change of vertex order?
@@ -32,6 +34,8 @@ public class XTVOVertex {
     }
     
     public ByteBuffer write() {
+        checkNumberCount();
+        
         int size = 0;
         
         for (XTVOAttribute attr : vertexParams.keySet()) {
@@ -46,7 +50,9 @@ public class XTVOVertex {
         
         vertexParams.forEach((a, b) -> {
             buff.position(Utils.align(buff.position(), a.getValueType().getAlignment()));
-            b.forEach(c -> a.getValueType().write(buff, c));
+            
+            for(int i = 0; i < a.getCount(); i++)
+                a.getValueType().write(buff, i < b.size() ? b.get(i) : 0);
         });
 
         buff.position(Utils.align(buff.position(), 2));
@@ -56,5 +62,12 @@ public class XTVOVertex {
     
     public Entry<XTVOAttribute, List<Number>> getParameter(XTVORegisterType position) {
         return vertexParams.entrySet().stream().filter(a -> a.getKey().getRegisterId() == position).findFirst().orElse(null);
+    }
+    
+    private void checkNumberCount() {
+        vertexParams.forEach((k, v) -> {
+            if(k.getCount() != v.size())
+                Main.LOGGER.warning(() -> "XTVO Vertex, register " + k.getRegisterId() + " has not enough values.");
+        });
     }
 }

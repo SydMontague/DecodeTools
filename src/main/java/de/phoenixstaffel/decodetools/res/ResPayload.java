@@ -7,6 +7,7 @@ import java.util.function.Function;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
+import de.phoenixstaffel.decodetools.res.kcap.TNOJKCAP;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
 import de.phoenixstaffel.decodetools.res.payload.CTPPPayload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
@@ -57,6 +58,15 @@ public abstract class ResPayload {
      */
     public AbstractKCAP getParent() {
         return parent;
+    }
+    
+    /**
+     * Sets the parent KCAP of this entry, only few entries care really for this (e.g. TNOJ)
+     * 
+     * @param parent the new parent of the entry
+     */
+    public void setParent(TNOJKCAP parent) {
+        this.parent = parent;
     }
     
     /**

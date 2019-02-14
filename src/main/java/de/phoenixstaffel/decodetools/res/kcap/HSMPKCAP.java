@@ -25,9 +25,11 @@ import de.phoenixstaffel.decodetools.res.payload.VoidPayload;
  */
 public class HSMPKCAP extends AbstractKCAP {
     private static final int HSMP_VERSION = 0x100;
+    // @formatter:off
     private static final KCAPType[] TYPE_ORDER = { KCAPType.XTVP, KCAPType.XDIP, KCAPType.GMIP, 
                                                    KCAPType.HSEM, KCAPType.PRGM, KCAPType.LRTM, 
                                                    KCAPType.TNOJ, KCAPType.RTCL, KCAPType.TDTM };
+    // @formatter:on
     
     private float unknown2;
     private float unknown3;
@@ -273,6 +275,30 @@ public class HSMPKCAP extends AbstractKCAP {
             // write content
             entry.writeKCAP(dest, dataStream);
         }
+    }
+    
+    public void setXDIP(XDIPKCAP xdip) {
+        this.xdip = xdip;
+    }
+    
+    public void setXTVP(XTVPKCAP xtvp) {
+        this.xtvp = xtvp;
+    }
+    
+    public void setHSEM(HSEMKCAP hsem) {
+        this.hsem = hsem;
+    }
+
+    public void setTNOJ(TNOJKCAP tnoj) {
+        this.tnoj = tnoj;
+    }
+    
+    public TNOJKCAP getTNOJ() {
+        return tnoj;
+    }
+    
+    public GMIPKCAP getGMIP() {
+        return gmip;
     }
     
     @Override
