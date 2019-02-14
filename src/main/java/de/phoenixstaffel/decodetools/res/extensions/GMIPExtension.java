@@ -6,7 +6,7 @@ import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class GMIPExtension implements HeaderExtension {
-    private int version; // TODO remove in case it is actually fixed
+    private int version;
     private int numEntries;
     private int padding;
     
@@ -21,7 +21,6 @@ public class GMIPExtension implements HeaderExtension {
         return new FileNameExtensionPayload(kcapEntries, source);
     }
     
-    // TODO update when new GMIO images get added to root KCAP
     public int getEntryCount() {
         return numEntries;
     }

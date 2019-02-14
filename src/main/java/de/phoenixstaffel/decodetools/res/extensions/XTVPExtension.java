@@ -6,7 +6,7 @@ import de.phoenixstaffel.decodetools.res.HeaderExtensionPayload;
 import de.phoenixstaffel.decodetools.res.payload.KCAPPayload;
 
 public class XTVPExtension implements HeaderExtension {
-    private int version; // TODO remove in case it is actually fixed
+    private int version;
     private int numEntries;
     private int padding;
     

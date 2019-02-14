@@ -296,7 +296,7 @@ public class ModelImporter extends PayloadPanel {
         List<TNOJPayload> tnoj = loadJoints((float) spinner.getValue());
         
         int materialId = -1;
-        
+        // TODO add option to add new GMIO
         for (short i = 0; i < scene.mNumMeshes(); i++) {
             AIMesh mesh = AIMesh.create(scene.mMeshes().get(i));
             
@@ -441,6 +441,9 @@ public class ModelImporter extends PayloadPanel {
     }
     
     private float calculateModelScale() {
+        if(jointNodes.size() == 0)
+            return 1.0f;
+        
         List<ResPayload> tnojEntries = rootKCAP.getTNOJ().getEntries();
         List<Float> floats = new ArrayList<>();
         

@@ -33,7 +33,6 @@ public class XFEPExtension implements HeaderExtension {
         
         name = source.readASCIIString();
         
-        // TODO dirty
         int size = 0x0C + data1.length * 4 + data2.length * 4 + name.length() + 1;
         size = Utils.align(size, 16) - size;
         

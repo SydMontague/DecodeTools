@@ -185,8 +185,6 @@ public class HSEMPayload extends ResPayload {
         return headerData;
     }
     
-    // FIXME add COLLADA im-/exporter
-    // FIXME make cleaner and stuff
     public void toObj(PrintStream out) {
         int vertexOffset = 1;
         int normalOffset = 1;
