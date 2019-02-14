@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.gui;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -97,7 +98,7 @@ public class ModelImporter extends PayloadPanel {
     private final JButton btnDown = new JButton("↓");
     private final JButton btnUp = new JButton("↑");
     private final JPanel panel = new JPanel();
-    private final JButton btnSave = new JButton("Save");
+    private final JButton btnSave = new JButton("Update HSMP");
     private final JLabel lblScale = new JLabel("Scale:");
     private final JSpinner spinner = new JSpinner();
     private final JPanel panel_1 = new JPanel();
@@ -115,7 +116,7 @@ public class ModelImporter extends PayloadPanel {
         setSelectedFile(rootKCAP);
         setupLayout();
         
-        btnSave.setAction(new FunctionAction("Save", a -> loadModel()));
+        btnSave.setAction(new FunctionAction("Update HSMP", a -> loadModel()));
         
         btnUp.setAction(new AbstractAction("↑") {
             @Override
@@ -181,6 +182,23 @@ public class ModelImporter extends PayloadPanel {
                 }
                 
                 jointNodes = nodeList(scene.mRootNode());
+                
+                // automatically sort the joints based on best guess
+                List<ResPayload> rootTNOJ = ModelImporter.this.rootKCAP.getTNOJ().getEntries();
+                
+                for(int i = rootTNOJ.size() - 1; i >= 0; i--) {
+                    String name = ((TNOJPayload) rootTNOJ.get(i)).getName();
+                    
+                    for(int j = 0; j < jointNodes.size(); j++) {
+                        AINode node = jointNodes.get(j);
+                        if(node.mName().dataString().equalsIgnoreCase(name)) {
+                            jointNodes.remove(j);
+                            jointNodes.add(0, node);
+                            break;
+                        }
+                    }
+                }
+                
                 spinner.setValue(calculateModelScale());
                 lblnone.setText(fileDialogue.getSelectedFile().getPath());
                 
@@ -208,15 +226,17 @@ public class ModelImporter extends PayloadPanel {
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(panel_1, GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                            .addGap(12)
-                            .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 180, GroupLayout.PREFERRED_SIZE))
-                        .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(lblInput)
-                            .addPreferredGap(ComponentPlacement.UNRELATED)
-                            .addComponent(lblnone, GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(btnSelect)))
+                            .addGap(9)
+                            .addComponent(lblnone, GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE))
+                        .addComponent(panel_1, GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE))
+                    .addGap(12)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+                        .addGroup(groupLayout.createSequentialGroup()
+                            .addComponent(btnSelect)
+                            .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnSave, GroupLayout.PREFERRED_SIZE, 113, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 180, GroupLayout.PREFERRED_SIZE))
                     .addContainerGap())
         );
         groupLayout.setVerticalGroup(
@@ -224,9 +244,10 @@ public class ModelImporter extends PayloadPanel {
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblInput)
                         .addComponent(lblnone)
-                        .addComponent(btnSelect))
+                        .addComponent(btnSelect)
+                        .addComponent(btnSave)
+                        .addComponent(lblInput))
                     .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addComponent(panel_1, GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
@@ -235,7 +256,7 @@ public class ModelImporter extends PayloadPanel {
         );
         GroupLayout gl_panel_1 = new GroupLayout(panel_1);
         gl_panel_1.setHorizontalGroup(
-            gl_panel_1.createParallelGroup(Alignment.LEADING)
+            gl_panel_1.createParallelGroup(Alignment.TRAILING)
                 .addGroup(gl_panel_1.createSequentialGroup()
                     .addComponent(lblScale)
                     .addPreferredGap(ComponentPlacement.RELATED)
@@ -244,10 +265,7 @@ public class ModelImporter extends PayloadPanel {
                     .addComponent(lblNewLabel)
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(143, Short.MAX_VALUE))
-                .addGroup(Alignment.TRAILING, gl_panel_1.createSequentialGroup()
-                    .addContainerGap(252, Short.MAX_VALUE)
-                    .addComponent(btnSave))
+                    .addContainerGap(139, Short.MAX_VALUE))
         );
         gl_panel_1.setVerticalGroup(
             gl_panel_1.createParallelGroup(Alignment.LEADING)
@@ -257,8 +275,7 @@ public class ModelImporter extends PayloadPanel {
                         .addComponent(spinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblNewLabel)
                         .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(ComponentPlacement.RELATED, 335, Short.MAX_VALUE)
-                    .addComponent(btnSave))
+                    .addContainerGap(356, Short.MAX_VALUE))
         );
         panel_1.setLayout(gl_panel_1);
         scrollPane.setViewportView(list);
@@ -286,8 +303,9 @@ public class ModelImporter extends PayloadPanel {
             if (mesh.mMaterialIndex() != materialId) {
                 hsemPayload.add(new HSEMMaterialEntry((short) 0, (short) mesh.mMaterialIndex()));
                 HashMap<Short, Short> map = new HashMap<>();
+                
                 map.put((short) 0, (short) mesh.mMaterialIndex());
-                map.put((short) 2, (short) (rootKCAP.getGMIP().getEntryCount() - 1));
+                map.put((short) 2, (short) (scene.mNumMaterials() - 1));
                 hsemPayload.add(new HSEMTextureEntry(map));
                 materialId = mesh.mMaterialIndex();
             }
@@ -446,7 +464,8 @@ public class ModelImporter extends PayloadPanel {
                 floats.add(zFactor);
         }
         
-        return floats.stream().collect(Collectors.averagingDouble(a -> a)).floatValue();
+        floats.sort(Comparator.naturalOrder());
+        return floats.get(floats.size() / 2);
     }
     
     @SuppressWarnings("resource")
@@ -506,9 +525,11 @@ public class ModelImporter extends PayloadPanel {
             int unknown1 = 0;
             int unknown2 = 0;
             
+            float[] scales = getScales(bla);
+            
             float[] parentMatrix = parentId != -1 ? tnojList.get(parentId).getOffsetMatrix() : IDENTITY_MATRIX;
             
-            float[] offsetVector = { trans.a4() * scale, trans.b4() * scale, trans.c4() * scale, 0.0f };
+            float[] offsetVector = { trans.a4() * scale * scales[0], trans.b4() * scale * scales[1], trans.c4() * scale * scales[2], 0.0f };
             float[] unknownVector = { 0.0f, 0.0f, 0.0f, 1.0f };
             float[] scaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
             float[] localScaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
