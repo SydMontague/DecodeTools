@@ -15,8 +15,10 @@ public enum StructureType {
     STRING((a,b) -> {
         int length = Integer.parseInt(b.getOrDefault("Length", "0").toString());
         String encoding = b.getOrDefault("Encoding", "UTF-8").toString();
+        boolean trim = Boolean.parseBoolean(b.getOrDefault("Trim", false).toString());
         
-        return a.readString(length, encoding);
+        String string = a.readString(length, encoding);
+        return trim ? string.trim() : string;
     });
 
     private final BiFunction<Access, Map<String, Object>, Object> function;

@@ -86,6 +86,7 @@ public class GMIOPayload extends NameablePayload {
         
         byte[] pixelData = source.readByteArray((width * height * format.getBPP()) / 8, (long) dataPointer + dataStart);
         
+        // FIXME prevent 1x1 ETC1A4 textures that corrupt shit
         int[] convertedPixels = format.convertToRGBA(pixelData, width, height);
         convertedPixels = format.isTiled() ? Utils.untile(width, height, convertedPixels) : convertedPixels;
         

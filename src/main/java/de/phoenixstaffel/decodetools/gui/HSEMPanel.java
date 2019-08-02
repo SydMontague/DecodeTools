@@ -12,6 +12,8 @@ import java.io.PrintStream;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 //TODO quick 'n' dirty, make proper
 public class HSEMPanel extends PayloadPanel {
@@ -21,6 +23,7 @@ public class HSEMPanel extends PayloadPanel {
     private transient HSEMPayload selected;
     private final JButton btnNewButton = new JButton("Export as .obj");
     private final JList<HSEMEntry> list = new JList<>();
+    private final JScrollPane scrollPane = new JScrollPane();
     
     public HSEMPanel(Object obj) {
         setSelectedFile(obj);
@@ -51,17 +54,17 @@ public class HSEMPanel extends PayloadPanel {
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(list, GroupLayout.PREFERRED_SIZE, 244, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 400, GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnNewButton))
-                    .addContainerGap(196, Short.MAX_VALUE))
+                    .addContainerGap(56, Short.MAX_VALUE))
         );
         groupLayout.setVerticalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(btnNewButton)
-                    .addGap(7)
-                    .addComponent(list, GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
+                    .addPreferredGap(ComponentPlacement.UNRELATED)
+                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
                     .addContainerGap())
         );
         setLayout(groupLayout);
@@ -79,6 +82,7 @@ public class HSEMPanel extends PayloadPanel {
         }
         
         selected = (HSEMPayload) file;
+        scrollPane.setViewportView(list);
         list.setListData(selected.getEntries().toArray(new HSEMEntry[0]));
     }
     
