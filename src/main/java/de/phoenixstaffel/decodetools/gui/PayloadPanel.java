@@ -29,6 +29,8 @@ public abstract class PayloadPanel extends JPanel {
         tempPanels.put(AbstractKCAP.KCAPType.KPTF, new KPTFPanel(null));
         tempPanels.put(Payload.HSEM, new HSEMPanel(null));
         tempPanels.put(AbstractKCAP.KCAPType.HSMP, new ModelImporter(null));
+        tempPanels.put(Payload.GENERIC, new GenericPanel(null));
+        tempPanels.put(Payload.BTX, new BTXPanel(null));
         
         return tempPanels;
     }

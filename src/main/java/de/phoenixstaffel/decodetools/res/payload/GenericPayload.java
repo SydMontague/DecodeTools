@@ -6,20 +6,20 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class GenericPayload extends ResPayload {
-    private int[] data;
+    private byte[] data;
     
     public GenericPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
         
-        data = new int[(int) ((size == -1 ? source.getSize() : size) / 4)];
+        data = new byte[(int) (size == -1 ? source.getSize() : size)];
         
         for (int i = 0; i < data.length; i++)
-            data[i] = source.readInteger();
+            data[i] = source.readByte();
     }
     
     @Override
     public int getSize() {
-        return data.length * 4;
+        return data.length;
     }
     
     @Override
@@ -29,7 +29,11 @@ public class GenericPayload extends ResPayload {
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
-        for (int i : data)
-            dest.writeInteger(i);
+        for (byte i : data)
+            dest.writeByte(i);
+    }
+
+    public void setData(byte[] bytes) {
+        this.data = bytes;
     }
 }
