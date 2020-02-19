@@ -3,7 +3,9 @@ package de.phoenixstaffel.decodetools.gui;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -149,9 +151,11 @@ public class MassStringReplacer extends JFrame {
             long count = 0;
             long fCount = 0;
             StringBuilder filesFound = new StringBuilder();
-            
             for (Entry<String, ResFile> file : files.entrySet()) {
                 boolean replaced = false;
+
+                List<String> btxIds = new ArrayList<>();
+                int id = 0;
                 
                 for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) payload;
@@ -159,12 +163,15 @@ public class MassStringReplacer extends JFrame {
                     long lCount = btx.getEntries().stream().map(c -> c.getValue().getString()).filter(c -> c.contains(input)).count();
                     count += lCount;
                     
-                    if(lCount > 0)
+                    if(lCount > 0) {
                         replaced = true;
+                        btxIds.add(Integer.toString(id));
+                    }
+                    id++;
                 }
                 
                 if(replaced) {
-                    filesFound.append(file.getKey()).append("\n");
+                    filesFound.append(file.getKey()).append(" | ").append(String.join(", ", btxIds)).append("\n");
                     fCount++;
                 }
             }
