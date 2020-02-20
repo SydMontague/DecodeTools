@@ -244,7 +244,7 @@ public class BTXPayload extends ResPayload {
         
         public BTXEntry(String string, BTXMeta meta) {
             // remove furigana from the string
-            this.string = this.string.replaceAll("<r[0-9][^>]*>", ""); 
+            this.string = string.replaceAll("<r[0-9][^>]*>", ""); 
             this.meta = meta;
         }
         
