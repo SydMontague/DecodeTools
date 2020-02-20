@@ -5,9 +5,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
@@ -36,7 +38,8 @@ public class MassStringReplacer extends JFrame {
     private static final String MESSAGE_PROPERTY = "message";
     private static final String PROGRESS_PROPERTY = "progress";
     
-    transient Map<String, ResFile> files = new HashMap<>();
+    private transient Map<String, ResFile> files = new HashMap<>();
+    private transient Set<String> changedFiles = new HashSet<>();
     
     private final JLabel folderLabel = new JLabel("Folder:");
     private final JLabel originalLabel = new JLabel("Original String");
@@ -207,8 +210,10 @@ public class MassStringReplacer extends JFrame {
                         replaced = true;
                 }
                 
-                if (replaced)
+                if (replaced) {
                     fCount++;
+                    changedFiles.add(file.getKey());
+                }
             }
             
             messageLabel.setText("Replaced " + count + " entries in " + fCount + " files.");
@@ -288,10 +293,10 @@ public class MassStringReplacer extends JFrame {
         protected Void doInBackground() throws Exception {
             int count = 0;
             setProgress(0);
-            for (Entry<String, ResFile> file : files.entrySet()) {
-                file.getValue().repack(new File(input, file.getKey()));
-                setProgress((++count * 100) / files.size());
-                firePropertyChange(MESSAGE_PROPERTY, "", count + " of " + files.size() + " files saved.");
+            for (String name : changedFiles) {
+                files.get(name).repack(new File(input, name));
+                setProgress((++count * 100) / changedFiles.size());
+                firePropertyChange(MESSAGE_PROPERTY, "", count + " of " + changedFiles.size() + " files saved.");
             }
             
             return null;
@@ -299,6 +304,8 @@ public class MassStringReplacer extends JFrame {
         
         @Override
         protected void done() {
+            changedFiles.clear();
+            
             openButton.setEnabled(true);
             findButton.setEnabled(true);
             replaceButton.setEnabled(true);
