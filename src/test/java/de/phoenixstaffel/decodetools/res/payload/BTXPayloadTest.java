@@ -22,6 +22,7 @@ import de.phoenixstaffel.decodetools.res.payload.BTXPayload.BTXEntry;
 
 public class BTXPayloadTest {
     
+    // TODO test broken due to furigana change
     @Test
     public void testSpeakers() throws IOException {
         String[] compare = new String[] {
@@ -34,7 +35,8 @@ public class BTXPayloadTest {
             testBTX(in, compare, "Speakers", true);
         }
     }
-    
+
+    // TODO test broken due to furigana change
     @Test
     public void testNoSpeakers() throws IOException {
         String[] compare = new String[] {

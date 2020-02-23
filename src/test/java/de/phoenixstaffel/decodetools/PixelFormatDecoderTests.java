@@ -1,16 +1,13 @@
 package de.phoenixstaffel.decodetools;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
@@ -22,7 +19,7 @@ import de.phoenixstaffel.decodetools.core.Utils;
 
 public class PixelFormatDecoderTests {
     
-    private byte[] bla() throws IOException {
+    private byte[] bla() {
         byte[] b = new byte[256*256*2];
         ByteBuffer buff = ByteBuffer.wrap(b);
         
@@ -42,11 +39,6 @@ public class PixelFormatDecoderTests {
         Files.write(Paths.get("test.bin"), bla(), StandardOpenOption.CREATE);
         byte[] b = PixelFormatEncoder.convertToLA8(i);
         Files.write(Paths.get("test2.bin"), b, StandardOpenOption.CREATE);
-        
-        for (int j = 0; j < b.length; j+=2) {
-            System.out.println(b[j] + " " + b[j+1]);
-            
-        }
         
         int[] rgb = Utils.untile((short) i.getWidth(), (short) i.getHeight(), PixelFormatDecoder.convertFromLA8(b, i.getWidth(), i.getHeight()));
         int[] rgb2 = i.getRGB(0, 0, i.getWidth(), i.getHeight(), null, 0, i.getWidth());
@@ -85,97 +77,5 @@ public class PixelFormatDecoderTests {
         assertEquals(Utils.extend6To8(0b111111111111), 0b11111111);
         assertEquals(Utils.extend6To8(-1), 0b11111111);
         assertEquals(Utils.extend6To8(0b000000), 0b00000000);
-    }
-    
-    @Test
-    public void testGetSubInteger() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-        Method m = PixelFormatDecoder.class.getDeclaredMethod("getSubInteger", long.class, int.class, int.class);
-        m.setAccessible(true);
-        
-        assertEquals(m.invoke(null, 0b00001110, 1, 3), 0b111L);
-        assertEquals(m.invoke(null, 0b00001110, 4, 3), 0b000L);
-        assertEquals(m.invoke(null, 0b00001110, 0, 4), 0b1110L);
-        
-        try {
-            m.invoke(null, 0b00001110, 62, 3);
-            fail("No exception reading bits 62-64 (out of bounds).");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception reading bits 62-64 (out of bounds).");
-        }
-        
-        try {
-            m.invoke(null, 0b00001110, -1, 3);
-            fail("No exception starting at bit -1.");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception starting at bit -1.");
-        }
-        
-        try {
-            m.invoke(null, 0b00001110, 62, 0);
-            fail("No exception reading 0 bits.");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception reading 0 bits.");
-        }
-        
-        try {
-            m.invoke(null, 0b00001110, 62, -1);
-            fail("No exception reading -1 bits.");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception reading -1 bits.");
-        }
-    }
-    
-    @Test
-    public void testGetBitValue() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-        Method m = PixelFormatDecoder.class.getDeclaredMethod("getBitValue", long.class, int.class);
-        m.setAccessible(true);
-        
-        assertEquals(m.invoke(null, 0b00001110, 0), false);
-        assertEquals(m.invoke(null, 0b00001110, 1), true);
-        
-        try {
-            m.invoke(null, 0b00001110, 64);
-            fail("No exception reading bit 64 (out of bounds).");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception reading bits 62-64 (out of bounds).");
-        }
-        
-        try {
-            m.invoke(null, 0b00001110, -1);
-            fail("No exception reading bit -1 (out of bounds).");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception reading bit -1 (out of bounds).");
-        }
-    }
-    
-    @Test
-    public void testAdd3BitSigned() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-        Method m = PixelFormatDecoder.class.getDeclaredMethod("add3BitSigned", long.class, long.class);
-        m.setAccessible(true);
-        
-        assertEquals(m.invoke(null, 100L, 3L), 103L);
-        assertEquals(m.invoke(null, 100L, 7L), 99L);
-        
-        try {
-            m.invoke(null, 100L, -1L);
-            fail("No exception with 2nd argument being smaller than 0.");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception with 2nd argument being smaller than 0.");
-        }
-        
-        try {
-            m.invoke(null, 100L, 8L);
-            fail("No exception with 2nd argument being larger than 7.");
-        } catch(InvocationTargetException e) {
-            if(!(e.getTargetException() instanceof IllegalArgumentException))
-                fail("No exception with 2nd argument being larger than 7.");
-        }
     }
 }

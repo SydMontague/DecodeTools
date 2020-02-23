@@ -86,6 +86,9 @@ public class UtilsTests {
         assertTrue(Utils.getBitValue(-1, 5));
         assertFalse(Utils.getBitValue(5, 60));
         assertFalse(Utils.getBitValue(5, 30));
+
+        assertException(IllegalArgumentException.class, () -> Utils.getBitValue(-1, -1));
+        assertException(IllegalArgumentException.class, () -> Utils.getBitValue(-1, 65));
     }
     
     @Test
