@@ -2,6 +2,8 @@ package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
@@ -104,10 +106,30 @@ public class ModelImporter extends PayloadPanel {
     private final JPanel panel_1 = new JPanel();
     private final JComboBox<Integer> comboBox = new JComboBox<>();
     private final JLabel lblNewLabel = new JLabel("Shader:");
+    private final JButton btnNewButton = new JButton("Joints to OBJ");
     
     // generated
     
     public ModelImporter(HSMPKCAP rootKCAP) {
+        btnNewButton.addActionListener(a -> {
+            if (this.rootKCAP == null)
+                return;
+            
+            JFileChooser fileDialogue = new JFileChooser("./Output");
+            fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileDialogue.showSaveDialog(null);
+            
+            if (fileDialogue.getSelectedFile() == null)
+                return;
+            
+            try (PrintStream out = new PrintStream(fileDialogue.getSelectedFile())) {
+                tnojToObj(out);
+            }
+            catch (FileNotFoundException e) {
+                //
+            }
+        });
+        
         lblScale.setLabelFor(spinner);
         lblNewLabel.setLabelFor(comboBox);
         comboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }));
@@ -258,14 +280,19 @@ public class ModelImporter extends PayloadPanel {
         gl_panel_1.setHorizontalGroup(
             gl_panel_1.createParallelGroup(Alignment.TRAILING)
                 .addGroup(gl_panel_1.createSequentialGroup()
-                    .addComponent(lblScale)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(spinner, GroupLayout.PREFERRED_SIZE, 75, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(lblNewLabel)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(139, Short.MAX_VALUE))
+                    .addGroup(gl_panel_1.createParallelGroup(Alignment.LEADING)
+                        .addGroup(gl_panel_1.createSequentialGroup()
+                            .addComponent(lblScale)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(spinner, GroupLayout.PREFERRED_SIZE, 75, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(lblNewLabel)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE))
+                        .addGroup(gl_panel_1.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(btnNewButton)))
+                    .addContainerGap(31, Short.MAX_VALUE))
         );
         gl_panel_1.setVerticalGroup(
             gl_panel_1.createParallelGroup(Alignment.LEADING)
@@ -275,7 +302,9 @@ public class ModelImporter extends PayloadPanel {
                         .addComponent(spinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblNewLabel)
                         .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(356, Short.MAX_VALUE))
+                    .addPreferredGap(ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
+                    .addComponent(btnNewButton)
+                    .addContainerGap())
         );
         panel_1.setLayout(gl_panel_1);
         scrollPane.setViewportView(list);
@@ -545,6 +574,17 @@ public class ModelImporter extends PayloadPanel {
         }
         
         return tnojList;
+    }
+    
+    private void tnojToObj(PrintStream stream) {
+        int vertexOffset = 1;
+        
+        for(ResPayload jnt : rootKCAP.getTNOJ()) {
+            TNOJPayload tmp = (TNOJPayload) jnt;
+            stream.println("g " + tmp.getName());
+            stream.println(String.format("v %f %f %f", -tmp.getOffsetMatrix()[3], -tmp.getOffsetMatrix()[7], -tmp.getOffsetMatrix()[11]));
+            stream.println("f " + vertexOffset++);
+        }
     }
 
     @Override
