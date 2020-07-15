@@ -27,10 +27,14 @@ import javax.swing.border.BevelBorder;
 
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Tuple;
+import de.phoenixstaffel.decodetools.gui.util.LinebreakUtil;
 import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
+import de.phoenixstaffel.decodetools.res.payload.BTXPayload.BTXEntry;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 public class MassStringReplacer extends JFrame {
     
@@ -62,16 +66,21 @@ public class MassStringReplacer extends JFrame {
             progressBar.setString((String) b.getNewValue());
         }
     };
+    private final JLabel lineLimitLabel = new JLabel("Line Limit:");
+    private final JSpinner lineLimitSpinner = new JSpinner();
+    private final JButton linebreakButton = new JButton("Redo Linebreaks");
     
     public MassStringReplacer() {
+        lineLimitSpinner.setModel(new SpinnerNumberModel(52, 1, 999, 1));
         setTitle("Mass Text Replacer Tool");
         setResizable(false);
-        setSize(500, 360);
+        setSize(500, 391);
         
         openButton.setAction(new OpenAction());
         findButton.setAction(new FindAction());
         replaceButton.setAction(new ReplaceAction());
         saveButton.setAction(new SaveAction());
+        linebreakButton.setAction(new LinebreakFixerAction());
         
         //@formatter:off
         replacementInput.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -84,7 +93,7 @@ public class MassStringReplacer extends JFrame {
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(progressBar, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
+                        .addComponent(progressBar, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
                         .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
                             .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                                 .addGroup(groupLayout.createSequentialGroup()
@@ -92,8 +101,8 @@ public class MassStringReplacer extends JFrame {
                                     .addPreferredGap(ComponentPlacement.UNRELATED)
                                     .addComponent(pathLabel))
                                 .addComponent(originalLabel)
-                                .addComponent(originalInput, GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                .addComponent(replacementInput, GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
+                                .addComponent(originalInput, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+                                .addComponent(replacementInput, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
                                 .addComponent(messageLabel))
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
@@ -101,6 +110,12 @@ public class MassStringReplacer extends JFrame {
                                 .addComponent(openButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(findButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(replaceButton)))
+                        .addGroup(groupLayout.createSequentialGroup()
+                            .addComponent(lineLimitLabel)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(linebreakButton))
                         .addComponent(replacementLabel))
                     .addContainerGap())
         );
@@ -118,9 +133,9 @@ public class MassStringReplacer extends JFrame {
                     .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
                         .addComponent(findButton)
                         .addComponent(originalInput, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGap(11)
-                    .addComponent(replacementLabel)
                     .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(replacementLabel)
+                    .addGap(11)
                     .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
                         .addComponent(replaceButton)
                         .addComponent(replacementInput, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -130,7 +145,12 @@ public class MassStringReplacer extends JFrame {
                         .addComponent(messageLabel))
                     .addGap(11)
                     .addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(14, Short.MAX_VALUE))
+                    .addPreferredGap(ComponentPlacement.UNRELATED)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lineLimitLabel)
+                        .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(linebreakButton))
+                    .addContainerGap(15, Short.MAX_VALUE))
         );
         findButton.setEnabled(false);
         replaceButton.setEnabled(false);
@@ -156,7 +176,7 @@ public class MassStringReplacer extends JFrame {
             StringBuilder filesFound = new StringBuilder();
             for (Entry<String, ResFile> file : files.entrySet()) {
                 boolean replaced = false;
-
+                
                 List<String> btxIds = new ArrayList<>();
                 int id = 0;
                 
@@ -166,14 +186,14 @@ public class MassStringReplacer extends JFrame {
                     long lCount = btx.getEntries().stream().map(c -> c.getValue().getString()).filter(c -> c.contains(input)).count();
                     count += lCount;
                     
-                    if(lCount > 0) {
+                    if (lCount > 0) {
                         replaced = true;
                         btxIds.add(Integer.toString(id));
                     }
                     id++;
                 }
                 
-                if(replaced) {
+                if (replaced) {
                     filesFound.append(file.getKey()).append(" | ").append(String.join(", ", btxIds)).append("\n");
                     fCount++;
                 }
@@ -205,7 +225,8 @@ public class MassStringReplacer extends JFrame {
                     BTXPayload btx = (BTXPayload) payload;
                     long lCount = btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().contains(input)).count();
                     count += lCount;
-                    btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().contains(input)).forEach(c -> c.setString(c.getString().replace(input, replacement)));
+                    btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().contains(input))
+                       .forEach(c -> c.setString(c.getString().replace(input, replacement)));
                     if (lCount > 0)
                         replaced = true;
                 }
@@ -217,6 +238,45 @@ public class MassStringReplacer extends JFrame {
             }
             
             messageLabel.setText("Replaced " + count + " entries in " + fCount + " files.");
+        }
+    }
+    
+    private class LinebreakFixerAction extends AbstractAction {
+        private static final long serialVersionUID = 2568092425475577644L;
+        
+        public LinebreakFixerAction() {
+            super("Fix Linebreaks");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int charLimit = (int) lineLimitSpinner.getValue();
+            int fCount = 0;
+            
+            for (Entry<String, ResFile> file : files.entrySet()) {
+                boolean changed = false;
+                
+                for (ResPayload p : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                    BTXPayload btx = (BTXPayload) p;
+                    
+                    for (Tuple<Integer, BTXEntry> str : btx.getEntries()) {
+                        BTXEntry entry = str.getValue();
+                        String output = LinebreakUtil.calculateLinebreaks(entry.getString(), charLimit);
+                        
+                        if (!output.equals(entry.getString())) {
+                            entry.setString(output);
+                            changed = true;
+                        }
+                    }
+                }
+                
+                if (changed) {
+                    changedFiles.add(file.getKey());
+                    fCount++;
+                }
+            }
+            
+            messageLabel.setText("Changed linebreaks in " + fCount + " files.");
         }
     }
     
@@ -331,8 +391,8 @@ public class MassStringReplacer extends JFrame {
                     try {
                         files.put(ff.getName(), new ResFile(access));
                     }
-                    catch(Exception e) {
-                        //do nothing
+                    catch (Exception e) {
+                        // do nothing
                     }
                 }
                 setProgress((++count * 100) / dirContent.length);
