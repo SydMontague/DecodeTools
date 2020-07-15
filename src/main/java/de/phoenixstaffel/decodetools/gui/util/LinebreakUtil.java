@@ -61,7 +61,7 @@ public class LinebreakUtil {
             String s = token.nextToken();
             int localLength = calculateStringLength(s);
             
-            if (lineNum == 0 && count + localLength + 1 > localLimit) {
+            if (lineNum == 0 && (count + localLength + 1 > localLimit) && length - count < charLimit) {
                 output.append("\n");
                 lineNum++;
                 count = 0;
