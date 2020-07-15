@@ -47,7 +47,7 @@ public class LinebreakUtil {
     }
     
     private static String calculateLinebreaksPage(String in, int charLimit) {
-        String input = in.replaceAll("\s+", " ");
+        String input = in.replaceAll("\\s+", " ");
         
         int length = calculateStringLength(input);
         int localLimit = length > charLimit ? (int) Math.ceil(length / 2D) : charLimit;
