@@ -46,6 +46,6 @@ public class HSEM07Entry implements HSEMEntry {
 
     @Override
     public String toString() {
-        return String.format("Entry03 | U1: %s | U2: %s | U3: %s | U4: %s", unkn1, unkn2, unkn3, unkn4);
+        return String.format("Entry07 | U1: %s | U2: %s | U3: %s | U4: %s", unkn1, unkn2, unkn3, unkn4);
     }
 }

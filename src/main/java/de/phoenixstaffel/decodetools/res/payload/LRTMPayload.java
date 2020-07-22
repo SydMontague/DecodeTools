@@ -8,8 +8,8 @@ import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 //FIXME implements colors and shininess
 public class LRTMPayload extends NameablePayload {
     private int index;
-    private short unknown1; // shading type? 4 = unshaded?
-    private short unknown2; // ??? type?
+    private short unknown1; // shading type? 4 = unshaded? 0-4
+    private short unknown2; // ??? type? 0-2
     private int colorFilter; // ?
     private short lightingSize; // lighting size
     private short lightingPointer; // lighting point

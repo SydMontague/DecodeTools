@@ -437,7 +437,8 @@ public class ModelImporter extends PayloadPanel {
                 }
                 
                 vertices.forEach(a -> {
-                    a.putIfAbsent(wgtAttrib, new ArrayList<Number>());
+                    a.putIfAbsent(wgtAttrib, new ArrayList<>());
+                    a.putIfAbsent(idxAttrib, new ArrayList<>());
                     Utils.padList(a.get(wgtAttrib), wgtAttrib.getCount(), 0);
                     Utils.padList(a.get(idxAttrib), idxAttrib.getCount(), 0);
                 });
@@ -461,6 +462,8 @@ public class ModelImporter extends PayloadPanel {
         
         float[] headerArray = rootKCAP.getHSEM().get(0).getHeaderData();
         HSEMPayload hsemEntry = new HSEMPayload(null, hsemPayload, -1, 0, hsemHeaderArray, 1, 0);
+        
+        Main.LOGGER.info(String.format("XDIO: %d | XTVO: %d", xdioPayload.size(), xtvoPayload.size()));
         
         rootKCAP.setHSEM(new HSEMKCAP(rootKCAP, List.of(hsemEntry)));
         rootKCAP.setXDIP(new XDIPKCAP(rootKCAP, xdioPayload));
