@@ -5,11 +5,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
@@ -38,6 +42,8 @@ import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.ResFile;
+import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
+import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
 
 public class MainWindow extends JFrame implements Observer {
     private static final long serialVersionUID = -8269477952146086450L;
@@ -59,6 +65,7 @@ public class MainWindow extends JFrame implements Observer {
     private JMenuItem mntmReexportMipmaps = new JMenuItem("Re-Export Malformatted Files");
     private JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
     private final JMenuItem mntmMassStringReplacer = new JMenuItem("Mass String Replacer");
+    private final JMenuItem mntmMergeBTX = new JMenuItem("Merge BTX folder to file");
     
     public MainWindow() {
         model.addObserver(this);
@@ -115,6 +122,9 @@ public class MainWindow extends JFrame implements Observer {
         
         mntmReexportMipmaps.setAction(new ReExportAction());
         mnTools.add(mntmReexportMipmaps);
+        
+        mntmMergeBTX.setAction(new MergeBTXAction());
+        mnTools.add(mntmMergeBTX);
         
         contentPane = new JPanel();
         contentPane.setBorder(null);
@@ -356,6 +366,55 @@ public class MainWindow extends JFrame implements Observer {
             
             worker.addPropertyChangeListener(progressFrame.getProgressListener());
             worker.execute();
+        }
+        
+    }
+    
+    class MergeBTXAction extends AbstractAction {
+        private static final long serialVersionUID = -7894935184753933528L;
+        
+        public MergeBTXAction() {
+            super("Merge BTX to single file");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent ee) {
+            JFileChooser inputFileDialogue = new JFileChooser("./");
+            inputFileDialogue.setDialogTitle("Please select the directory with the input files");
+            inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            inputFileDialogue.showOpenDialog(null);
+            
+            JFileChooser outputFileDialogue = new JFileChooser("./");
+            outputFileDialogue.setDialogTitle("Please select the directory in which the exported files will be saved.");
+            outputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            outputFileDialogue.setMultiSelectionEnabled(false);
+            outputFileDialogue.showSaveDialog(null);
+            
+            String path = inputFileDialogue.getSelectedFile().getPath();
+            
+            try (PrintStream fout = new PrintStream(outputFileDialogue.getSelectedFile()); Stream<Path> files = Files.walk(Paths.get(path))) {
+                files.forEach(a -> {
+                    if (!a.toFile().isFile())
+                        return;
+                    
+                    try (Access b = new FileAccess(a.toFile())) {
+                        ResFile f = new ResFile(b);
+                        String name = a.subpath(a.getNameCount() - 1, a.getNameCount()).toString();
+                        
+                        fout.println(name);
+                        f.getRoot().getElementsWithType(Payload.BTX).forEach(c -> {
+                            ((BTXPayload) c).getEntries().forEach(d -> fout.println(d.getValue().getString()));
+                        });
+                        
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+            catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
         
     }
