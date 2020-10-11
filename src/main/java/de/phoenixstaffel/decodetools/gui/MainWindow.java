@@ -403,11 +403,12 @@ public class MainWindow extends JFrame implements Observer {
                         
                         fout.println(name);
                         f.getRoot().getElementsWithType(Payload.BTX).forEach(c -> {
-                            ((BTXPayload) c).getEntries().forEach(d -> fout.println(d.getValue().getString()));
+                            ((BTXPayload) c).getEntries().stream().filter(d -> !d.getValue().getString().isEmpty()).forEach(d -> fout.println(d.getValue().getString().replace("\n", "\\n")));
+                            fout.println();
                         });
                         
                     }
-                    catch (IOException e) {
+                    catch (Exception e) {
                         Main.LOGGER.log(Level.SEVERE, String.format("Error while handling %s.", a.toString()), e);
                     }
                 });
