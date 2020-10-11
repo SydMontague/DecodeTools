@@ -408,7 +408,7 @@ public class MainWindow extends JFrame implements Observer {
                         
                     }
                     catch (IOException e) {
-                        e.printStackTrace();
+                        Main.LOGGER.log(Level.SEVERE, String.format("Error while handling %s.", a.toString()), e);
                     }
                 });
             }
