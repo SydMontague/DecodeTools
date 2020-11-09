@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.res.payload.xtvo;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -20,7 +21,7 @@ public class XTVOVertex {
         this.vertexParams = vertexParams;
     }
     
-    public XTVOVertex(ByteBuffer source, List<XTVOAttribute> attributes) {
+    public XTVOVertex(ByteBuffer source, Collection<XTVOAttribute> attributes) {
         attributes.forEach(a -> {
             List<Number> list = new ArrayList<>();
             

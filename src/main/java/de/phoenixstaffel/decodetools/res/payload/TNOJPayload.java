@@ -194,4 +194,78 @@ public class TNOJPayload extends NameablePayload {
     public float getZOffset() {
         return zOffset;
     }
+    
+    public float getLocalScaleX() {
+        return localScaleX;
+    }
+    
+    public float getLocalScaleY() {
+        return localScaleY;
+    }
+    
+    public float getLocalScaleZ() {
+        return localScaleZ;
+    }
+    
+    public float getScaleX() {
+        return scaleX;
+    }
+    
+    public float getScaleY() {
+        return scaleY;
+    }
+    
+    public float getScaleZ() {
+        return scaleZ;
+    }
+    
+    public int getParentId() {
+        return parentId;
+    }
+    
+    public float getUnknown3() {
+        return unknown3;
+    }
+    
+    public float getRotationX() {
+        return unknown4;
+    }
+    
+    public float getRotationY() {
+        return unknown5;
+    }
+    
+    public float getRotationZ() {
+        return unknown6;
+    }
+    
+    public float getRotationW() {
+        return unknown7;
+    }
+    
+    public double[] getAngles() {
+        double[] angles = new double[3];
+        
+        double x = getRotationX();
+        double y = getRotationY();
+        double z = getRotationZ();
+        double w = getRotationW();
+        
+        // code adapted from Wikipedia https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Source_code_2
+        double sinrCosp = 2 * (w * x + y * z);
+        double cosrCosp = 1 - 2 * (x * x + y * y);
+        angles[0] = Math.toDegrees(Math.atan2(sinrCosp, cosrCosp));
+
+        double sinp = 2 * (w * y - z * x);
+        if (Math.abs(sinp) >= 1)
+            angles[1] = Math.toDegrees(Math.copySign(Math.PI / 2, sinp)); // use 90 degrees if out of range
+        else
+            angles[1] = Math.toDegrees(Math.asin(sinp));
+        
+        double sinyCosp = 2 * (w * z + x * y);
+        double cosyCosp = 1 - 2 * (y * y + z * z);
+        angles[2] = Math.toDegrees(Math.atan2(sinyCosp, cosyCosp));
+        
+        return angles;
+    }
 }

@@ -47,6 +47,14 @@ public class HSEMJointEntry implements HSEMEntry {
         return HSEMEntryType.JOINT;
     }
     
+    public int getJointCount() {
+        return jointAssignment.size();
+    }
+    
+    public Map<Short, Short> getJointAssignment() {
+        return jointAssignment;
+    }
+    
     @Override
     public String toString() {
         return String.format("Joint | U1: %s | JCnt: %s", unkn1, jointAssignment.size());

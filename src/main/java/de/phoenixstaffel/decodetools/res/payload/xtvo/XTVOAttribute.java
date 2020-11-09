@@ -71,6 +71,10 @@ public class XTVOAttribute implements Comparable<XTVOAttribute> {
         return b.intValue() * scale;
     }
     
+    public float getScale() {
+        return scale;
+    }
+    
     @Override
     public int hashCode() {
         return registerId.getRegisterId();

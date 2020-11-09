@@ -48,6 +48,10 @@ public class HSEMKCAP extends AbstractKCAP {
             Main.LOGGER.warning(() -> "Final position for HSEM KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
     
+    public List<HSEMPayload> getHSEMEntries() {
+        return Collections.unmodifiableList(entries);
+    }
+    
     @Override
     public List<ResPayload> getEntries() {
         return Collections.unmodifiableList(entries);

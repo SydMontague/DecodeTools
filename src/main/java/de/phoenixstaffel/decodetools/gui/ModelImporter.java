@@ -2,8 +2,10 @@ package de.phoenixstaffel.decodetools.gui;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
@@ -42,6 +44,7 @@ import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.assimp.AIVertexWeight;
 import org.lwjgl.assimp.Assimp;
+import org.xml.sax.SAXException;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Utils;
@@ -69,6 +72,8 @@ import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOValueType;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 
@@ -107,6 +112,7 @@ public class ModelImporter extends PayloadPanel {
     private final JComboBox<Integer> comboBox = new JComboBox<>();
     private final JLabel lblNewLabel = new JLabel("Shader:");
     private final JButton btnNewButton = new JButton("Joints to OBJ");
+    private final JButton btnExportDAE = new JButton("Export to DAE");
     
     // generated
     
@@ -128,6 +134,20 @@ public class ModelImporter extends PayloadPanel {
             catch (FileNotFoundException e) {
                 //
             }
+        });
+        
+        btnExportDAE.addActionListener(a -> {
+            if (this.rootKCAP == null)
+                return;
+            
+            JFileChooser fileDialogue = new JFileChooser("./Output");
+            fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileDialogue.showSaveDialog(null);
+            
+            if (fileDialogue.getSelectedFile() == null)
+                return;
+            
+            saveModel(fileDialogue.getSelectedFile());
         });
         
         lblScale.setLabelFor(spinner);
@@ -291,8 +311,10 @@ public class ModelImporter extends PayloadPanel {
                             .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE))
                         .addGroup(gl_panel_1.createSequentialGroup()
                             .addContainerGap()
-                            .addComponent(btnNewButton)))
-                    .addContainerGap(31, Short.MAX_VALUE))
+                            .addComponent(btnNewButton)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(btnExportDAE)))
+                    .addContainerGap(26, Short.MAX_VALUE))
         );
         gl_panel_1.setVerticalGroup(
             gl_panel_1.createParallelGroup(Alignment.LEADING)
@@ -303,7 +325,9 @@ public class ModelImporter extends PayloadPanel {
                         .addComponent(lblNewLabel)
                         .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
-                    .addComponent(btnNewButton)
+                    .addGroup(gl_panel_1.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(btnNewButton)
+                        .addComponent(btnExportDAE))
                     .addContainerGap())
         );
         panel_1.setLayout(gl_panel_1);
@@ -315,6 +339,15 @@ public class ModelImporter extends PayloadPanel {
         panel.add(btnUp);
         panel.add(btnDown);
         setLayout(groupLayout);
+    }
+    
+    public void saveModel(File output) {
+        try {
+            new ColldadaExporter(rootKCAP).export(output);
+        }
+        catch (TransformerException | ParserConfigurationException | MalformedURLException | SAXException e) {
+            e.printStackTrace();
+        }
     }
     
     @SuppressWarnings("resource")
@@ -565,7 +598,7 @@ public class ModelImporter extends PayloadPanel {
             float[] parentMatrix = parentId != -1 ? tnojList.get(parentId).getOffsetMatrix() : IDENTITY_MATRIX;
             
             float[] offsetVector = { trans.a4() * scale * scales[0], trans.b4() * scale * scales[1], trans.c4() * scale * scales[2], 0.0f };
-            float[] unknownVector = { 0.0f, 0.0f, 0.0f, 1.0f };
+            float[] rotationQuat = { 0.0f, 0.0f, 0.0f, 1.0f };
             float[] scaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
             float[] localScaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
             
@@ -573,7 +606,7 @@ public class ModelImporter extends PayloadPanel {
                 continue;
             
             names.add(name);
-            tnojList.add(new TNOJPayload(null, parentId, name, unknown1, unknown2, parentMatrix, offsetVector, unknownVector, scaleVector, localScaleVector));
+            tnojList.add(new TNOJPayload(null, parentId, name, unknown1, unknown2, parentMatrix, offsetVector, rotationQuat, scaleVector, localScaleVector));
         }
         
         return tnojList;

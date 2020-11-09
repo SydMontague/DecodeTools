@@ -3,7 +3,10 @@ package de.phoenixstaffel.decodetools.res.payload;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
@@ -12,6 +15,7 @@ import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
+import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVORegisterType;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOVertex;
 
 public class XTVOPayload extends ResPayload {
@@ -49,7 +53,7 @@ public class XTVOPayload extends ResPayload {
     private float[] mTex2 = { 0.0f, 0.0f, 1.0f, 1.0f };
     private float[] mTex3 = { 0.0f, 0.0f, 1.0f, 1.0f };
     
-    private List<XTVOAttribute> attributes = new ArrayList<>();
+    private Map<XTVORegisterType, XTVOAttribute> attributes = new EnumMap<>(XTVORegisterType.class);
     
     private List<XTVOVertex> data = new ArrayList<>();
     
@@ -57,7 +61,7 @@ public class XTVOPayload extends ResPayload {
             int unknown7, int unknown9, int unknown10) {
         super(parent);
         
-        this.attributes = attributes;
+        attributes.forEach(a -> this.attributes.put(a.getRegisterId(), a));
         this.data = new ArrayList<>(data);
         this.shaderId = shaderId;
         this.id = id;
@@ -105,8 +109,10 @@ public class XTVOPayload extends ResPayload {
         for (int i = 0; i < 4; i++)
             mTex3[i] = source.readFloat();
         
-        for (int i = 0; i < attributeCount; i++)
-            attributes.add(new XTVOAttribute(source));
+        for (int i = 0; i < attributeCount; i++) {
+            XTVOAttribute attrib = new XTVOAttribute(source);
+            attributes.put(attrib.getRegisterId(), attrib);
+        }
         
         ByteBuffer b = ByteBuffer.wrap(source.readByteArray(dataSize, (long) dataStart + dataPointer));
         b.order(ByteOrder.LITTLE_ENDIAN);
@@ -116,7 +122,7 @@ public class XTVOPayload extends ResPayload {
             b.get(buffArray);
             ByteBuffer buff = ByteBuffer.wrap(buffArray);
             buff.order(ByteOrder.LITTLE_ENDIAN);
-            data.add(new XTVOVertex(buff, attributes));
+            data.add(new XTVOVertex(buff, attributes.values()));
         }
         
         dataStartOnLoad = (long) dataStart + dataPointer;
@@ -135,7 +141,7 @@ public class XTVOPayload extends ResPayload {
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
         int size = 0;
-        for (XTVOAttribute attr : attributes) {
+        for (XTVOAttribute attr : attributes.values()) {
             size = Utils.align(size, attr.getValueType().getAlignment());
             size += attr.getCount() * attr.getValueType().getAlignment();
         }
@@ -176,14 +182,14 @@ public class XTVOPayload extends ResPayload {
         for (float f : mTex3)
             dest.writeFloat(f);
         
-        for (XTVOAttribute attr : attributes)
+        for (XTVOAttribute attr : attributes.values())
             attr.writeKCAP(dest);
     }
     
     @Override
     public void fillDummyResData(DummyResData resData) {
         int size = 0;
-        for (XTVOAttribute attr : attributes) {
+        for (XTVOAttribute attr : attributes.values()) {
             size = Utils.align(size, attr.getValueType().getAlignment());
             size += attr.getCount() * attr.getValueType().getAlignment();
         }
@@ -198,7 +204,11 @@ public class XTVOPayload extends ResPayload {
         return data;
     }
     
-    public List<XTVOAttribute> getAttributes() {
+    public Optional<XTVOAttribute> getAttribute(XTVORegisterType type) {
+        return Optional.ofNullable(attributes.get(type));
+    }
+    
+    public Map<XTVORegisterType, XTVOAttribute> getAttributes() {
         return attributes;
     }
     

@@ -305,6 +305,18 @@ public class HSMPKCAP extends AbstractKCAP {
         return hsem;
     }
     
+    public XTVPKCAP getXTVP() {
+        return xtvp;
+    }
+    
+    public XDIPKCAP getXDIP() {
+        return xdip;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
     @Override
     public String toString() {
         return getKCAPType().name() + " " + name;

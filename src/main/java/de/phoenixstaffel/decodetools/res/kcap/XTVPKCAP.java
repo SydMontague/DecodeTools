@@ -57,6 +57,10 @@ public class XTVPKCAP extends AbstractKCAP {
         if (source.getPosition() != expectedEnd)
             Main.LOGGER.warning(() -> "Final position for XTVP KCAP does not match the header. Current: " + source.getPosition() + " Expected: " + expectedEnd);
     }
+
+    public List<XTVOPayload> getXTVOEntries() {
+        return Collections.unmodifiableList(entries);
+    }
     
     @Override
     public List<ResPayload> getEntries() {

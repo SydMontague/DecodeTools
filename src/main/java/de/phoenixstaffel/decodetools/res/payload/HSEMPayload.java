@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.QuadConsumer;
+import de.phoenixstaffel.decodetools.core.Vector4;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
@@ -75,27 +76,6 @@ public class HSEMPayload extends ResPayload {
         
         out.println("vt " + uCoord + " " + vCoord);
     };
-    
-    static class Vector4 {
-        float x = 0;
-        float y = 0;
-        float z = 0;
-        float w = 0;
-        
-        public Vector4() {
-        }
-        
-        public Vector4(float x, float y, float z, float w) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-        
-        public float dot(Vector4 in) {
-            return x * in.x + y * in.y + z * in.z + w * in.w;
-        }
-    }
     
     private int id;
     // int size
@@ -201,8 +181,8 @@ public class HSEMPayload extends ResPayload {
                 XTVOPayload xtvo = (XTVOPayload) xtvos.get(e.getVertexId());
                 XDIOPayload xdio = (XDIOPayload) xdios.get(e.getIndexId());
                 
-                boolean hasNorm = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.NORMAL);
-                boolean hasUV = xtvo.getAttributes().stream().anyMatch(a -> a.getRegisterId() == XTVORegisterType.TEXTURE0);
+                boolean hasNorm = xtvo.getAttributes().containsKey(XTVORegisterType.NORMAL);
+                boolean hasUV = xtvo.getAttributes().containsKey(XTVORegisterType.TEXTURE0);
                 
                 out.println("g group_" + groupIndex++);
                 
