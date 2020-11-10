@@ -73,7 +73,6 @@ public class MassStringReplacer extends JFrame {
     public MassStringReplacer() {
         lineLimitSpinner.setModel(new SpinnerNumberModel(52, 1, 999, 1));
         setTitle("Mass Text Replacer Tool");
-        setResizable(false);
         setSize(500, 391);
         
         openButton.setAction(new OpenAction());

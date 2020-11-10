@@ -101,40 +101,41 @@ public class ColldadaExporter {
 
         Map<Integer, Element> jointMap = new HashMap<>();
         
-        for(int i = 0; i < hsmp.getTNOJ().getEntryCount(); i++) {
-            TNOJPayload j = hsmp.getTNOJ().get(i);
-            
-            Element elem = doc.createElement("node");
-            elem.setAttribute("id", j.getName());
-            elem.setAttribute("sid", j.getName());
-            elem.setAttribute("type", "JOINT");
-            
-            Element translate = createTextElement("translate", j.getXOffset() + " " + j.getYOffset() + " " + j.getZOffset());
-            
-            double[] angles = j.getAngles();
-            
-            Element rotX = createTextElement("rotate", "1 0 0 " + angles[0]);
-            Element rotY = createTextElement("rotate", "0 1 0 " + angles[1]);
-            Element rotZ = createTextElement("rotate", "0 0 1 " + angles[2]);
-            Element scale = createTextElement("scale", j.getLocalScaleX() + " " + j.getLocalScaleY() + " " + j.getLocalScaleZ());
-            translate.setAttribute("sid", "translate");
-            rotX.setAttribute("sid", "rotateX");
-            rotY.setAttribute("sid", "rotateY");
-            rotZ.setAttribute("sid", "rotateZ");
-            scale.setAttribute("sid", "scale");
-            
-            elem.appendChild(translate);
-            elem.appendChild(rotX);
-            elem.appendChild(rotY);
-            elem.appendChild(rotZ);
-            elem.appendChild(scale);
-            
-            jointMap.put(i, elem);
-            if(j.getParentId() != -1) 
-                jointMap.get(j.getParentId()).appendChild(elem);
-            else
-                jointNode.appendChild(elem);
-        }
+        if(hsmp.getTNOJ() != null)
+            for(int i = 0; i < hsmp.getTNOJ().getEntryCount(); i++) {
+                TNOJPayload j = hsmp.getTNOJ().get(i);
+                
+                Element elem = doc.createElement("node");
+                elem.setAttribute("id", j.getName());
+                elem.setAttribute("sid", j.getName());
+                elem.setAttribute("type", "JOINT");
+                
+                Element translate = createTextElement("translate", j.getXOffset() + " " + j.getYOffset() + " " + j.getZOffset());
+                
+                double[] angles = j.getAngles();
+                
+                Element rotX = createTextElement("rotate", "1 0 0 " + angles[0]);
+                Element rotY = createTextElement("rotate", "0 1 0 " + angles[1]);
+                Element rotZ = createTextElement("rotate", "0 0 1 " + angles[2]);
+                Element scale = createTextElement("scale", j.getLocalScaleX() + " " + j.getLocalScaleY() + " " + j.getLocalScaleZ());
+                translate.setAttribute("sid", "translate");
+                rotX.setAttribute("sid", "rotateX");
+                rotY.setAttribute("sid", "rotateY");
+                rotZ.setAttribute("sid", "rotateZ");
+                scale.setAttribute("sid", "scale");
+                
+                elem.appendChild(translate);
+                elem.appendChild(rotX);
+                elem.appendChild(rotY);
+                elem.appendChild(rotZ);
+                elem.appendChild(scale);
+                
+                jointMap.put(i, elem);
+                if(j.getParentId() != -1) 
+                    jointMap.get(j.getParentId()).appendChild(elem);
+                else
+                    jointNode.appendChild(elem);
+            }
         
         rootNode.appendChild(meshNode);
         rootNode.appendChild(jointNode);
