@@ -402,6 +402,12 @@ public class ColldadaExporter {
 
         libVisualScenes.appendChild(visualScene);
         
+        Element scene = doc.createElement("scene");
+        Element sceneInstance = doc.createElement("instance_visual_scene");
+        sceneInstance.setAttribute("url", "#mainScene");
+        scene.appendChild(sceneInstance);
+        root.appendChild(scene);
+        
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
