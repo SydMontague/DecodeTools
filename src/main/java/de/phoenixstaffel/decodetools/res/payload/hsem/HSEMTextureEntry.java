@@ -60,4 +60,8 @@ public class HSEMTextureEntry implements HSEMEntry {
         });
         return builder.toString();
     }
+    
+    public Map<Short, Short> getTextureAssignment() {
+        return textureAssignment;
+    }
 }

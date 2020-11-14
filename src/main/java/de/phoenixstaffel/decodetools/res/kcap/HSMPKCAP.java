@@ -313,6 +313,10 @@ public class HSMPKCAP extends AbstractKCAP {
         return xdip;
     }
     
+    public RTCLKCAP getRTCL() {
+        return rtcl;
+    }
+    
     public String getName() {
         return name;
     }

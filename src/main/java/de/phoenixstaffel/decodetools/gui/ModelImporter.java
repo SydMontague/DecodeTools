@@ -141,7 +141,7 @@ public class ModelImporter extends PayloadPanel {
                 return;
             
             JFileChooser fileDialogue = new JFileChooser("./Output");
-            fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileDialogue.showSaveDialog(null);
             
             if (fileDialogue.getSelectedFile() == null)
@@ -345,7 +345,7 @@ public class ModelImporter extends PayloadPanel {
         try {
             new ColldadaExporter(rootKCAP).export(output);
         }
-        catch (TransformerException | ParserConfigurationException | MalformedURLException | SAXException e) {
+        catch (TransformerException | ParserConfigurationException e) {
             e.printStackTrace();
         }
     }
