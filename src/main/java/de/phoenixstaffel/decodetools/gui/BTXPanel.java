@@ -16,10 +16,15 @@ import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload.BTXEntry;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JScrollPane;
 
 public class BTXPanel extends PayloadPanel {
     private BTXPayload payload;
     private final JButton btnNewButton = new JButton("New button");
+    private final JTable table = new JTable();
+    private final JScrollPane scrollPane = new JScrollPane();
     
     public BTXPanel(Object object) {
         setSelectedFile(object);
@@ -57,16 +62,21 @@ public class BTXPanel extends PayloadPanel {
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(btnNewButton)
-                    .addContainerGap(351, Short.MAX_VALUE))
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                        .addComponent(btnNewButton))
+                    .addContainerGap())
         );
         groupLayout.setVerticalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(btnNewButton)
-                    .addContainerGap(266, Short.MAX_VALUE))
+                    .addGap(9)
+                    .addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                    .addContainerGap())
         );
+        scrollPane.setViewportView(table);
         setLayout(groupLayout);
     }
     
@@ -74,8 +84,29 @@ public class BTXPanel extends PayloadPanel {
     public void setSelectedFile(Object file) {
         this.payload = null;
         
-        if (file instanceof BTXPayload)
+        if (file instanceof BTXPayload) {
             this.payload = (BTXPayload) file;        
+        
+            DefaultTableModel model = new DefaultTableModel();
+            model.addColumn("ID");
+            model.addColumn("String");
+            model.addColumn("Speaker");
+            model.addColumn("Unk1");
+            model.addColumn("Unk2");
+            model.addColumn("Unk3");
+            
+            payload.getEntries().forEach(a -> {
+                int id = a.getKey();
+                String string = a.getValue().getString();
+                Integer speaker = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getSpeaker() : null;
+                Short unk1 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk1() : null;
+                Byte unk2 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk2() : null;
+                Byte unk3 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk3() : null;
+                
+                model.addRow(new Object[] { id, string, speaker, unk1, unk2, unk3 });
+            });
+            
+            table.setModel(model);
+        }
     }
-    
 }

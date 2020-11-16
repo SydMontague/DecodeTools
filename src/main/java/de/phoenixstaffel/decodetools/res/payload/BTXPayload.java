@@ -15,12 +15,16 @@ import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 public class BTXPayload extends ResPayload {
     private static final String WRITE_ENCODING = "UTF-16LE";
     
+    private final int fileId;
+    
     private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
     private int unknown;
     
     // TODO make cleaner/nicer
     public BTXPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
+        this.fileId = parent.getEntryCount();
+        
         long start = source.getPosition();
         int postStart = 0;
         
@@ -139,7 +143,7 @@ public class BTXPayload extends ResPayload {
         
         dest.setPosition(pointer);
         
-        entries.stream().filter(a -> a.getValue().getMeta() != null).forEach(a -> a.getValue().getMeta().writeKCAP(dest));
+        entries.stream().forEach(a -> a.getValue().getMeta().ifPresent(b -> b.writeKCAP(dest)));
     }
     
     public List<Tuple<Integer, BTXEntry>> getEntries() {
@@ -155,6 +159,11 @@ public class BTXPayload extends ResPayload {
         return null;
     }
     
+    @Override
+    public String toString() {
+        return super.toString() + " " + fileId;
+    }
+    
     /**
      * Contains additional information for text strings, like the speaker for text messages.
      * 
@@ -163,7 +172,9 @@ public class BTXPayload extends ResPayload {
     public static class BTXMeta {
         private int id; // TODO shouldn't be stored but instead generated
         private int speaker;
-        private int unknown2;
+        private short unknown2_1;
+        private byte unknown2_2;
+        private byte unknown2_3;
         private int unknown3;
         
         // TODO voice line name?
@@ -180,7 +191,10 @@ public class BTXPayload extends ResPayload {
         public BTXMeta(Access source) {
             id = source.readInteger();
             speaker = source.readInteger();
-            unknown2 = source.readInteger();
+            
+            unknown2_1 = source.readShort();
+            unknown2_2 = source.readByte();
+            unknown2_3 = source.readByte();
             unknown3 = source.readInteger();
             
             unknown4 = source.readInteger();
@@ -197,7 +211,9 @@ public class BTXPayload extends ResPayload {
         public void writeKCAP(Access dest) {
             dest.writeInteger(id);
             dest.writeInteger(speaker);
-            dest.writeInteger(unknown2);
+            dest.writeShort(unknown2_1);
+            dest.writeByte(unknown2_2);
+            dest.writeByte(unknown2_3);
             dest.writeInteger(unknown3);
             
             dest.writeInteger(unknown4);
@@ -233,6 +249,18 @@ public class BTXPayload extends ResPayload {
         public int getSpeaker() {
             return speaker;
         }
+
+        public short getUnk1() {
+            return unknown2_1;
+        }
+        
+        public byte  getUnk2() {
+            return unknown2_2;
+        }
+
+        public byte  getUnk3() {
+            return unknown2_3;
+        }
     }
     
     /**
@@ -253,8 +281,8 @@ public class BTXPayload extends ResPayload {
          * 
          * @return the BTXMeta of this entry, null if non-existent
          */
-        public BTXMeta getMeta() {
-            return meta;
+        public Optional<BTXMeta> getMeta() {
+            return Optional.ofNullable(meta);
         }
         
         /**
