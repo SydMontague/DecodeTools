@@ -160,11 +160,7 @@ public class TDTMKCAP extends AbstractKCAP {
         dest.writeFloat(time4);
         
         // write TDTM entries
-        for (TDTMEntry entry : tdtmEntry) {
-            dest.writeShort(entry.unknown1);
-            dest.writeShort(entry.unknown2);
-            dest.writeInteger(entry.unknown3);
-        }
+        tdtmEntry.forEach(a -> a.writeKCAP(dest));
         
         if (tdtmEntry.size() % 2 == 1)
             dest.writeLong(0); // padding
@@ -193,24 +189,34 @@ public class TDTMKCAP extends AbstractKCAP {
     }
     
     class TDTMEntry {
-        short unknown1;
-        short unknown2; // joint ID?
-        int unknown3; // entry ID?
+        private byte unknown1; // mode
+        private byte unknown2;
+        private short jointId;
+        private int qstmId;
         
         public TDTMEntry() {
             // everything 0
         }
         
-        public TDTMEntry(short unknown1, short unknown2, int unknown3) {
+        public TDTMEntry(byte unknown1, byte unknown2, short jointId, int qstmId) {
             this.unknown1 = unknown1;
             this.unknown2 = unknown2;
-            this.unknown3 = unknown3;
+            this.jointId = jointId;
+            this.qstmId = qstmId;
         }
         
         public TDTMEntry(Access source) {
-            this.unknown1 = source.readShort();
-            this.unknown2 = source.readShort();
-            this.unknown3 = source.readInteger();
+            this.unknown1 = source.readByte();
+            this.unknown2 = source.readByte();
+            this.jointId = source.readShort();
+            this.qstmId = source.readInteger();
+        }
+        
+        public void writeKCAP(Access dest) {
+            dest.writeByte(unknown1);
+            dest.writeByte(unknown2);
+            dest.writeShort(jointId);
+            dest.writeInteger(qstmId);
         }
     }
 }

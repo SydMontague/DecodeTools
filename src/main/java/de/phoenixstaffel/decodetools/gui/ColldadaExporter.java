@@ -215,7 +215,10 @@ public class ColldadaExporter {
                 Element matrix = createTextElement("matrix", floatArrayToString(j.getMatrix()));
                 elem.appendChild(matrix);
                 
-                jointMap.get(j.getParentBone()).appendChild(elem);
+                if(jointMap.containsKey(j.getParentBone()))
+                    jointMap.get(j.getParentBone()).appendChild(elem);
+                else 
+                    jointNode.appendChild(elem);
             }
         
         rootNode.appendChild(meshNode);
@@ -250,37 +253,37 @@ public class ColldadaExporter {
                 Element node = doc.createElement("node");
                 node.setAttribute("id", meshName + "-node");
                 
+                Element instance;
+                
                 if(xtvo.getAttribute(XTVORegisterType.IDX).isEmpty()) {
-                    Element geomInst = doc.createElement("instance_geometry");
-                    geomInst.setAttribute("url", "#" + meshName);
-                    node.appendChild(geomInst);
+                    instance = doc.createElement("instance_geometry");
+                    instance.setAttribute("url", "#" + meshName);
                 }
                 else {
-                    Element ctrlInst = doc.createElement("instance_controller");
-                    ctrlInst.setAttribute("url", "#" + meshName + "-skin");
-                    ctrlInst.appendChild(createTextElement("skeleton", "#mainScene"));
+                    instance = doc.createElement("instance_controller");
+                    instance.setAttribute("url", "#" + meshName + "-skin");
+                    instance.appendChild(createTextElement("skeleton", "#mainScene"));
+                }
+                
+                if(currentTexture != -1) {
+                    Element bindMat = doc.createElement("bind_material");
+                    Element tech = doc.createElement("technique_common");
                     
-                    if(currentTexture != -1) {
-                        Element bindMat = doc.createElement("bind_material");
-                        Element tech = doc.createElement("technique_common");
-                        
-                        Element instanceMaterial = doc.createElement("instance_material");
-                        instanceMaterial.setAttribute("symbol", meshName + "-material");
-                        instanceMaterial.setAttribute("target", "#" + images.get(currentTexture) + "-material");
-                        Element vertexInput = doc.createElement("bind_vertex_input");
-                        vertexInput.setAttribute("semantic", "UVSET0");
-                        vertexInput.setAttribute("input_semantic", "TEXCOORD");
-                        vertexInput.setAttribute("input_set", "0");
-                        instanceMaterial.appendChild(vertexInput);
-                        
-                        tech.appendChild(instanceMaterial);
-                        bindMat.appendChild(tech);
-                        ctrlInst.appendChild(bindMat);
-                    }
+                    Element instanceMaterial = doc.createElement("instance_material");
+                    instanceMaterial.setAttribute("symbol", meshName + "-material");
+                    instanceMaterial.setAttribute("target", "#" + images.get(currentTexture) + "-material");
+                    Element vertexInput = doc.createElement("bind_vertex_input");
+                    vertexInput.setAttribute("semantic", "UVSET0");
+                    vertexInput.setAttribute("input_semantic", "TEXCOORD");
+                    vertexInput.setAttribute("input_set", "0");
+                    instanceMaterial.appendChild(vertexInput);
                     
-                    node.appendChild(ctrlInst);
+                    tech.appendChild(instanceMaterial);
+                    bindMat.appendChild(tech);
+                    instance.appendChild(bindMat);
                 }
 
+                node.appendChild(instance);
                 meshNode.appendChild(node);
                 
                 // create controller

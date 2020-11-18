@@ -23,7 +23,7 @@ public class BTXPayload extends ResPayload {
     // TODO make cleaner/nicer
     public BTXPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
-        this.fileId = parent.getEntryCount();
+        this.fileId = parent != null ? parent.getEntryCount() : 0;
         
         long start = source.getPosition();
         int postStart = 0;
@@ -90,7 +90,7 @@ public class BTXPayload extends ResPayload {
         for (Tuple<Integer, BTXEntry> a : entries) {
             size += ((a.getValue().getString().length() + 1) * 2);
             
-            if (a.getValue().getMeta() != null) {
+            if (a.getValue().getMeta().isPresent()) {
                 size += 0x30;
                 size = Utils.align(size, 4);
             }
@@ -108,13 +108,13 @@ public class BTXPayload extends ResPayload {
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
-        if (entries.stream().anyMatch(a -> a.getValue().getMeta() != null))
-            dest.writeInteger((int) (getSize() - entries.stream().filter(a -> a.getValue().getMeta() != null).count() * 0x30));
+        if (entries.stream().anyMatch(a -> a.getValue().getMeta().isPresent()))
+            dest.writeInteger((int) (getSize() - entries.stream().filter(a -> a.getValue().getMeta().isPresent()).count() * 0x30));
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(1); // version
-        dest.writeInteger(entries.stream().anyMatch(a -> a.getValue().getMeta() != null) ? 0xC : 0x10);
-        if (entries.stream().noneMatch(a -> a.getValue().getMeta() != null))
+        dest.writeInteger(entries.stream().anyMatch(a -> a.getValue().getMeta().isPresent()) ? 0xC : 0x10);
+        if (entries.stream().noneMatch(a -> a.getValue().getMeta().isPresent()))
             dest.writeInteger(0); // padding
             
         dest.writeInteger(unknown);
@@ -126,7 +126,7 @@ public class BTXPayload extends ResPayload {
             dest.writeInteger(a.getKey());
             
             int lPointer = (int) (pointer - dest.getPosition() + 2);
-            if (a.getValue().getMeta() != null)
+            if (a.getValue().getMeta().isPresent())
                 lPointer = Utils.align(lPointer, 4);
             else
                 lPointer += 2;
@@ -135,7 +135,7 @@ public class BTXPayload extends ResPayload {
             
             dest.writeString(a.getValue().getString() + "\0", WRITE_ENCODING, pointer);
             pointer += (a.getValue().getString().length() + 1) * 2;
-            if (a.getValue().getMeta() != null)
+            if (a.getValue().getMeta().isPresent())
                 pointer = Utils.align(pointer, 4);
             else
                 pointer += 2;

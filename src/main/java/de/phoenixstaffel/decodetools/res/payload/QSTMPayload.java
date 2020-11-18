@@ -1,37 +1,35 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
+import de.phoenixstaffel.decodetools.res.payload.qstm.QSTMEntry;
 
-/*
- * 4-byte   QSTM magic value (0x4D545351) 
- * 2-byte   unknown
- * 2-byte   unknown, number of attributes?
- * <QSTM entries>
- * 
- * QSTM entry:
- * 2-byte   attribute ID
- * 2-byte   data size
- * <data>   content depending on attribute ID
- * 
- * TODO implement proper structure
- */
 public class QSTMPayload extends ResPayload {
-    private int[] data;
+    private short unknown1;
+    private short unknown2; // numAttribtues
+    
+    private List<QSTMEntry> entries = new ArrayList<>();
     
     public QSTMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
-        data = new int[size / 4];
         
-        for (int i = 0; i < data.length; i++)
-            data[i] = source.readInteger();
+        source.readInteger(); // magic value
+        unknown1 = source.readShort();
+        unknown2 = source.readShort();
+        
+        for(int i = 0; i < unknown2; i++) 
+            entries.add(QSTMEntry.loadEntry(source));
     }
     
     @Override
     public int getSize() {
-        return data.length * 4;
+        return 8 + entries.stream().collect(Collectors.summingInt(QSTMEntry::getSize));
     }
     
     @Override
@@ -41,7 +39,10 @@ public class QSTMPayload extends ResPayload {
     
     @Override
     public void writeKCAP(Access dest, IResData dataStream) {
-        for (int i : data)
-            dest.writeInteger(i);
+        dest.writeInteger(getType().getMagicValue());
+        dest.writeShort(unknown1);
+        dest.writeShort(unknown2);
+        
+        entries.forEach(a -> a.writeKCAP(dest));
     }
 }
