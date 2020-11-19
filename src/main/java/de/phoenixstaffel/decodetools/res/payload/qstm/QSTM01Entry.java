@@ -22,13 +22,13 @@ public class QSTM01Entry implements QSTMEntry {
     
     @Override
     public short getSize() {
-        return 4;
+        return 8;
     }
     
     @Override
     public void writeKCAP(Access dest) {
         dest.writeShort(getType().getId());
-        dest.writeShort(getSize());
+        dest.writeShort((short) 4);
         
         dest.writeByte(unk1);
         dest.writeByte(unk2);

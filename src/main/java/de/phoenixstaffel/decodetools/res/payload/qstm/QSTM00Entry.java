@@ -21,7 +21,7 @@ public class QSTM00Entry implements QSTMEntry {
     
     @Override
     public short getSize() {
-        return (short) (4 + values.size() * 4);
+        return (short) (8 + values.size() * 4);
     }
     
     @Override
@@ -32,10 +32,12 @@ public class QSTM00Entry implements QSTMEntry {
     @Override
     public void writeKCAP(Access dest) {
         dest.writeShort(getType().getId());
-        dest.writeShort(getSize());
+        dest.writeShort((short) (4 + values.size() * 4));
         
         dest.writeByte(unk1);
         dest.writeByte((byte) values.size());
+        dest.writeShort((short) 0); // padding
+        
         values.forEach(dest::writeFloat);
     }
 }

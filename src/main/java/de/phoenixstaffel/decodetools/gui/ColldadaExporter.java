@@ -172,6 +172,7 @@ public class ColldadaExporter {
                 
                 Element elem = doc.createElement("node");
                 elem.setAttribute("id", j.getName());
+                elem.setAttribute("name", j.getName());
                 elem.setAttribute("sid", j.getName());
                 elem.setAttribute("type", "JOINT");
                 
@@ -210,6 +211,7 @@ public class ColldadaExporter {
                 Element elem = doc.createElement("node");
                 elem.setAttribute("id", j.getName());
                 elem.setAttribute("sid", j.getName());
+                elem.setAttribute("name", j.getName());
                 elem.setAttribute("type", "JOINT");
                 
                 Element matrix = createTextElement("matrix", floatArrayToString(j.getMatrix()));
