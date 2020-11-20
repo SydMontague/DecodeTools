@@ -435,11 +435,11 @@ public class ModelImporter extends PayloadPanel {
                 }
                 if (tex0Buff != null) {
                     AIVector3D tex0 = tex0Buff.get(j);
-                    vertex.put(tex0Attrib, List.of(tex0.x() * 32767f, ((tex0.y() - 1) * 32767f)));
+                    vertex.put(tex0Attrib, List.of((tex0.x() % 1.0f) * 32767f, (tex0.y() % 1.0f) * 32767f));
                 }
                 if (tex1Buff != null) {
                     AIVector3D tex1 = tex1Buff.get(j);
-                    vertex.put(tex1Attrib, List.of(tex1.x() * 32767f, ((tex1.y() - 1) * 32767f)));
+                    vertex.put(tex1Attrib, List.of((tex1.x() % 1.0f) * 32767f, (tex1.y() % 1.0f) * 32767f));
                 }
                 
                 vertices.add(vertex);
@@ -506,7 +506,7 @@ public class ModelImporter extends PayloadPanel {
     }
     
     private float calculateModelScale() {
-        if(jointNodes.size() == 0)
+        if(jointNodes.isEmpty())
             return 1.0f;
         
         List<ResPayload> tnojEntries = rootKCAP.getTNOJ().getEntries();
@@ -547,9 +547,19 @@ public class ModelImporter extends PayloadPanel {
             scales[2] *= currentNode.mTransformation().c3();
             
             currentNode = currentNode.mParent();
-        } while(currentNode != null && !currentNode.mName().dataString().equals("unnamed"));
+        } while(isJointNode(currentNode));
         
         return scales;
+    }
+    
+    @SuppressWarnings("resource")
+    private static boolean isJointNode(AINode node) {
+        if(node == null)
+            return false;
+        
+        String name = node.mName().dataString();
+        
+        return name.startsWith("J_") || name.startsWith("loc_");
     }
     
     @SuppressWarnings("resource")
