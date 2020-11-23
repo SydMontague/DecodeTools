@@ -12,8 +12,6 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.StreamAccess;
 import de.phoenixstaffel.decodetools.core.Tuple;
@@ -95,11 +93,11 @@ public class BTXPayloadTest {
             for (int i = 0; i < list.size(); i++) {
                 assertEquals(compare[i], list.get(i).getValue().getString());
                 if(hasMeta) {
-                    assertNotEquals(null, list.get(i).getValue().getMeta());
-                    assertEquals(217, list.get(i).getValue().getMeta().getSpeaker());
+                    assertTrue(list.get(i).getValue().getMeta().isPresent());
+                    assertEquals(217, list.get(i).getValue().getMeta().get().getSpeaker());
                 }
                 else
-                    assertEquals(null, list.get(i).getValue().getMeta());
+                    assertTrue(list.get(i).getValue().getMeta().isEmpty());
             }
             
             File outputFile = File.createTempFile("output", suffix);
