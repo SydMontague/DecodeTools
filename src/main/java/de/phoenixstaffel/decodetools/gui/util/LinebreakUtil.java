@@ -37,6 +37,8 @@ public class LinebreakUtil {
         StringBuilder b = new StringBuilder();
         String[] arr = in.split("<p>");
         
+        Main.LOGGER.info(in);
+        
         for (int i = 0; i < arr.length; i++) {
             b.append(calculateLinebreaksPage(arr[i], charLimit));
             if (i + 1 < arr.length)
