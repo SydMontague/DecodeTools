@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
@@ -25,6 +26,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.gui.util.LinebreakUtil;
@@ -260,11 +262,18 @@ public class MassStringReplacer extends JFrame {
                     
                     for (Tuple<Integer, BTXEntry> str : btx.getEntries()) {
                         BTXEntry entry = str.getValue();
-                        String output = LinebreakUtil.calculateLinebreaks(entry.getString(), charLimit);
                         
-                        if (!output.equals(entry.getString())) {
-                            entry.setString(output);
-                            changed = true;
+                        try {
+                            String output = LinebreakUtil.calculateLinebreaks(entry.getString(), charLimit);
+                        
+                            if (!output.equals(entry.getString())) {
+                                entry.setString(output);
+                                changed = true;
+                            }
+                        }
+                        catch(Exception ex) {
+                            Main.LOGGER.warning(String.format("Error while calcualting linebreaks. File: %s | String: %s", file.getKey(), entry.getString()));
+                            Main.LOGGER.log(Level.WARNING, "Exception: ", ex);
                         }
                     }
                 }
