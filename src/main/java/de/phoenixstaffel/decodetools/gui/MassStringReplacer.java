@@ -555,6 +555,12 @@ public class MassStringReplacer extends JFrame {
                         }
                         
                         String newString = enMap.get(jpMap.get(oldString));
+                        
+                        if(newString == null) {
+                            Main.LOGGER.warning("New string is null, original: " + str.getValue().getString());
+                            return;
+                        }
+                        
                         str.getValue().setString(newString);
                     });
                 });
