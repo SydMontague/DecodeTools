@@ -164,6 +164,10 @@ public class BTXPayload extends ResPayload {
         return super.toString() + " " + fileId;
     }
     
+    public int getFileId() {
+        return fileId;
+    }
+    
     /**
      * Contains additional information for text strings, like the speaker for text messages.
      * 

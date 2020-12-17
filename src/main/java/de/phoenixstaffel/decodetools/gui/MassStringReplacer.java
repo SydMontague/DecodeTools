@@ -3,6 +3,8 @@ package de.phoenixstaffel.decodetools.gui;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +73,7 @@ public class MassStringReplacer extends JFrame {
     private final JLabel lineLimitLabel = new JLabel("Line Limit:");
     private final JSpinner lineLimitSpinner = new JSpinner();
     private final JButton linebreakButton = new JButton("Redo Linebreaks");
+    private final JButton btnNewButton = new JButton("Prefix Stuff");
     
     public MassStringReplacer() {
         lineLimitSpinner.setModel(new SpinnerNumberModel(52, 1, 999, 1));
@@ -82,6 +85,7 @@ public class MassStringReplacer extends JFrame {
         replaceButton.setAction(new ReplaceAction());
         saveButton.setAction(new SaveAction());
         linebreakButton.setAction(new LinebreakFixerAction());
+        btnNewButton.setAction(new PrefixStuffAction());
         
         //@formatter:off
         replacementInput.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -93,17 +97,17 @@ public class MassStringReplacer extends JFrame {
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(progressBar, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
-                        .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+                        .addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                        .addGroup(groupLayout.createSequentialGroup()
                             .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                                 .addGroup(groupLayout.createSequentialGroup()
                                     .addComponent(folderLabel)
                                     .addPreferredGap(ComponentPlacement.UNRELATED)
                                     .addComponent(pathLabel))
                                 .addComponent(originalLabel)
-                                .addComponent(originalInput, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
-                                .addComponent(replacementInput, GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+                                .addComponent(originalInput, GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                                .addComponent(replacementInput, GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
                                 .addComponent(messageLabel))
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
@@ -111,12 +115,14 @@ public class MassStringReplacer extends JFrame {
                                 .addComponent(openButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(findButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(replaceButton)))
-                        .addGroup(groupLayout.createSequentialGroup()
+                        .addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
                             .addComponent(lineLimitLabel)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(linebreakButton))
+                            .addComponent(linebreakButton)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(btnNewButton))
                         .addComponent(replacementLabel))
                     .addContainerGap())
         );
@@ -150,8 +156,9 @@ public class MassStringReplacer extends JFrame {
                     .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lineLimitLabel)
                         .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(linebreakButton))
-                    .addContainerGap(15, Short.MAX_VALUE))
+                        .addComponent(linebreakButton)
+                        .addComponent(btnNewButton))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         findButton.setEnabled(false);
         replaceButton.setEnabled(false);
@@ -417,5 +424,137 @@ public class MassStringReplacer extends JFrame {
             replaceButton.setEnabled(true);
             saveButton.setEnabled(true);
         }
+    }
+    
+    private static class BlaEntry {
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + fileId;
+            result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
+            result = prime * result + stringId;
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!(obj instanceof BlaEntry))
+                return false;
+            BlaEntry other = (BlaEntry) obj;
+            if (fileId != other.fileId)
+                return false;
+            if (fileName == null) {
+                if (other.fileName != null)
+                    return false;
+            }
+            else if (!fileName.equals(other.fileName))
+                return false;
+            if (stringId != other.stringId)
+                return false;
+            return true;
+        }
+
+        String fileName;
+        int fileId;
+        int stringId;
+        
+        public BlaEntry(String fileName, int fileId, int stringId) {
+            this.fileName = fileName;
+            this.fileId = fileId;
+            this.stringId = stringId;
+        }
+    }
+    
+    private class PrefixStuffAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            JFileChooser prefixFileDialogue = new JFileChooser("./Input");
+            prefixFileDialogue.setDialogTitle("Please select the prefix file.");
+            prefixFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            prefixFileDialogue.showOpenDialog(null);
+
+            JFileChooser japaneseFileDialogue = new JFileChooser("./Input");
+            japaneseFileDialogue.setDialogTitle("Please select the folder with the Japanese files.");
+            japaneseFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            japaneseFileDialogue.showOpenDialog(null);
+
+            JFileChooser translatedFileDialogue = new JFileChooser("./Input");
+            translatedFileDialogue.setDialogTitle("Please select the folder with the translated files.");
+            translatedFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            translatedFileDialogue.showOpenDialog(null);
+            
+            JFileChooser outputFileDialogue = new JFileChooser("./Output");
+            translatedFileDialogue.setDialogTitle("Please select output prefix file.");
+            translatedFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            translatedFileDialogue.showOpenDialog(null);
+            
+            File prefix = prefixFileDialogue.getSelectedFile();
+            File japanese = japaneseFileDialogue.getSelectedFile();
+            File translated = translatedFileDialogue.getSelectedFile();
+            File output = outputFileDialogue.getSelectedFile();
+            
+            try(FileAccess bbb = new FileAccess(prefix)) {
+                ResFile pref = new ResFile(bbb);
+
+                Map<String, BlaEntry> jpMap = new HashMap<>();
+                Map<BlaEntry, String> enMap = new HashMap<>();
+                
+                Files.walk(japanese.toPath()).forEach(a -> {
+                    try (FileAccess acc = new FileAccess(a.toFile())){
+                        ResFile file = new ResFile(acc);
+                        String fileName = a.getFileName().toString();
+                        
+                        file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
+                            BTXPayload btx = (BTXPayload) b;
+                            btx.getEntries().forEach(c -> jpMap.put(c.getValue().getString(), new BlaEntry(fileName, btx.getFileId(), c.getKey())));
+                        });
+                    }
+                    catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                });
+                Files.walk(translated.toPath()).forEach(a -> {
+                    try (FileAccess acc = new FileAccess(a.toFile())){
+                        ResFile file = new ResFile(acc);
+                        String fileName = a.getFileName().toString();
+                        
+                        file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
+                            BTXPayload btx = (BTXPayload) b;
+                            btx.getEntries().forEach(c -> enMap.put(new BlaEntry(fileName, btx.getFileId(), c.getKey()), c.getValue().getString()));
+                        });
+                    }
+                    catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                });
+                
+                pref.getRoot().getElementsWithType(Payload.BTX).forEach(a -> {
+                    BTXPayload btx = (BTXPayload) a;
+                    btx.getEntries().forEach(str -> {
+                        String oldString = str.getValue().getString();
+                        
+                        if(!jpMap.containsKey(oldString)) {
+                            Main.LOGGER.warning("String not found: " + str.getValue().getString());
+                            return;
+                        }
+                        
+                        String newString = enMap.get(jpMap.get(oldString));
+                        str.getValue().setString(newString);
+                    });
+                });
+                
+                pref.repack(output);
+            }
+            catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+        
+        
     }
 }
