@@ -5,6 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
@@ -504,34 +506,38 @@ public class MassStringReplacer extends JFrame {
                 Map<String, BlaEntry> jpMap = new HashMap<>();
                 Map<BlaEntry, String> enMap = new HashMap<>();
                 
-                Files.walk(japanese.toPath()).forEach(a -> {
-                    try (FileAccess acc = new FileAccess(a.toFile())){
-                        ResFile file = new ResFile(acc);
-                        String fileName = a.getFileName().toString();
-                        
-                        file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
-                            BTXPayload btx = (BTXPayload) b;
-                            btx.getEntries().forEach(c -> jpMap.put(c.getValue().getString(), new BlaEntry(fileName, btx.getFileId(), c.getKey())));
-                        });
-                    }
-                    catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                });
-                Files.walk(translated.toPath()).forEach(a -> {
-                    try (FileAccess acc = new FileAccess(a.toFile())){
-                        ResFile file = new ResFile(acc);
-                        String fileName = a.getFileName().toString();
-                        
-                        file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
-                            BTXPayload btx = (BTXPayload) b;
-                            btx.getEntries().forEach(c -> enMap.put(new BlaEntry(fileName, btx.getFileId(), c.getKey()), c.getValue().getString()));
-                        });
-                    }
-                    catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                });
+                try(Stream<Path> lFiles = Files.walk(japanese.toPath())) {
+                    lFiles.forEach(a -> {
+                        try (FileAccess acc = new FileAccess(a.toFile())){
+                            ResFile file = new ResFile(acc);
+                            String fileName = a.getFileName().toString();
+                            
+                            file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
+                                BTXPayload btx = (BTXPayload) b;
+                                btx.getEntries().forEach(c -> jpMap.put(c.getValue().getString(), new BlaEntry(fileName, btx.getFileId(), c.getKey())));
+                            });
+                        }
+                        catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    });
+                }
+                try(Stream<Path> lFiles = Files.walk(translated.toPath())) {
+                    lFiles.forEach(a -> {
+                        try (FileAccess acc = new FileAccess(a.toFile())){
+                            ResFile file = new ResFile(acc);
+                            String fileName = a.getFileName().toString();
+                            
+                            file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
+                                BTXPayload btx = (BTXPayload) b;
+                                btx.getEntries().forEach(c -> enMap.put(new BlaEntry(fileName, btx.getFileId(), c.getKey()), c.getValue().getString()));
+                            });
+                        }
+                        catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    });
+                }
                 
                 pref.getRoot().getElementsWithType(Payload.BTX).forEach(a -> {
                     BTXPayload btx = (BTXPayload) a;
