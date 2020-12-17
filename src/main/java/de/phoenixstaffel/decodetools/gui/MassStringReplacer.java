@@ -491,9 +491,9 @@ public class MassStringReplacer extends JFrame {
             translatedFileDialogue.showOpenDialog(null);
             
             JFileChooser outputFileDialogue = new JFileChooser("./Output");
-            translatedFileDialogue.setDialogTitle("Please select output prefix file.");
-            translatedFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            translatedFileDialogue.showSaveDialog(null);
+            outputFileDialogue.setDialogTitle("Please select output prefix file.");
+            outputFileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            outputFileDialogue.showSaveDialog(null);
             
             File prefix = prefixFileDialogue.getSelectedFile();
             File japanese = japaneseFileDialogue.getSelectedFile();
