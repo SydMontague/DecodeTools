@@ -508,6 +508,9 @@ public class MassStringReplacer extends JFrame {
                 
                 try(Stream<Path> lFiles = Files.walk(japanese.toPath())) {
                     lFiles.forEach(a -> {
+                        if(!a.toFile().isFile())
+                            return;
+                        
                         try (FileAccess acc = new FileAccess(a.toFile())){
                             ResFile file = new ResFile(acc);
                             String fileName = a.getFileName().toString();
@@ -524,6 +527,8 @@ public class MassStringReplacer extends JFrame {
                 }
                 try(Stream<Path> lFiles = Files.walk(translated.toPath())) {
                     lFiles.forEach(a -> {
+                        if(!a.toFile().isFile())
+                            return;
                         try (FileAccess acc = new FileAccess(a.toFile())){
                             ResFile file = new ResFile(acc);
                             String fileName = a.getFileName().toString();
