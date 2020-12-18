@@ -89,9 +89,12 @@ public class LinebreakUtil {
                 char next = itr.next();
                 StringBuilder id = new StringBuilder();
                 
-                while (itr.next() != '>')
+                while (itr.next() != '>') {
+                    if(itr.current() == StringCharacterIterator.DONE)
+                        throw new IllegalStateException("String contains unterminated placeholder!");
                     id.append(itr.current());
-                
+                }
+                    
                 switch (next) {
                     case 'p': // page break
                     case 'w': // delay

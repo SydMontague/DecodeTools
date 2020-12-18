@@ -472,6 +472,10 @@ public class MassStringReplacer extends JFrame {
     
     private class PrefixStuffAction extends AbstractAction {
 
+        public PrefixStuffAction() {
+            super("Prefix Stuff");
+        }
+        
         @Override
         public void actionPerformed(ActionEvent e) {
 
