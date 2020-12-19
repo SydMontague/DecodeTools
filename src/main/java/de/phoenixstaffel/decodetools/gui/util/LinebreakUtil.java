@@ -33,12 +33,24 @@ public class LinebreakUtil {
         }
     }
     
-    public static String calculateLinebreaks(String in, int charLimit) {
+    public static String calculateDigitterLinebreaks(String in, int charLimit) {
+        String s = calculateLinebreaks(in, charLimit, false);
+        String[] ss = s.split("\n", 2);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(ss[0]);
+        sb.append("\n");
+        sb.append(calculateLinebreaks(ss[1], charLimit, false));
+        
+        return sb.toString();
+    }
+    
+    public static String calculateLinebreaks(String in, int charLimit, boolean balance) {
         StringBuilder b = new StringBuilder();
         String[] arr = in.split("<p>");
         
         for (int i = 0; i < arr.length; i++) {
-            b.append(calculateLinebreaksPage(arr[i], charLimit));
+            b.append(calculateLinebreaksPage(arr[i], charLimit, balance));
             if (i + 1 < arr.length)
                 b.append("<p>\n");
         }
@@ -46,11 +58,13 @@ public class LinebreakUtil {
         return b.toString();
     }
     
-    private static String calculateLinebreaksPage(String in, int charLimit) {
+    private static String calculateLinebreaksPage(String in, int charLimit, boolean balance) {
         String input = in.replaceAll("\\s+", " ");
         
         int length = calculateStringLength(input);
         int localLimit = length > charLimit ? (int) Math.ceil(length / 2D) : charLimit;
+        if (!balance)
+            localLimit = charLimit;
         int lineNum = 0;
         
         StringTokenizer token = new StringTokenizer(input);
@@ -90,11 +104,11 @@ public class LinebreakUtil {
                 StringBuilder id = new StringBuilder();
                 
                 while (itr.next() != '>') {
-                    if(itr.current() == CharacterIterator.DONE)
+                    if (itr.current() == CharacterIterator.DONE)
                         throw new IllegalStateException("String contains unterminated placeholder!");
                     id.append(itr.current());
                 }
-                    
+                
                 switch (next) {
                     case 'p': // page break
                     case 'w': // delay

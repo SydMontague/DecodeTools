@@ -75,7 +75,8 @@ public class MassStringReplacer extends JFrame {
     private final JLabel lineLimitLabel = new JLabel("Line Limit:");
     private final JSpinner lineLimitSpinner = new JSpinner();
     private final JButton linebreakButton = new JButton("Redo Linebreaks");
-    private final JButton btnNewButton = new JButton("Prefix Stuff");
+    private final JButton prefixButton = new JButton("Prefix Stuff");
+    private final JButton digitterLinebreakButton = new JButton("New button");
     
     public MassStringReplacer() {
         lineLimitSpinner.setModel(new SpinnerNumberModel(52, 1, 999, 1));
@@ -87,7 +88,8 @@ public class MassStringReplacer extends JFrame {
         replaceButton.setAction(new ReplaceAction());
         saveButton.setAction(new SaveAction());
         linebreakButton.setAction(new LinebreakFixerAction());
-        btnNewButton.setAction(new PrefixStuffAction());
+        prefixButton.setAction(new PrefixStuffAction());
+        digitterLinebreakButton.setAction(new DigitterLinebreakFixerAction());
         
         //@formatter:off
         replacementInput.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -99,7 +101,7 @@ public class MassStringReplacer extends JFrame {
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
                         .addGroup(groupLayout.createSequentialGroup()
                             .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
@@ -117,14 +119,16 @@ public class MassStringReplacer extends JFrame {
                                 .addComponent(openButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(findButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(replaceButton)))
-                        .addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
+                        .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(lineLimitLabel)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(linebreakButton)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(btnNewButton))
+                            .addComponent(digitterLinebreakButton)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(prefixButton))
                         .addComponent(replacementLabel))
                     .addContainerGap())
         );
@@ -159,7 +163,8 @@ public class MassStringReplacer extends JFrame {
                         .addComponent(lineLimitLabel)
                         .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(linebreakButton)
-                        .addComponent(btnNewButton))
+                        .addComponent(prefixButton)
+                        .addComponent(digitterLinebreakButton))
                     .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         findButton.setEnabled(false);
@@ -273,7 +278,53 @@ public class MassStringReplacer extends JFrame {
                         BTXEntry entry = str.getValue();
                         
                         try {
-                            String output = LinebreakUtil.calculateLinebreaks(entry.getString(), charLimit);
+                            String output = LinebreakUtil.calculateLinebreaks(entry.getString(), charLimit, true);
+                        
+                            if (!output.equals(entry.getString())) {
+                                entry.setString(output);
+                                changed = true;
+                            }
+                        }
+                        catch(Exception ex) {
+                            Main.LOGGER.warning(String.format("Error while calcualting linebreaks. File: %s | String: %s", file.getKey(), entry.getString()));
+                            Main.LOGGER.log(Level.WARNING, "Exception: ", ex);
+                        }
+                    }
+                }
+                
+                if (changed) {
+                    changedFiles.add(file.getKey());
+                    fCount++;
+                }
+            }
+            
+            messageLabel.setText("Changed linebreaks in " + fCount + " files.");
+        }
+    }
+    
+    private class DigitterLinebreakFixerAction extends AbstractAction {
+        private static final long serialVersionUID = 2568092425475577644L;
+        
+        public DigitterLinebreakFixerAction() {
+            super("Fix Digitterbreaks");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int charLimit = (int) lineLimitSpinner.getValue();
+            int fCount = 0;
+            
+            for (Entry<String, ResFile> file : files.entrySet()) {
+                boolean changed = false;
+                
+                for (ResPayload p : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                    BTXPayload btx = (BTXPayload) p;
+                    
+                    for (Tuple<Integer, BTXEntry> str : btx.getEntries()) {
+                        BTXEntry entry = str.getValue();
+                        
+                        try {
+                            String output = LinebreakUtil.calculateDigitterLinebreaks(entry.getString(), charLimit);
                         
                             if (!output.equals(entry.getString())) {
                                 entry.setString(output);
