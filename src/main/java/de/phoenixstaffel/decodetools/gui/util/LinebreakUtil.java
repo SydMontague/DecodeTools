@@ -90,7 +90,7 @@ public class LinebreakUtil {
                 StringBuilder id = new StringBuilder();
                 
                 while (itr.next() != '>') {
-                    if(itr.current() == StringCharacterIterator.DONE)
+                    if(itr.current() == CharacterIterator.DONE)
                         throw new IllegalStateException("String contains unterminated placeholder!");
                     id.append(itr.current());
                 }

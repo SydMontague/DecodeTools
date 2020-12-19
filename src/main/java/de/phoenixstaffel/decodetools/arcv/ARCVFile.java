@@ -55,7 +55,7 @@ public class ARCVFile {
             try {
                 return addFile(t.toPath(), filePath.toString().replaceAll("\\\\", "/")); // fuck windows
             }
-            catch (IOException e) {
+            catch (Exception e) {
                 Main.LOGGER.log(Level.WARNING, "Exception while adding file to ARCVFile: " + filePath, e);
             }
             
@@ -118,6 +118,7 @@ public class ARCVFile {
         // Res Load
         Access access = new FileAccess(a.toFile(), true);
         ResPayload res = new ResFile(access).getRoot();
+        int kcapSize = res.getType() == Payload.KCAP ? access.readInteger(0x08) : 0;
         access.close();
         
         result.loadTime = System.nanoTime() - timer;
@@ -133,10 +134,17 @@ public class ARCVFile {
         
         result.dataTime = System.nanoTime() - timer;
         
-        // sanity checks, MARV generation
-        if (input.length - Utils.align(structureSize, 0x80) != dataSize && dataSize != 0)
-            Main.LOGGER.log(Level.WARNING, () -> name + " calculated size and actual size differs. It's format might be invalid, please check and re-export.");
+        if(res.getType() == Payload.KCAP && structureSize != kcapSize) {
+            Main.LOGGER.log(Level.WARNING, () -> name + " claimed and calculated KCAP size differs.");
+            structureSize = kcapSize;
+        }
         
+        // sanity checks, MARV generation
+        if (input.length - Utils.align(structureSize, 0x80) != dataSize && dataSize != 0) {
+            Main.LOGGER.log(Level.WARNING, () -> name + " calculated size and actual size differs. It's format might be invalid, please check and re-export if necessary.");
+            dataSize = input.length - Utils.align(structureSize, 0x80);
+        }
+            
         MARVEntry marv = new MARVEntry(structureSize, dataSize, dataEntries, name.endsWith(".img"));
         if (res.getType() == Payload.GENERIC || res.getType() == Payload.BTX)
             marv = null;
