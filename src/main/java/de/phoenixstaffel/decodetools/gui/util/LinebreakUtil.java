@@ -35,13 +35,13 @@ public class LinebreakUtil {
     
     public static String calculateDigitterLinebreaks(String in, int charLimit) {
         String s = calculateLinebreaks(in, charLimit, false);
-        String[] ss = s.split("\n", 2);
+        String[] splitString = s.split("\n", 2);
         
         StringBuilder sb = new StringBuilder();
-        sb.append(ss[0]);
-        if(sb.length() == 2) {
+        sb.append(splitString[0]);
+        if(splitString.length == 2) {
             sb.append("\n");
-            sb.append(calculateLinebreaks(ss[1], charLimit, false));
+            sb.append(calculateLinebreaks(splitString[1], charLimit, false));
         }
         
         return sb.toString();
