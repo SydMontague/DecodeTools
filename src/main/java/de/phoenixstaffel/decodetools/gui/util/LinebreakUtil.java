@@ -39,8 +39,10 @@ public class LinebreakUtil {
         
         StringBuilder sb = new StringBuilder();
         sb.append(ss[0]);
-        sb.append("\n");
-        sb.append(calculateLinebreaks(ss[1], charLimit, false));
+        if(sb.length() == 2) {
+            sb.append("\n");
+            sb.append(calculateLinebreaks(ss[1], charLimit, false));
+        }
         
         return sb.toString();
     }
