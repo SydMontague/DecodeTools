@@ -86,7 +86,7 @@ public class MassStringReplacer extends JFrame {
     
     public MassStringReplacer() {
         maxWidthSpinner.setModel(new SpinnerNumberModel(252, 100, 480, 1));
-        lineLimitSpinner.setModel(new SpinnerNumberModel(10.0, 1.0, 999.0, 0.0));
+        lineLimitSpinner.setModel(new SpinnerNumberModel(10.0, 1.0, 999.0, 0.1));
         setTitle("Mass Text Replacer Tool");
         setSize(600, 500);
         
