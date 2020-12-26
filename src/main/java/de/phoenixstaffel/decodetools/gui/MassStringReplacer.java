@@ -39,17 +39,20 @@ import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload.BTXEntry;
+import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
+
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
 public class MassStringReplacer extends JFrame {
-    
     private static final long serialVersionUID = -5343568132395772145L;
     private static final String MESSAGE_PROPERTY = "message";
     private static final String PROGRESS_PROPERTY = "progress";
     
     private transient Map<String, ResFile> files = new HashMap<>();
     private transient Set<String> changedFiles = new HashSet<>();
+    
+    private TNFOPayload linebreakFont = null;
     
     private final JLabel folderLabel = new JLabel("Folder:");
     private final JLabel originalLabel = new JLabel("Original String");
@@ -72,16 +75,20 @@ public class MassStringReplacer extends JFrame {
             progressBar.setString((String) b.getNewValue());
         }
     };
-    private final JLabel lineLimitLabel = new JLabel("Line Limit:");
+    private final JLabel fontSizeLabel = new JLabel("Font Size:");
     private final JSpinner lineLimitSpinner = new JSpinner();
     private final JButton linebreakButton = new JButton("Redo Linebreaks");
     private final JButton prefixButton = new JButton("Prefix Stuff");
     private final JButton digitterLinebreakButton = new JButton("New button");
+    private final JButton loadFontButton = new JButton("Load Font");
+    private final JSpinner maxWidthSpinner = new JSpinner();
+    private final JLabel maxWidthLabel = new JLabel("Max Width");
     
     public MassStringReplacer() {
-        lineLimitSpinner.setModel(new SpinnerNumberModel(52, 1, 999, 1));
+        maxWidthSpinner.setModel(new SpinnerNumberModel(252, 100, 480, 1));
+        lineLimitSpinner.setModel(new SpinnerNumberModel(10.0, 1.0, 999.0, 0.0));
         setTitle("Mass Text Replacer Tool");
-        setSize(500, 391);
+        setSize(600, 500);
         
         openButton.setAction(new OpenAction());
         findButton.setAction(new FindAction());
@@ -90,6 +97,7 @@ public class MassStringReplacer extends JFrame {
         linebreakButton.setAction(new LinebreakFixerAction());
         prefixButton.setAction(new PrefixStuffAction());
         digitterLinebreakButton.setAction(new DigitterLinebreakFixerAction());
+        loadFontButton.setAction(new LoadFontAction());
         
         //@formatter:off
         replacementInput.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -120,16 +128,22 @@ public class MassStringReplacer extends JFrame {
                                 .addComponent(findButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(replaceButton)))
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(lineLimitLabel)
+                            .addComponent(fontSizeLabel)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(maxWidthLabel)
+                            .addPreferredGap(ComponentPlacement.UNRELATED)
+                            .addComponent(maxWidthSpinner, GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(loadFontButton)
+                            .addGap(76)
+                            .addComponent(prefixButton))
+                        .addComponent(replacementLabel)
+                        .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(linebreakButton)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(digitterLinebreakButton)
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(prefixButton))
-                        .addComponent(replacementLabel))
+                            .addComponent(digitterLinebreakButton)))
                     .addContainerGap())
         );
         groupLayout.setVerticalGroup(
@@ -160,12 +174,17 @@ public class MassStringReplacer extends JFrame {
                     .addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lineLimitLabel)
+                        .addComponent(fontSizeLabel)
                         .addComponent(lineLimitSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(linebreakButton)
                         .addComponent(prefixButton)
+                        .addComponent(loadFontButton)
+                        .addComponent(maxWidthSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(maxWidthLabel))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(linebreakButton)
                         .addComponent(digitterLinebreakButton))
-                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap(82, Short.MAX_VALUE))
         );
         findButton.setEnabled(false);
         replaceButton.setEnabled(false);
@@ -174,6 +193,34 @@ public class MassStringReplacer extends JFrame {
         progressBar.setStringPainted(true);
         getContentPane().setLayout(groupLayout);
         //@formatter:on
+    }
+    
+    private class LoadFontAction extends AbstractAction {
+        private static final long serialVersionUID = -2044589566004599107L;
+
+        public LoadFontAction() {
+            super("Load Font");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileDialogue = new JFileChooser("./Input");
+            fileDialogue.setDialogTitle("Please select GlobalKeepRes with the font you want to use");
+            fileDialogue.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileDialogue.showOpenDialog(null);
+            
+            File f = fileDialogue.getSelectedFile();
+            if (f == null)
+                return;
+
+            try(FileAccess access = new FileAccess(f)) {
+                ResFile res = new ResFile(access);
+                linebreakFont = (TNFOPayload) res.getRoot().getElementsWithType(Payload.TNFO).get(0);
+            }
+            catch (Exception e1) {
+                Main.LOGGER.warning(() -> "Error while loading font, did you enter the GlobalKeepRes.res?");
+            }
+        }
     }
     
     private class FindAction extends AbstractAction {
@@ -265,8 +312,12 @@ public class MassStringReplacer extends JFrame {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            int charLimit = (int) lineLimitSpinner.getValue();
+            double fontSize = (double) lineLimitSpinner.getValue();
+            int maxWidth = (int) maxWidthSpinner.getValue();
             int fCount = 0;
+            
+            if(linebreakFont == null)
+                messageLabel.setText("No font loaded!");
             
             for (Entry<String, ResFile> file : files.entrySet()) {
                 boolean changed = false;
@@ -278,7 +329,7 @@ public class MassStringReplacer extends JFrame {
                         BTXEntry entry = str.getValue();
                         
                         try {
-                            String output = LinebreakUtil.calculateLinebreaks(entry.getString(), charLimit, true);
+                            String output = LinebreakUtil.calculateLinebreaks(entry.getString(), fontSize, maxWidth, linebreakFont, false);
                         
                             if (!output.equals(entry.getString())) {
                                 entry.setString(output);
@@ -311,8 +362,12 @@ public class MassStringReplacer extends JFrame {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            int charLimit = (int) lineLimitSpinner.getValue();
+            double fontSize = (double) lineLimitSpinner.getValue();
+            int maxWidth = (int) maxWidthSpinner.getValue();
             int fCount = 0;
+            
+            if(linebreakFont == null)
+                messageLabel.setText("No font loaded!");
             
             for (Entry<String, ResFile> file : files.entrySet()) {
                 boolean changed = false;
@@ -324,7 +379,7 @@ public class MassStringReplacer extends JFrame {
                         BTXEntry entry = str.getValue();
                         
                         try {
-                            String output = LinebreakUtil.calculateDigitterLinebreaks(entry.getString(), charLimit);
+                            String output = LinebreakUtil.calculateLinebreaks(entry.getString(), fontSize, maxWidth, linebreakFont, true);
                         
                             if (!output.equals(entry.getString())) {
                                 entry.setString(output);
