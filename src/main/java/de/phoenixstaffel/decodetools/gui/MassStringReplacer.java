@@ -213,12 +213,15 @@ public class MassStringReplacer extends JFrame {
             if (f == null)
                 return;
 
+            messageLabel.setText("Font loaded!");
+            
             try(FileAccess access = new FileAccess(f)) {
                 ResFile res = new ResFile(access);
                 linebreakFont = (TNFOPayload) res.getRoot().getElementsWithType(Payload.TNFO).get(0);
             }
             catch (Exception e1) {
                 Main.LOGGER.warning(() -> "Error while loading font, did you enter the GlobalKeepRes.res?");
+                messageLabel.setText("Error while loading font!");
             }
         }
     }
