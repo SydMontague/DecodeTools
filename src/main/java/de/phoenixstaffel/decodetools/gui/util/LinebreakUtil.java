@@ -41,32 +41,6 @@ public class LinebreakUtil {
         }
     }
     
-    public static void main(String[] args) throws IOException {
-        try(FileAccess access = new FileAccess(new File("Input/Keep/GlobalKeepRes.res"))) {
-            ResFile res = new ResFile(access);
-            TNFOPayload font = (TNFOPayload) res.getRoot().getElementsWithType(Payload.TNFO).get(0);
-            
-            String str = "I think this will prove to be a\nuseful source of information!<p>\nIt looks like you have no account yet....";
-            String str2 = "Actually, with everything that's been happening, a lot of Digimon have left the city.";
-            String str3 = "Oh? My boy, to say such a thing. You seem to be very kind for a human.";
-            String str4 = "Katze1 Katze2 Katze3 Katze4 Katze5 Katze6 Katze7 Katze8 Katze9 Katze10 Katze11 Katze12 Katze13 Katze14 Katze15 Katze16 Katze17 Katze18";
-            String str5 = "All my fallen friends, me trees... I will avenge you!";
-            String str6 = "To be honest, I don't know what to do about them.";
-            
-            
-            System.out.println(calculateLinebreaks(str6, 10, 254, font, true));
-            System.out.println(calculateLinebreaks(str, 10, 254, font, true));
-            System.out.println(calculateLinebreaks(str2, 10, 254, font, true));
-            System.out.println(calculateLinebreaks(str3, 10, 254, font, true));
-            System.out.println(calculateLinebreaks(str4, 10, 254, font, true));
-            System.out.println(calculateLinebreaks(str5, 10, 254, font, true));
-            //System.out.println(calculateLinebreaks(str, 80, false));
-            double width = calculateStringWidth("<n1010>", font, 10.0);
-            double width2 = calculateStringWidth("Katze7 Katze8 Katze9 Katze10 Katze11 Katze12", font, 10.0);
-            System.out.println(width2);
-        }
-    }
-    
     public static String calculateLinebreaks(String in, double fontSize, double maxWidth, TNFOPayload font, boolean balance) {
         StringBuilder b = new StringBuilder();
         String[] arr = in.split("<p>");
