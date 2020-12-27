@@ -54,14 +54,16 @@ public class LinebreakUtil {
             else if(width > maxWidth * 1.5D && balance) { // multi line, for Digitter
                 StringTokenizer token = new StringTokenizer(input);
                 double currentWidth = 0D;
-
+                int lineCount = 1;
+                
                 while(token.hasMoreTokens()) {
                     String s = token.nextToken();
                     double lWidth = calculateStringWidth(s, font, fontSize);
                     currentWidth += lWidth;
-                    
+
                     if(currentWidth > maxWidth) {
                         b.append('\n');
+                        lineCount++;
                         currentWidth = lWidth;
                     }
 
@@ -69,6 +71,9 @@ public class LinebreakUtil {
                     b.append(s);
                     b.append(" ");
                 }
+                
+                if(lineCount > 3)
+                    Main.LOGGER.warning("Linecount is over 3. If applied to Digitter it will break.");
             }
             else { // double line
                 if(width > maxWidth * 2)
