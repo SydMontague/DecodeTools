@@ -51,7 +51,7 @@ public class LinebreakUtil {
             
             if(width < maxWidth) // single line
                 b.append(input);
-            else if(width > maxWidth * 2 && balance) { // multi line, for Digitter
+            else if(width > maxWidth * 1.5D && balance) { // multi line, for Digitter
                 StringTokenizer token = new StringTokenizer(input);
                 double currentWidth = 0D;
 
