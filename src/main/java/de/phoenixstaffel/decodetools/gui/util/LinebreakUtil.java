@@ -73,7 +73,7 @@ public class LinebreakUtil {
                 }
                 
                 if(lineCount > 3)
-                    Main.LOGGER.warning("Linecount is over 3. If applied to Digitter it will break.");
+                    Main.LOGGER.warning(() -> String.format("Linecount is over 3. If applied to Digitter it will break: %s", input));
             }
             else { // double line
                 if(width > maxWidth * 2)
