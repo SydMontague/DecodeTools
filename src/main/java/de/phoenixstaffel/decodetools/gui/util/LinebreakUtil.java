@@ -41,6 +41,20 @@ public class LinebreakUtil {
         }
     }
     
+    public static void main(String[] args) throws IOException {
+        try(FileAccess access = new FileAccess(new File("Input/Keep/GlobalKeepRes.res"))) {
+            ResFile res = new ResFile(access);
+            TNFOPayload font = (TNFOPayload) res.getRoot().getElementsWithType(Payload.TNFO).get(0);
+            
+            String str = "So, do you want to transfer some of the powers of your previous Partner to this Digi-Egg?";
+            String str2 = "You know... I used to have a house made out of giant seashell.";
+            
+            System.out.println(calculateLinebreaks(str, 10, 252, font, false));
+            System.out.println(calculateStringWidth("This allows you to pass on some of the abilities", font, 10));
+            System.out.println(calculateStringWidth("So, do you want to transfer some of the powers", font, 10));
+        }
+    }
+    
     public static String calculateLinebreaks(String in, double fontSize, double maxWidth, TNFOPayload font, boolean balance) {
         StringBuilder b = new StringBuilder();
         String[] arr = in.split("<p>");
@@ -118,8 +132,18 @@ public class LinebreakUtil {
                 String line1 = list.subList(0, bestIndex + 1).stream().map(StringToken::getString).collect(Collectors.joining(" "));
                 String line2 = list.subList(bestIndex + 1, list.size()).stream().map(StringToken::getString).collect(Collectors.joining(" "));
                 
-                if(calculateStringWidth(line1, font, fontSize) > maxWidth || calculateStringWidth(line2, font, fontSize) > maxWidth)
+                double lineWidth1 = calculateStringWidth(line1, font, fontSize);
+                double lineWidth2 = calculateStringWidth(line2, font, fontSize);
+                
+                if(lineWidth1 > maxWidth) {
                     Main.LOGGER.warning(() -> String.format("String is too long for a textbox: %s", input));
+                    Main.LOGGER.warning(() -> String.format("Width: %#.2f | Line: %s", lineWidth1, line1));
+                    
+                }
+                if(lineWidth2 > maxWidth) {
+                    Main.LOGGER.warning(() -> String.format("String is too long for a textbox: %s", input));
+                    Main.LOGGER.warning(() -> String.format("Width: %#.2f | Line: %s", lineWidth1, line1));
+                }
                 
                 sb.append(line1);
                 sb.append("\n");
