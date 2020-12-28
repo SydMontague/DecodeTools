@@ -142,7 +142,7 @@ public class LinebreakUtil {
                 }
                 if(lineWidth2 > maxWidth) {
                     Main.LOGGER.warning(() -> String.format("String is too long for a textbox: %s", input));
-                    Main.LOGGER.warning(() -> String.format("Width: %#.2f | Line: %s", lineWidth1, line1));
+                    Main.LOGGER.warning(() -> String.format("Width: %#.2f | Line: %s", lineWidth2, line2));
                 }
                 
                 sb.append(line1);
