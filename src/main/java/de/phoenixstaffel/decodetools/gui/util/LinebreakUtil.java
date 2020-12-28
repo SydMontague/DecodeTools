@@ -115,9 +115,15 @@ public class LinebreakUtil {
                 }
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(list.subList(0, bestIndex + 1).stream().map(StringToken::getString).collect(Collectors.joining(" ")));
+                String line1 = list.subList(0, bestIndex + 1).stream().map(StringToken::getString).collect(Collectors.joining(" "));
+                String line2 = list.subList(bestIndex + 1, list.size()).stream().map(StringToken::getString).collect(Collectors.joining(" "));
+                
+                if(calculateStringWidth(line1, font, fontSize) > maxWidth || calculateStringWidth(line2, font, fontSize) > maxWidth)
+                    Main.LOGGER.warning(() -> String.format("String is too long for a textbox: %s", input));
+                
+                sb.append(line1);
                 sb.append("\n");
-                sb.append(list.subList(bestIndex + 1, list.size()).stream().map(StringToken::getString).collect(Collectors.joining(" ")));
+                sb.append(line2);
                 b.append(sb.toString());
             }
 
