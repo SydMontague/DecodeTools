@@ -83,6 +83,7 @@ public class MassStringReplacer extends JFrame {
     private final JButton loadFontButton = new JButton("Load Font");
     private final JSpinner maxWidthSpinner = new JSpinner();
     private final JLabel maxWidthLabel = new JLabel("Max Width");
+    private final JButton cleanupButton = new JButton("Cleanup Strings");
     
     public MassStringReplacer() {
         maxWidthSpinner.setModel(new SpinnerNumberModel(252, 100, 480, 1));
@@ -98,6 +99,7 @@ public class MassStringReplacer extends JFrame {
         prefixButton.setAction(new PrefixStuffAction());
         digitterLinebreakButton.setAction(new DigitterLinebreakFixerAction());
         loadFontButton.setAction(new LoadFontAction());
+        cleanupButton.setAction(new CleanupAction());
         
         //@formatter:off
         replacementInput.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -110,7 +112,7 @@ public class MassStringReplacer extends JFrame {
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                        .addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
                         .addGroup(groupLayout.createSequentialGroup()
                             .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                                 .addGroup(groupLayout.createSequentialGroup()
@@ -118,8 +120,8 @@ public class MassStringReplacer extends JFrame {
                                     .addPreferredGap(ComponentPlacement.UNRELATED)
                                     .addComponent(pathLabel))
                                 .addComponent(originalLabel)
-                                .addComponent(originalInput, GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
-                                .addComponent(replacementInput, GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                                .addComponent(originalInput, GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
+                                .addComponent(replacementInput, GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
                                 .addComponent(messageLabel))
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
@@ -134,7 +136,7 @@ public class MassStringReplacer extends JFrame {
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(maxWidthLabel)
                             .addPreferredGap(ComponentPlacement.UNRELATED)
-                            .addComponent(maxWidthSpinner, GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                            .addComponent(maxWidthSpinner, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(loadFontButton)
                             .addGap(76)
@@ -143,7 +145,9 @@ public class MassStringReplacer extends JFrame {
                         .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(linebreakButton)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(digitterLinebreakButton)))
+                            .addComponent(digitterLinebreakButton)
+                            .addPreferredGap(ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
+                            .addComponent(cleanupButton)))
                     .addContainerGap())
         );
         groupLayout.setVerticalGroup(
@@ -183,7 +187,8 @@ public class MassStringReplacer extends JFrame {
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
                         .addComponent(linebreakButton)
-                        .addComponent(digitterLinebreakButton))
+                        .addComponent(digitterLinebreakButton)
+                        .addComponent(cleanupButton))
                     .addContainerGap(82, Short.MAX_VALUE))
         );
         findButton.setEnabled(false);
@@ -193,6 +198,46 @@ public class MassStringReplacer extends JFrame {
         progressBar.setStringPainted(true);
         getContentPane().setLayout(groupLayout);
         //@formatter:on
+    }
+    
+    private class CleanupAction extends AbstractAction {
+        private static final long serialVersionUID = 561757485888416842L;
+
+        public CleanupAction() {
+            super("Cleanup Strings");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            long count = 0;
+            long fCount = 0;
+
+            for (Entry<String, ResFile> file : files.entrySet()) {
+                boolean replaced = false;
+                
+                for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                    BTXPayload btx = (BTXPayload) payload;
+                    
+                    for(Tuple<Integer, BTXEntry> entry : btx.getEntries()) {
+                        String s = entry.getValue().getString();
+                        String newString = s.replaceAll("(?m)(^ +)|( +$)", "").replaceAll("( {2,})", " ");
+                        
+                        if(!s.equals(newString)) {
+                            replaced = true;
+                            count++;
+                            entry.getValue().setString(newString);
+                        }
+                    }
+                }
+                
+                if (replaced) {
+                    changedFiles.add(file.getKey());
+                    fCount++;
+                }
+            }
+            
+            messageLabel.setText("Cleaned up: " + count + " strings in " + fCount + " files.");
+        }
     }
     
     private class LoadFontAction extends AbstractAction {
