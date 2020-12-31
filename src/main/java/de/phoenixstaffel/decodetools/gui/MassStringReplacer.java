@@ -243,7 +243,7 @@ public class MassStringReplacer extends JFrame {
                 }
             }
             
-            messageLabel.setText("Cleaned up: " + count + " strings in " + fCount + " files. Total: " + sizeDiff);
+            messageLabel.setText("Cleaned up: " + count + " strings in " + fCount + " files. Total: " + sizeDiff + " bytes");
         }
     }
     
