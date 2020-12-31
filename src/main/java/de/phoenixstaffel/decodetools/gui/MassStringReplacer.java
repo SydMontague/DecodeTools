@@ -210,6 +210,7 @@ public class MassStringReplacer extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             long count = 0;
+            int sizeDiff = 0;
             long fCount = 0;
 
             for (Entry<String, ResFile> file : files.entrySet()) {
@@ -223,8 +224,14 @@ public class MassStringReplacer extends JFrame {
                         String newString = s.replaceAll("(?m)(^ +)|( +$)", "").replaceAll("( {2,})", " ");
                         
                         if(!s.equals(newString)) {
+                            
+                            Main.LOGGER.info(() -> "Old String: " + s);
+                            Main.LOGGER.info(() -> "New String: " + newString);
+                            
                             replaced = true;
                             count++;
+                            sizeDiff = s.length() - newString.length();
+                            
                             entry.getValue().setString(newString);
                         }
                     }
@@ -236,7 +243,7 @@ public class MassStringReplacer extends JFrame {
                 }
             }
             
-            messageLabel.setText("Cleaned up: " + count + " strings in " + fCount + " files.");
+            messageLabel.setText("Cleaned up: " + count + " strings in " + fCount + " files. Total: " + sizeDiff);
         }
     }
     
