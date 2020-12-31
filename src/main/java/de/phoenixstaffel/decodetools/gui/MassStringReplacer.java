@@ -221,13 +221,14 @@ public class MassStringReplacer extends JFrame {
                     
                     for(Tuple<Integer, BTXEntry> entry : btx.getEntries()) {
                         String s = entry.getValue().getString();
-                        String newString = s.replaceAll("(?m)(^ +)|( +$)", "").replaceAll("( {2,})", " ");
+                        String newString = s.replaceAll("(?m)(^ +)", "");
+                        
+                        if(!s.equals(newString))
+                            Main.LOGGER.info(() -> String.format("Removed leading space. %s", s));
+                        
+                        newString = s.replaceAll("(?m)(^ +)|( +$)", "").replaceAll("( {2,})", " ");
                         
                         if(!s.equals(newString)) {
-                            
-                            Main.LOGGER.info(() -> "Old String: " + s);
-                            Main.LOGGER.info(() -> "New String: " + newString);
-                            
                             replaced = true;
                             count++;
                             sizeDiff += s.length() - newString.length();
@@ -243,7 +244,7 @@ public class MassStringReplacer extends JFrame {
                 }
             }
             
-            messageLabel.setText("Cleaned up: " + count + " strings in " + fCount + " files. Total: " + sizeDiff + " bytes");
+            messageLabel.setText("Cleaned up: " + count + " strings in " + fCount + " files. Total: " + sizeDiff + " spaces");
         }
     }
     
