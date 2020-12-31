@@ -230,7 +230,7 @@ public class MassStringReplacer extends JFrame {
                             
                             replaced = true;
                             count++;
-                            sizeDiff = s.length() - newString.length();
+                            sizeDiff += s.length() - newString.length();
                             
                             entry.getValue().setString(newString);
                         }
