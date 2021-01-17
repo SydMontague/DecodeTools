@@ -26,6 +26,7 @@ public abstract class PayloadPanel extends JPanel {
         Map<Enum<?>, PayloadPanel> tempPanels = new HashMap<>();
         
         tempPanels.put(Payload.GMIO, new GMIOPanel(null));
+        tempPanels.put(AbstractKCAP.KCAPType.GMIP, new GMIPPanel(null));
         tempPanels.put(AbstractKCAP.KCAPType.KPTF, new KPTFPanel(null));
         tempPanels.put(Payload.HSEM, new HSEMPanel(null));
         tempPanels.put(AbstractKCAP.KCAPType.HSMP, new ModelImporter(null));

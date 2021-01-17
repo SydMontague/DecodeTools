@@ -40,6 +40,7 @@ import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
+import de.phoenixstaffel.decodetools.gui.util.JProgressFrame;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;

@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools.gui;
+package de.phoenixstaffel.decodetools.gui.util;
 
 import java.awt.Color;
 import java.awt.Cursor;

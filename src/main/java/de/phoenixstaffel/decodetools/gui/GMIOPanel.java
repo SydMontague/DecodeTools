@@ -27,6 +27,7 @@ import javax.swing.filechooser.FileFilter;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.PixelFormat;
+import de.phoenixstaffel.decodetools.gui.util.JImage;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 import javax.swing.JSpinner;
 

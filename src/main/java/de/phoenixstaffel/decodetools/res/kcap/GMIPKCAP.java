@@ -78,6 +78,19 @@ public class GMIPKCAP extends AbstractKCAP {
         return Collections.unmodifiableList(entries);
     }
     
+    public void add(GMIOPayload gmio) {
+        gmio.setParent(this);
+        entries.add(gmio);
+    }
+    
+    public void remove(int index) {
+        entries.remove(index);
+    }
+    
+    public void swap(int id1, int id2) {
+        Collections.swap(entries, id1, id2);
+    }
+    
     @Override
     public List<ResPayload> getEntries() {
         return Collections.unmodifiableList(entries);

@@ -1,4 +1,4 @@
-package de.phoenixstaffel.decodetools.gui;
+package de.phoenixstaffel.decodetools.gui.util;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;

@@ -39,6 +39,7 @@ public class KCAPPanel extends EditorPanel {
     private JTree tree = new JTree((TreeModel) null);
     private JPopupMenu popupMenu = new JPopupMenu();
     private JMenuItem exportItem = new JMenuItem("Export");
+    private JMenuItem refeshItem = new JMenuItem("Refresh");
     
     private Map<Enum<?>, PayloadPanel> panels = PayloadPanel.generatePayloadPanels();
     private final JPanel panel = new JPanel();
@@ -47,8 +48,10 @@ public class KCAPPanel extends EditorPanel {
     public KCAPPanel(EditorModel model) {
         super(model);
         
-
         popupMenu.add(exportItem);
+        popupMenu.add(refeshItem);
+        
+        refeshItem.setAction(new FunctionAction("Refresh", e -> getModel().update()));
         
         exportItem.setAction(new FunctionAction("Export", a -> {
             JFileChooser inputFileDialogue = new JFileChooser("./");

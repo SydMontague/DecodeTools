@@ -44,6 +44,36 @@ public class GMIOPayload extends NameablePayload {
     private float uvHeight;
     private BufferedImage image;
     
+    /**
+     * Creates an empty GMIO
+     * @param parent the parent KCAP
+     */
+    public GMIOPayload(AbstractKCAP parent) {
+        super(parent, null);
+        
+        this.unknown1 = 0x3001;
+        this.unknown1_1 = 0;
+        this.unknown1_2 = 0;
+        
+        this.unknown2 = 0;
+        this.unknown3 = 0;
+        this.unknown4 = 0;
+        this.unknown5 = 0;
+        this.unknown6 = 0;
+        this.unknown7 = 0;
+        
+        this.format = PixelFormat.RGBA8;
+
+        this.unknown8 = 0;
+        this.unknown9 = 0;
+        this.unknown10 = 0;
+        this.extraData = new byte[0];
+        
+        this.uvHeight = 1f;
+        this.uvWidth = 1f;
+        this.image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+    }
+    
     public GMIOPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         this(source, dataStart, parent, name);
     }

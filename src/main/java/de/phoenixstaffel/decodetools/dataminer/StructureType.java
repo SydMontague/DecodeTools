@@ -7,7 +7,9 @@ import de.phoenixstaffel.decodetools.core.Access;
 
 public enum StructureType {
     BYTE((a, b) -> a.readByte()),
+    UBYTE((a, b) -> Byte.toUnsignedInt(a.readByte())),
     SHORT((a,b) -> a.readShort()),
+    USHORT((a,b) -> Short.toUnsignedInt(a.readShort())),
     INT((a,b) -> a.readInteger()),
     LONG((a,b) -> a.readLong()),
     FLOAT((a,b) -> a.readFloat()),

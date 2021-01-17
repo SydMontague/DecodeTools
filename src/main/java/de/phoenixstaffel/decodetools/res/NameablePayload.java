@@ -9,7 +9,7 @@ public abstract class NameablePayload extends ResPayload {
 
     private String name;
     
-    public NameablePayload(AbstractKCAP parent, String name) {
+    protected NameablePayload(AbstractKCAP parent, String name) {
         super(parent);
         this.name = name;
     }

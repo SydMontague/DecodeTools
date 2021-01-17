@@ -37,6 +37,7 @@ import org.xml.sax.SAXException;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.export.fontxml.XMLFont;
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
+import de.phoenixstaffel.decodetools.gui.util.JImage;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;

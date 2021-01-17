@@ -16,6 +16,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
 
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
+import de.phoenixstaffel.decodetools.gui.util.JImageSelector;
 
 public class JResizeDialogue extends JFrame {
     private static final long serialVersionUID = -1409196592444942514L;
