@@ -382,6 +382,57 @@ public interface Access extends Closeable {
     public byte[] readByteArray(int length, long address);
     
     /**
+     * Reads an array of short from the underlying data storage from the current position.
+     * <p>
+     * This operation increases the current position by {@code length}.
+     * </p>
+     * 
+     * @param length the length of the array that should be read
+     * @return the array of the given {@code length} filled with the data read
+     */
+    public default short[] readShortArray(int length) {
+        short[] data = new short[length];
+        
+        for(int i = 0; i < length; i++)
+            data[i] = readShort();
+        
+        return data;
+    }
+    
+    /**
+     * Reads an array of short from the underlying data storage from the current position with an offset.
+     * <p>
+     * This operation does not affect the current position.
+     * </p>
+     * 
+     * @param offset the offset from the current position to read from
+     * @param length the length of the array that should be read
+     * @return the array of the given {@code length} filled with the data read
+     */
+    public default short[] readShortArrayOffset(int length, long offset) {
+        return readShortArray(length, getPosition() + offset);
+    }
+    
+    /**
+     * Reads an array of short from the underlying data storage from the given address.
+     * <p>
+     * This operation does not affect the current position.
+     * </p>
+     * 
+     * @param length the length of the array that should be read
+     * @param address the position to read from
+     * @return the array of the given {@code length} filled with the data read
+     */
+    public default short[] readShortArray(int length, long address) {
+        short[] data = new short[length];
+
+        for(int i = 0; i < length; i++)
+            data[i] = readShort(address + i * 2);
+
+        return data;
+    }
+    
+    /**
      * Writes a byte to the underlying data storage at the current position.
      * <p>
      * This operation increases the current position by 1.
@@ -688,6 +739,45 @@ public interface Access extends Closeable {
      * @param data the array to write
      */
     public void writeByteArray(byte[] data, long start);
+    
+    /**
+     * Writes an array of shorts to the underlying data storage at the current position.
+     * <p>
+     * This operation increases the current position by the number of bytes in the array.
+     * </p>
+     * 
+     * @param data the array to write
+     */
+    public default void writeShortArray(short[] data) {
+        for(short d : data)
+            writeShort(d);
+    }
+    
+    /**
+     * Writes an array of shorts to the underlying data storage at the current position with an offset.
+     * <p>
+     * This operation increases the current position by the number of bytes in the array.
+     * </p>
+     * 
+     * @param data the array to write
+     * @param offset the offset from the current position to write to
+     */
+    public default void writeShortArrayOffset(short[] data, long offset) {
+        writeShortArray(data, getPosition() + offset);
+    }
+
+    /**
+     * Writes an array of shorts to the underlying data storage at the given address.
+     * <p>
+     * This operation does not affect the current position.
+     * </p>
+     * 
+     * @param data the array to write
+     */
+    public default void writeShortArray(short[] data, long start) {
+        for(int i = 0; i < data.length; i++)
+            writeShort(data[i], start + i * 2);
+    }
     
     /**
      * Gets the current position in the underlying data storage, used for non-absolute access.

@@ -2,6 +2,8 @@ package de.phoenixstaffel.decodetools.arcv;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
@@ -57,6 +61,31 @@ public class VCRAFile {
     
     public void addEntry(VCRAEntry entry) {
         entries.add(entry);
+    }
+    
+    public void extractARCV(File inputARCV, File outputDir) {
+        try(Access arcv = new FileAccess(inputARCV)) {
+            for(VCRAEntry entry : entries) {
+                File outputFile = new File(outputDir, entry.getPath());
+                byte[] raw = arcv.readByteArray(entry.getCompressedSize(), entry.getSector() * 0x800L);
+                byte[] output;
+                
+                if(entry.getCompressedSize() == entry.getUnpackedSize())
+                    output = raw;
+                else {
+                    output = new byte[entry.getUnpackedSize()];
+                    Inflater inflater = new Inflater();
+                    inflater.setInput(raw);
+                    inflater.inflate(output);
+                }
+                
+                Files.createDirectories(outputFile.toPath().getParent());
+                Files.write(outputFile.toPath(), output, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            }
+        }
+        catch (IOException | DataFormatException e) {
+            Main.LOGGER.log(Level.SEVERE, "Exception while extracting ARCV: ", e);
+        }
     }
     
     public void repack(File file) {

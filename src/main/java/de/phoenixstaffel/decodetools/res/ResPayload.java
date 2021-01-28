@@ -1,10 +1,15 @@
 package de.phoenixstaffel.decodetools.res;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Level;
 
+import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
+import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
@@ -33,8 +38,6 @@ import de.phoenixstaffel.decodetools.res.payload.XTVOPayload;
  * The abstract superclass for all different entry types inside a Re:Digitize/Decode Resource file.
  */
 public abstract class ResPayload {
-    private static final int DEFAULT_ALIGNMENT = 1;
-    
     private AbstractKCAP parent = null;
     
     protected ResPayload(AbstractKCAP parent) {
@@ -55,6 +58,7 @@ public abstract class ResPayload {
      * 
      * @return the parent KCAPPayload or null if there is none
      */
+    @Deprecated
     public AbstractKCAP getParent() {
         return parent;
     }
@@ -141,6 +145,29 @@ public abstract class ResPayload {
             list.add(this);
         
         return list;
+    }
+    
+    public void repack(File file) {
+        file.delete();
+        if (!file.exists())
+            try {
+                file.createNewFile();
+            }
+            catch (IOException e1) {
+                Main.LOGGER.log(Level.WARNING, "Exception while writing new .res file.", e1);
+            }
+        
+        try (Access dest = new FileAccess(file); IResData data = new ResData()) {
+            writeKCAP(dest, data);
+            
+            if(data.getSize() != 0) {
+                dest.setPosition(Utils.align(getSizeOfRoot(), 0x80));
+                dest.writeByteArray(data.getStream().toByteArray());
+            }
+        }
+        catch (IOException e) {
+            Main.LOGGER.log(Level.WARNING, "Exception while writing new .res file.", e);
+        }
     }
 
     @Override

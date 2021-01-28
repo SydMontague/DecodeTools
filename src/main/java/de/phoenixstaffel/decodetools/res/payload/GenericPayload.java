@@ -17,6 +17,11 @@ public class GenericPayload extends ResPayload {
             data[i] = source.readByte();
     }
     
+    public GenericPayload(AbstractKCAP parent, byte[] data) {
+        super(parent);
+        this.data = data;
+    }
+
     @Override
     public int getSize() {
         return data.length;
@@ -35,5 +40,9 @@ public class GenericPayload extends ResPayload {
 
     public void setData(byte[] bytes) {
         this.data = bytes;
+    }
+    
+    public byte[] getData() {
+        return data;
     }
 }

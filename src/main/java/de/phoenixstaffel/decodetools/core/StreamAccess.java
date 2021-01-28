@@ -1,6 +1,5 @@
 package de.phoenixstaffel.decodetools.core;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -36,6 +35,10 @@ public class StreamAccess extends BufferedAccess {
         this(chan, ByteOrder.LITTLE_ENDIAN);
     }
     
+    public StreamAccess(byte[] chan) {
+        this(ByteBuffer.wrap(chan));
+    }
+    
     @Override
     public long getPosition() {
         return chan.position();
@@ -55,7 +58,7 @@ public class StreamAccess extends BufferedAccess {
     }
     
     @Override
-    public void close() throws IOException {
+    public void close() {
         // nothing to close
     }
     

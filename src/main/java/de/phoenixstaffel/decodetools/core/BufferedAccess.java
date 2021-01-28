@@ -313,7 +313,6 @@ public abstract class BufferedAccess implements Access {
         writeBuffer(buff, start);
     }
     
-    
     abstract void readBuffer(ByteBuffer buff);
     
     abstract void readBuffer(ByteBuffer buff, long address);

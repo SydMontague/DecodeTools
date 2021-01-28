@@ -36,6 +36,7 @@ import javax.swing.WindowConstants;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.arcv.ARCVFile;
+import de.phoenixstaffel.decodetools.arcv.VCRAFile;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
@@ -67,6 +68,7 @@ public class MainWindow extends JFrame implements Observer {
     private JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
     private final JMenuItem mntmMassStringReplacer = new JMenuItem("Mass String Replacer");
     private final JMenuItem mntmMergeBTX = new JMenuItem("Merge BTX folder to file");
+    private final JMenuItem mntmUnpackARCV = new JMenuItem("New menu item");
     
     public MainWindow() {
         model.addObserver(this);
@@ -114,6 +116,9 @@ public class MainWindow extends JFrame implements Observer {
         
         mntmRebuildUncompressedArcv.setAction(new RebuildAction("Rebuild Uncompressed ARCV", false));
         mnArcv.add(mntmRebuildUncompressedArcv);
+        
+        mntmUnpackARCV.setAction(new ExtractAction());
+        mnArcv.add(mntmUnpackARCV);
         
         menuBar.add(mnStyle);
         menuBar.add(mnTools);
@@ -262,6 +267,59 @@ public class MainWindow extends JFrame implements Observer {
             };
             worker.execute();
             
+        }
+    }
+    
+    class ExtractAction extends AbstractAction {
+        private static final long serialVersionUID = 1596235982551552437L;
+
+        public ExtractAction() {
+            super("Extract ARCV");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            
+            JFileChooser inputFileDialogue = new JFileChooser("./");
+            inputFileDialogue.setDialogTitle("Please select the directory containing ARCVINFO.BIN and ARCV0.BIN");
+            inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            inputFileDialogue.showOpenDialog(null);
+            
+            JFileChooser outputFileDialogue = new JFileChooser("./");
+            outputFileDialogue.setDialogTitle("Please select the directory in which the files will be extracted.");
+            outputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            outputFileDialogue.showSaveDialog(null);
+            
+            if (inputFileDialogue.getSelectedFile() == null)
+                return;
+            
+            if (outputFileDialogue.getSelectedFile() == null)
+                return;
+            
+            // TODO add work queue, to make sure only one task is executed at a time
+            MainWindow.this.setEnabled(false);
+            SwingWorker<Void, Object> worker = new SwingWorker<Void, Object>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    File input = inputFileDialogue.getSelectedFile();
+                    File output = outputFileDialogue.getSelectedFile();
+                    
+                    try (Access access = new FileAccess(new File(input, "ARCVINFO.BIN"))){
+                        new VCRAFile(access).extractARCV(new File(input, "ARCV0.BIN"), output);
+                    }
+                    catch (IOException e1) {
+                        Main.LOGGER.log(Level.WARNING, "Error while extracting ARCV files!", e1);
+                    }
+                    return null;
+                }
+                
+                @Override
+                protected void done() {
+                    MainWindow.this.setEnabled(true);
+                }
+                
+            };
+            worker.execute();
         }
     }
     
