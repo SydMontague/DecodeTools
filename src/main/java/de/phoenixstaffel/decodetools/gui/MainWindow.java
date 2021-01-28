@@ -43,7 +43,7 @@ import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.gui.util.JProgressFrame;
 import de.phoenixstaffel.decodetools.res.DummyResData;
-import de.phoenixstaffel.decodetools.res.ResFile;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
 
@@ -384,12 +384,12 @@ public class MainWindow extends JFrame implements Observer {
                             byte[] input = Files.readAllBytes(f.toPath());
                             
                             Access access = new FileAccess(f, true);
-                            ResFile res = new ResFile(access);
+                            ResPayload res = ResPayload.craft(access);
                             access.close();
                             
-                            int structureSize = res.getRoot().getSizeOfRoot();
+                            int structureSize = res.getSizeOfRoot();
                             DummyResData resData = new DummyResData();
-                            res.getRoot().fillDummyResData(resData);
+                            res.fillDummyResData(resData);
                             int dataSize = resData.getSize();
                             resData.close();
                             
@@ -457,11 +457,11 @@ public class MainWindow extends JFrame implements Observer {
                         return;
                     
                     try (Access b = new FileAccess(a.toFile())) {
-                        ResFile f = new ResFile(b);
+                        ResPayload f = ResPayload.craft(b);
                         String name = a.subpath(a.getNameCount() - 1, a.getNameCount()).toString();
                         
                         fout.println(name);
-                        f.getRoot().getElementsWithType(Payload.BTX).forEach(c -> {
+                        f.getElementsWithType(Payload.BTX).forEach(c -> {
                             ((BTXPayload) c).getEntries().stream().filter(d -> !d.getValue().getString().isEmpty()).forEach(d -> fout.println(d.getValue().getString().replace("\n", "\\n")));
                             fout.println();
                         });

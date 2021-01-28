@@ -14,24 +14,24 @@ import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.gui.util.ResPayloadTreeNodeFactory;
-import de.phoenixstaffel.decodetools.res.ResFile;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 
 public class EditorModel extends Observable {
-    private ResFile selectedRes;
+    private ResPayload selectedRes;
     private File selectedFile;
     
     private TreeModel treeModel;
     private DefaultListModel<GMIOPayload> imageListModel;
     
-    public ResFile getSelectedResource() {
+    public ResPayload getSelectedResource() {
         return selectedRes;
     }
     
     public void setSelectedFile(File selectedFile) {
         try (Access access = new FileAccess(selectedFile, true)) {
-            ResFile file = new ResFile(access);
+            ResPayload file = ResPayload.craft(access);
             
             this.selectedFile = selectedFile;
             setSelectedResource(file);
@@ -42,7 +42,7 @@ public class EditorModel extends Observable {
         }
     }
     
-    public void setSelectedResource(ResFile res) {
+    public void setSelectedResource(ResPayload res) {
         this.selectedRes = res;
         update();
     }
@@ -63,9 +63,9 @@ public class EditorModel extends Observable {
      * Update the models in this class and notify the listeners.
      */
     public void update() {
-        this.treeModel = new DefaultTreeModel(ResPayloadTreeNodeFactory.craft(selectedRes.getRoot()));
+        this.treeModel = new DefaultTreeModel(ResPayloadTreeNodeFactory.craft(selectedRes));
         this.imageListModel = new DefaultListModel<>();
-        selectedRes.getRoot().getElementsWithType(Payload.GMIO).forEach(a -> imageListModel.addElement((GMIOPayload) a));
+        selectedRes.getElementsWithType(Payload.GMIO).forEach(a -> imageListModel.addElement((GMIOPayload) a));
         
         setChanged();
         notifyObservers();        

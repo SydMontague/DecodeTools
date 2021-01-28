@@ -1,8 +1,5 @@
 package de.phoenixstaffel.decodetools.dataminer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.phoenixstaffel.decodetools.core.Access;
 
 public class RDRequirements implements StructureClass {
@@ -11,9 +8,6 @@ public class RDRequirements implements StructureClass {
     private Access source;
     private long offset;
     private ListMiner.MapEntry entry;
-    
-    
-    private List<Requirement> req = new ArrayList<>();
     
     public RDRequirements(Access source, long offset, ListMiner.MapEntry entry) {
         this.source = source;

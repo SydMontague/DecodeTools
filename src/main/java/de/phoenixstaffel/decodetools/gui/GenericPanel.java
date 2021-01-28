@@ -1,12 +1,9 @@
 package de.phoenixstaffel.decodetools.gui;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
@@ -14,10 +11,9 @@ import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.res.payload.GenericPayload;
 
 public class GenericPanel extends PayloadPanel {
-    
+    private static final long serialVersionUID = -6205445177831125596L;
     private GenericPayload payload;
     private final JButton btnImportRaw = new JButton("Import Raw");
-    private final Action action = new SwingAction();
     
     public GenericPanel(Object selected) {
         setSelectedFile(selected);
@@ -49,15 +45,5 @@ public class GenericPanel extends PayloadPanel {
         
         if (file instanceof GenericPayload)
             this.payload = (GenericPayload) file;
-    }
-    
-    private class SwingAction extends AbstractAction {
-        public SwingAction() {
-            putValue(NAME, "SwingAction");
-            putValue(SHORT_DESCRIPTION, "Some short description");
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-        }
     }
 }

@@ -123,6 +123,7 @@ public class FileAccess extends BufferedAccess {
      * @param name the name to give this instance
      * @throws IOException if anything goes wrong opening the file
      */
+    @SuppressWarnings("resource")
     public FileAccess(File file, String name) throws IOException {
         this(FileChannel.open(file.toPath(), OPEN_OPTIONS), name);
     }
@@ -139,6 +140,7 @@ public class FileAccess extends BufferedAccess {
      * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
      * @throws IOException if anything goes wrong opening the file
      */
+    @SuppressWarnings("resource")
     public FileAccess(File file, String name, ByteOrder byteOrder) throws IOException {
         this(FileChannel.open(file.toPath(), OPEN_OPTIONS), name, byteOrder);
     }
@@ -190,6 +192,7 @@ public class FileAccess extends BufferedAccess {
      * @param readOnly whether the file is opened in read only mode or not
      * @throws IOException if anything goes wrong opening the file
      */
+    @SuppressWarnings("resource")
     public FileAccess(File file, String name, boolean readOnly) throws IOException {
         this(FileChannel.open(file.toPath(), readOnly ? READ_OPTIONS : OPEN_OPTIONS), name);
         this.readOnly = readOnly;
@@ -207,6 +210,7 @@ public class FileAccess extends BufferedAccess {
      * @param byteOrder the ByteOrder to use when reading/writing, i.e. Big/Little Endian
      * @throws IOException if anything goes wrong opening the file
      */
+    @SuppressWarnings("resource")
     public FileAccess(File file, String name, ByteOrder byteOrder, boolean readOnly) throws IOException {
         this(FileChannel.open(file.toPath(), readOnly ? READ_OPTIONS : OPEN_OPTIONS), name, byteOrder);
         this.readOnly = readOnly;

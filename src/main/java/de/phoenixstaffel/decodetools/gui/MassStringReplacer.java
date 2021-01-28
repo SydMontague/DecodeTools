@@ -34,7 +34,6 @@ import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.gui.util.LinebreakUtil;
-import de.phoenixstaffel.decodetools.res.ResFile;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload;
@@ -49,7 +48,7 @@ public class MassStringReplacer extends JFrame {
     private static final String MESSAGE_PROPERTY = "message";
     private static final String PROGRESS_PROPERTY = "progress";
     
-    private transient Map<String, ResFile> files = new HashMap<>();
+    private transient Map<String, ResPayload> files = new HashMap<>();
     private transient Set<String> changedFiles = new HashSet<>();
     
     private TNFOPayload linebreakFont = null;
@@ -213,10 +212,10 @@ public class MassStringReplacer extends JFrame {
             int sizeDiff = 0;
             long fCount = 0;
 
-            for (Entry<String, ResFile> file : files.entrySet()) {
+            for (Entry<String, ResPayload> file : files.entrySet()) {
                 boolean replaced = false;
                 
-                for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                for (ResPayload payload : file.getValue().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) payload;
                     
                     for(Tuple<Integer, BTXEntry> entry : btx.getEntries()) {
@@ -269,8 +268,8 @@ public class MassStringReplacer extends JFrame {
             messageLabel.setText("Font loaded!");
             
             try(FileAccess access = new FileAccess(f)) {
-                ResFile res = new ResFile(access);
-                linebreakFont = (TNFOPayload) res.getRoot().getElementsWithType(Payload.TNFO).get(0);
+                ResPayload res = ResPayload.craft(access);
+                linebreakFont = (TNFOPayload) res.getElementsWithType(Payload.TNFO).get(0);
             }
             catch (Exception e1) {
                 Main.LOGGER.warning(() -> "Error while loading font, did you enter the GlobalKeepRes.res?");
@@ -292,13 +291,13 @@ public class MassStringReplacer extends JFrame {
             long count = 0;
             long fCount = 0;
             StringBuilder filesFound = new StringBuilder();
-            for (Entry<String, ResFile> file : files.entrySet()) {
+            for (Entry<String, ResPayload> file : files.entrySet()) {
                 boolean replaced = false;
                 
                 List<String> btxIds = new ArrayList<>();
                 int id = 0;
                 
-                for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                for (ResPayload payload : file.getValue().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) payload;
                     
                     long lCount = btx.getEntries().stream().map(c -> c.getValue().getString()).filter(c -> c.contains(input)).count();
@@ -336,10 +335,10 @@ public class MassStringReplacer extends JFrame {
             long count = 0;
             long fCount = 0;
             
-            for (Entry<String, ResFile> file : files.entrySet()) {
+            for (Entry<String, ResPayload> file : files.entrySet()) {
                 boolean replaced = false;
                 
-                for (ResPayload payload : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                for (ResPayload payload : file.getValue().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) payload;
                     long lCount = btx.getEntries().stream().map(Tuple::getValue).filter(c -> c.getString().contains(input)).count();
                     count += lCount;
@@ -375,10 +374,10 @@ public class MassStringReplacer extends JFrame {
             if(linebreakFont == null)
                 messageLabel.setText("No font loaded!");
             
-            for (Entry<String, ResFile> file : files.entrySet()) {
+            for (Entry<String, ResPayload> file : files.entrySet()) {
                 boolean changed = false;
                 
-                for (ResPayload p : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                for (ResPayload p : file.getValue().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) p;
                     
                     for (Tuple<Integer, BTXEntry> str : btx.getEntries()) {
@@ -425,10 +424,10 @@ public class MassStringReplacer extends JFrame {
             if(linebreakFont == null)
                 messageLabel.setText("No font loaded!");
             
-            for (Entry<String, ResFile> file : files.entrySet()) {
+            for (Entry<String, ResPayload> file : files.entrySet()) {
                 boolean changed = false;
                 
-                for (ResPayload p : file.getValue().getRoot().getElementsWithType(Payload.BTX)) {
+                for (ResPayload p : file.getValue().getElementsWithType(Payload.BTX)) {
                     BTXPayload btx = (BTXPayload) p;
                     
                     for (Tuple<Integer, BTXEntry> str : btx.getEntries()) {
@@ -568,7 +567,7 @@ public class MassStringReplacer extends JFrame {
             for (File ff : dirContent) {
                 try (FileAccess access = new FileAccess(ff, true)) {
                     try {
-                        files.put(ff.getName(), new ResFile(access));
+                        files.put(ff.getName(), ResPayload.craft(access));
                     }
                     catch (Exception e) {
                         // do nothing
@@ -667,7 +666,7 @@ public class MassStringReplacer extends JFrame {
             File output = outputFileDialogue.getSelectedFile();
             
             try(FileAccess bbb = new FileAccess(prefix)) {
-                ResFile pref = new ResFile(bbb);
+                ResPayload pref = ResPayload.craft(bbb);
 
                 Map<String, BlaEntry> jpMap = new HashMap<>();
                 Map<BlaEntry, String> enMap = new HashMap<>();
@@ -678,10 +677,10 @@ public class MassStringReplacer extends JFrame {
                             return;
                         
                         try (FileAccess acc = new FileAccess(a.toFile())){
-                            ResFile file = new ResFile(acc);
+                            ResPayload file = ResPayload.craft(acc);
                             String fileName = a.getFileName().toString();
                             
-                            file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
+                            file.getElementsWithType(Payload.BTX).forEach(b -> {
                                 BTXPayload btx = (BTXPayload) b;
                                 btx.getEntries().forEach(c -> jpMap.put(c.getValue().getString(), new BlaEntry(fileName, btx.getFileId(), c.getKey())));
                             });
@@ -696,10 +695,10 @@ public class MassStringReplacer extends JFrame {
                         if(!a.toFile().isFile())
                             return;
                         try (FileAccess acc = new FileAccess(a.toFile())){
-                            ResFile file = new ResFile(acc);
+                            ResPayload file = ResPayload.craft(acc);
                             String fileName = a.getFileName().toString();
                             
-                            file.getRoot().getElementsWithType(Payload.BTX).forEach(b -> {
+                            file.getElementsWithType(Payload.BTX).forEach(b -> {
                                 BTXPayload btx = (BTXPayload) b;
                                 btx.getEntries().forEach(c -> enMap.put(new BlaEntry(fileName, btx.getFileId(), c.getKey()), c.getValue().getString()));
                             });
@@ -710,7 +709,7 @@ public class MassStringReplacer extends JFrame {
                     });
                 }
                 
-                pref.getRoot().getElementsWithType(Payload.BTX).forEach(a -> {
+                pref.getElementsWithType(Payload.BTX).forEach(a -> {
                     BTXPayload btx = (BTXPayload) a;
                     btx.getEntries().forEach(str -> {
                         String oldString = str.getValue().getString();

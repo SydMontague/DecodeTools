@@ -1,7 +1,6 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -15,7 +14,7 @@ import java.util.List;
 import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.StreamAccess;
 import de.phoenixstaffel.decodetools.core.Tuple;
-import de.phoenixstaffel.decodetools.res.ResFile;
+import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.BTXPayload.BTXEntry;
 
 public class BTXPayloadTest {
@@ -83,8 +82,8 @@ public class BTXPayloadTest {
         ByteBuffer buff = ByteBuffer.wrap(arr);
         
         try (StreamAccess access = new StreamAccess(buff)) {
-            ResFile f = new ResFile(access);
-            BTXPayload btx = (BTXPayload) f.getRoot();
+            ResPayload f = ResPayload.craft(access);
+            BTXPayload btx = (BTXPayload) f;
             
             List<Tuple<Integer, BTXEntry>> list = btx.getEntries();
             
@@ -131,7 +130,7 @@ public class BTXPayloadTest {
             ByteBuffer buff = ByteBuffer.wrap(arr);
             
             try (StreamAccess access = new StreamAccess(buff)) {
-                ResFile f = new ResFile(access);
+                ResPayload f = ResPayload.craft(access);
                 
                 File outputFile = File.createTempFile("output", "Speakers");
                 f.repack(outputFile);

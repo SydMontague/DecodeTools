@@ -25,6 +25,7 @@ import de.phoenixstaffel.decodetools.core.Access;
  * int - Header Size?
  * int - Unknown
  */
+@SuppressWarnings("unused")
 public class ListMiner extends Miner {
     private int magicValue;
     private int unknown1;

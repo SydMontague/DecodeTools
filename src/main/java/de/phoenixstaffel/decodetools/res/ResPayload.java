@@ -108,7 +108,7 @@ public abstract class ResPayload {
     /**
      * Creates a new ResPayload by reading the next structure from the passed {@link Access}.
      * 
-     * @param source the {@link Access to read from}
+     * @param source the {@link Access} to read from
      * @param dataStart a pointer to the start of the data section of the file this entry exists in
      * @param parent the parent KCAP of this entry or null if there is none
      * @param size the size of the entry as defined by the parent KCAP or -1 if it is the root entry
@@ -120,6 +120,17 @@ public abstract class ResPayload {
             return new VoidPayload(parent);
         
         return Payload.valueOf(parent, source.readLongOffset(0)).newInstance(source, dataStart, parent, size, name);
+    }
+    
+    /**
+     * Creates a new ResPayload by reading the next structure from the passed {@link Access}.
+     * 
+     * @param source the {@link Access} to read from
+     * @return the newly created ResPayload
+     */
+    public static ResPayload craft(Access source) {
+        int dataStart = Payload.valueOf(null, source.readLong(0)).getDataStart(source);
+        return ResPayload.craft(source, dataStart, (AbstractKCAP) null, -1, null);
     }
     
     /**
@@ -192,7 +203,6 @@ public abstract class ResPayload {
     public enum Payload {
         GENERIC(0, GenericPayload::new),
         GMIO(0x4F494D47, GMIOPayload::new, a -> 0x40 + a.readInteger(0x3C)),
-        //KCAP(0x5041434B, KCAPPayload::new, a -> a.readInteger(0x08)),
         KCAP(0x5041434B, AbstractKCAP::craftKCAP, a -> a.readInteger(0x08)),
         XTVO(0x4F565458, XTVOPayload::new, a -> 0x74 + 0xC * a.readShort(0x30)),
         XDIO(0x4F494458, XDIOPayload::new, a -> 0x20),

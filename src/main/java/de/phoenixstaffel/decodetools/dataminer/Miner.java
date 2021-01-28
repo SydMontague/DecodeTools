@@ -6,7 +6,7 @@ public abstract class Miner {
     private Access source;
     private Structure structure;
 
-    public Miner(Access source, Structure structure) {
+    protected Miner(Access source, Structure structure) {
         this.source = source;
         this.structure = structure;
     }

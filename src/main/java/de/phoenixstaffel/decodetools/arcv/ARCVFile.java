@@ -17,7 +17,6 @@ import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
-import de.phoenixstaffel.decodetools.res.ResFile;
 
 public class ARCVFile {
     private File inputDir;
@@ -117,7 +116,7 @@ public class ARCVFile {
         
         // Res Load
         Access access = new FileAccess(a.toFile(), true);
-        ResPayload res = new ResFile(access).getRoot();
+        ResPayload res = ResPayload.craft(access);
         int kcapSize = res.getType() == Payload.KCAP ? access.readInteger(0x08) : 0;
         access.close();
         

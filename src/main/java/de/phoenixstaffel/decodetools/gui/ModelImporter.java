@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
@@ -44,7 +43,6 @@ import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.assimp.AIVertexWeight;
 import org.lwjgl.assimp.Assimp;
-import org.xml.sax.SAXException;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Utils;

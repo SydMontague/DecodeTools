@@ -30,6 +30,7 @@ public class DataMiner extends Miner {
         super(source, structure);
     }
     
+    @SuppressWarnings("resource")
     @Override
     public String asCSV() {
         getSource().setPosition(getStructure().getOffset());

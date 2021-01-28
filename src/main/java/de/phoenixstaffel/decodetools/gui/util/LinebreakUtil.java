@@ -1,7 +1,6 @@
 package de.phoenixstaffel.decodetools.gui.util;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.CharacterIterator;
@@ -14,9 +13,6 @@ import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import de.phoenixstaffel.decodetools.Main;
-import de.phoenixstaffel.decodetools.core.FileAccess;
-import de.phoenixstaffel.decodetools.res.ResFile;
-import de.phoenixstaffel.decodetools.res.ResPayload.Payload;
 import de.phoenixstaffel.decodetools.res.payload.TNFOPayload;
 
 public class LinebreakUtil {

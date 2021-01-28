@@ -20,6 +20,7 @@ public class StringListMiner extends Miner{
         super(source, structure);
     }
     
+    @SuppressWarnings("resource")
     @Override
     public String asCSV() {
         getSource().setPosition(getStructure().getOffset());
