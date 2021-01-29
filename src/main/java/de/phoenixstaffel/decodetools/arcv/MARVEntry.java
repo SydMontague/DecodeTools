@@ -34,9 +34,6 @@ public class MARVEntry {
         structureSize = buffer.getInt();
         unknown3 = buffer.getInt();
         
-        if(structureSize == 0x18CB3A)
-            System.out.println("kk");
-        
         dataSize = buffer.getInt();
         unknown4 = buffer.getInt();
         numEntries = buffer.getInt();

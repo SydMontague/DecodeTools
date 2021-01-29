@@ -7,7 +7,7 @@ import java.util.List;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.VoidPayload;
 
@@ -94,7 +94,7 @@ public class NormalKCAP extends AbstractKCAP {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         long start = dest.getPosition();
         
         dest.writeInteger(getType().getMagicValue());
@@ -123,16 +123,19 @@ public class NormalKCAP extends AbstractKCAP {
         // move write pointer to start of content
         dest.setPosition(start + contentStart);
         
-        for (ResPayload entry : entries) {
-            if (entry.getType() == null) // null entries have no content
-                continue;
-            
-            // align content start
-            long aligned = Utils.align(dest.getPosition() - start, getGenericAlignment());
-            dest.setPosition(start + aligned);
-            
-            // write content
-            entry.writeKCAP(dest, dataStream);
+        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+            for (ResPayload entry : entries) {
+                if (entry.getType() == null) // null entries have no content
+                    continue;
+                
+                // align content start
+                long aligned = Utils.align(dest.getPosition() - start, getGenericAlignment());
+                dest.setPosition(start + aligned);
+                
+                // write content
+                entry.writeKCAP(dest, localDataStream);
+            }
+            dataStream.add(localDataStream);
         }
     }
     

@@ -8,7 +8,7 @@ import java.util.Objects;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 
 /*
@@ -186,7 +186,7 @@ public class XFEPKCAP extends AbstractKCAP {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         long start = dest.getPosition();
         
         // KCAP head
@@ -232,13 +232,16 @@ public class XFEPKCAP extends AbstractKCAP {
         
         dest.setPosition(start + contentStart);
         
-        for (ResPayload entry : getEntries()) {
-            // align content start
-            long aligned = Utils.align(dest.getPosition() - start, 0x10);
-            dest.setPosition(start + aligned);
-            
-            // write content
-            entry.writeKCAP(dest, dataStream);
+        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+            for (ResPayload entry : getEntries()) {
+                // align content start
+                long aligned = Utils.align(dest.getPosition() - start, 0x10);
+                dest.setPosition(start + aligned);
+                
+                // write content
+                entry.writeKCAP(dest, localDataStream);
+            }
+            dataStream.add(localDataStream);
         }
     }
     

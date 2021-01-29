@@ -1,19 +1,13 @@
 package de.phoenixstaffel.decodetools.gui;
 
-import de.phoenixstaffel.decodetools.Main;
-import de.phoenixstaffel.decodetools.res.payload.HSEMPayload;
-import de.phoenixstaffel.decodetools.res.payload.hsem.HSEMEntry;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle.ComponentPlacement;
+
+import de.phoenixstaffel.decodetools.Main;
+import de.phoenixstaffel.decodetools.res.payload.HSEMPayload;
+import de.phoenixstaffel.decodetools.res.payload.hsem.HSEMEntry;
 
 //TODO quick 'n' dirty, make proper
 public class HSEMPanel extends PayloadPanel {

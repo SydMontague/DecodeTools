@@ -8,7 +8,7 @@ import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Tuple;
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
@@ -107,7 +107,7 @@ public class BTXPayload extends ResPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         if (entries.stream().anyMatch(a -> a.getValue().getMeta().isPresent()))
             dest.writeInteger((int) (getSize() - entries.stream().filter(a -> a.getValue().getMeta().isPresent()).count() * 0x30));
         

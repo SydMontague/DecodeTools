@@ -5,8 +5,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import de.phoenixstaffel.decodetools.core.Access;
-import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP.KCAPType;
 import de.phoenixstaffel.decodetools.res.kcap.TNOJKCAP;
@@ -129,7 +129,7 @@ public class TNOJPayload extends NameablePayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         int nameId = -1;
         if(getParent() != null && getParent().getKCAPType() == KCAPType.TNOJ) {
             Iterator<? extends NameablePayload> itr = getParent().getEntries().stream().filter(a -> a instanceof NameablePayload)

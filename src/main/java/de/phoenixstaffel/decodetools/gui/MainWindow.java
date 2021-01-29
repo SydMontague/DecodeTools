@@ -391,7 +391,6 @@ public class MainWindow extends JFrame implements Observer {
                             DummyResData resData = new DummyResData();
                             res.fillDummyResData(resData);
                             int dataSize = resData.getSize();
-                            resData.close();
                             
                             if (input.length - Utils.align(structureSize, 0x80) != dataSize && dataSize != 0) {
                                 Main.LOGGER.info(() -> "Re-Exporting " + local);

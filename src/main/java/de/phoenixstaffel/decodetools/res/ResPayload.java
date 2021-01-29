@@ -101,9 +101,9 @@ public abstract class ResPayload {
      * starting from the current position of each.
      * 
      * @param dest the {@link Access} to write into
-     * @param dataStream the {@link IResData} to write into
+     * @param dataStream the {@link ResData} to write into
      */
-    public abstract void writeKCAP(Access dest, IResData dataStream);
+    public abstract void writeKCAP(Access dest, ResData dataStream);
     
     /**
      * Creates a new ResPayload by reading the next structure from the passed {@link Access}.
@@ -168,7 +168,7 @@ public abstract class ResPayload {
                 Main.LOGGER.log(Level.WARNING, "Exception while writing new .res file.", e1);
             }
         
-        try (Access dest = new FileAccess(file); IResData data = new ResData()) {
+        try (Access dest = new FileAccess(file); ResData data = new ResData()) {
             writeKCAP(dest, data);
             
             if(data.getSize() != 0) {

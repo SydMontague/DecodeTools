@@ -52,7 +52,7 @@ public class ARCVFile {
             Path filePath = inputDir.toPath().relativize(t.toPath());
             Main.LOGGER.info("Adding " + filePath);
             try {
-                return addFile(t.toPath(), filePath.toString().replaceAll("\\\\", "/")); // fuck windows
+                return addFile(t.toPath(), filePath.toString().replace("\\\\", "/")); // fuck windows
             }
             catch (Exception e) {
                 Main.LOGGER.log(Level.WARNING, "Exception while adding file to ARCVFile: " + filePath, e);
@@ -97,6 +97,7 @@ public class ARCVFile {
             
             byte[] output = new byte[0x800];
             while (!compresser.finished()) {
+                Arrays.fill(output, (byte) 0);
                 compressedSize += compresser.deflate(output);
                 outputStream.write(output);
             }
@@ -129,7 +130,6 @@ public class ARCVFile {
         res.fillDummyResData(resData);
         int dataSize = resData.getSize();
         int dataEntries = resData.getDataEntries();
-        resData.close();
         
         result.dataTime = System.nanoTime() - timer;
         

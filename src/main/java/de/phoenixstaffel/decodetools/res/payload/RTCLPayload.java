@@ -1,8 +1,8 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.core.Access;
-import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class RTCLPayload extends NameablePayload {
@@ -52,7 +52,7 @@ public class RTCLPayload extends NameablePayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         dest.writeInteger(id);
         dest.writeInteger(parentBone);
         dest.writeInteger(locIndex);

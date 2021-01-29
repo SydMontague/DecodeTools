@@ -27,7 +27,6 @@ import de.phoenixstaffel.decodetools.core.FileAccess;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.gui.util.ResPayloadTreeNode;
-import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
@@ -67,7 +66,7 @@ public class KCAPPanel extends EditorPanel {
             if(file.exists() && !file.delete())
                 Main.LOGGER.severe("Could not delete already existing " + file.getName() + ". Aborting.");
             
-            try (Access dest = new FileAccess(file); IResData data = new ResData()) {
+            try (Access dest = new FileAccess(file); ResData data = new ResData()) {
                 ((ResPayload) selected).writeKCAP(dest, data);
                 
                 if(data.getSize() != 0) {

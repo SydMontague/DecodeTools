@@ -1,7 +1,7 @@
 package de.phoenixstaffel.decodetools.res.payload;
 
 import de.phoenixstaffel.decodetools.core.Access;
-import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
@@ -33,7 +33,7 @@ public class GenericPayload extends ResPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         for (byte i : data)
             dest.writeByte(i);
     }

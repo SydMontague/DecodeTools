@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.res.DummyResData;
-import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.xdio.XDIOFace;
@@ -76,7 +76,7 @@ public class XDIOPayload extends ResPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         int max = data.stream().flatMapToInt(a -> IntStream.builder().add(a.getVert1()).add(a.getVert2()).add(a.getVert3()).build()).max().orElse(0);
         XDIOModes mode = XDIOModes.getFittingMode(max);
         
@@ -84,7 +84,7 @@ public class XDIOPayload extends ResPayload {
         ByteBuffer buff = ByteBuffer.wrap(array);
         data.forEach(a -> a.write(buff, mode));
         
-        int dataAddress = dataStream.add(array, false, getParent());
+        int dataAddress = dataStream.add(array, false);
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(VERSION);
@@ -104,7 +104,7 @@ public class XDIOPayload extends ResPayload {
         XDIOModes mode = XDIOModes.getFittingMode(max);
         
         byte[] array = new byte[data.size() * 3 * mode.getSize()];
-        resData.add(array, false, getParent());
+        resData.add(array, false);
     }
     
     public List<XDIOFace> getFaces() {

@@ -11,7 +11,7 @@ import java.util.Optional;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
-import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 import de.phoenixstaffel.decodetools.res.payload.xtvo.XTVOAttribute;
@@ -139,7 +139,7 @@ public class XTVOPayload extends ResPayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         int size = 0;
         for (XTVOAttribute attr : attributes.values()) {
             size = Utils.align(size, attr.getValueType().getAlignment());
@@ -152,7 +152,7 @@ public class XTVOPayload extends ResPayload {
         ByteBuffer buff = ByteBuffer.wrap(array);
         data.forEach(a -> buff.put(a.write()));
         
-        int dataAddress = dataStream.add(array, false, getParent());
+        int dataAddress = dataStream.add(array, false);
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(unknown1);
@@ -197,7 +197,7 @@ public class XTVOPayload extends ResPayload {
         size = Utils.align(size, 2);
         
         byte[] array = new byte[data.size() * size];
-        resData.add(array, false, getParent());
+        resData.add(array, false);
     }
     
     public List<XTVOVertex> getVertices() {

@@ -1,63 +1,71 @@
 package de.phoenixstaffel.decodetools.res;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class DummyResData implements IResData {
-    private List<ResDataEntry> list = new ArrayList<>();
-    private int count = 0;
-    private int currentAddress = 0;
+    private final List<ResDataEntry> list = new ArrayList<>();
+    private final int offset;
     
-    public int add(byte[] data, int size, boolean onlyOnce, AbstractKCAP parent) {
-
-        Optional<ResDataEntry> entry = list.stream().filter(a -> onlyOnce && a.isEqual(data, parent)).findFirst();
+    private int count = 0;
+    private int currentSize = 0;
+    
+    public DummyResData(int offset) {
+        this.offset = Utils.align(offset, 0x80);
+    }
+    
+    public DummyResData() {
+        this(0);
+    }
+    
+    public int add(byte[] data, int size, boolean onlyOnce) {
+        Optional<ResDataEntry> entry = list.stream().filter(a -> onlyOnce && a.isEqual(data)).findFirst();
         
-        if (entry.isPresent()) {
+        if (entry.isPresent())
             return entry.get().getAddress();
-        }
-
-        byte[] padding = new byte[Utils.align(getSize(), 0x80) - getSize()];
-        currentAddress += padding.length;
         
-        int address = currentAddress; 
+        byte[] padding = new byte[Utils.align(getSize(), 0x80) - getSize()];
+        currentSize += padding.length;
+        
+        int address = currentSize + offset;
         count++;
         
         if (onlyOnce)
-            list.add(new ResDataEntry(data, address, parent));
+            list.add(new ResDataEntry(data, address));
         
-        currentAddress += size;
+        currentSize += size;
         
         return address;
     }
     
     @Override
-    public int add(byte[] data, boolean onlyOnce, AbstractKCAP parent) {
-        return add(data, data.length, onlyOnce, parent);
+    public int add(byte[] data, boolean onlyOnce) {
+        return add(data, data.length, onlyOnce);
     }
     
-    @Override
-    public void close() throws IOException {
-        //nothing to implement
-    }
-    
-    @Override
-    public ByteArrayOutputStream getStream() {
-        return null;
+    public void add(DummyResData data) {
+        if (data.getSize() > 0) {
+            this.currentSize = Utils.align(getSize(), 0x80);
+            this.currentSize += data.getSize();
+            this.count += data.getDataEntries();
+        }
     }
     
     @Override
     public int getDataEntries() {
         return count;
     }
-
+    
     @Override
     public int getSize() {
-        return currentAddress;
+        return currentSize;
+    }
+    
+    @Override
+    public int getCurrentAddress() {
+        return offset + getSize();
     }
 }

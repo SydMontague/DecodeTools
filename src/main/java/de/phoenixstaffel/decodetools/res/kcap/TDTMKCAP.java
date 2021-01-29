@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
-import de.phoenixstaffel.decodetools.res.IResData;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.payload.QSTMPayload;
 import de.phoenixstaffel.decodetools.res.payload.VCTMPayload;
@@ -131,7 +131,7 @@ public class TDTMKCAP extends AbstractKCAP {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         long start = dest.getPosition();
         
         int headerSize = 0x40; // header
@@ -180,12 +180,15 @@ public class TDTMKCAP extends AbstractKCAP {
         dest.writeInteger(vctmKCAP.getSize());
         
         // write entries
-        qstmKCAP.writeKCAP(dest, dataStream);
-        
-        long aligned = Utils.align(dest.getPosition() - start, 0x10);
-        dest.setPosition(start + aligned);
-        
-        vctmKCAP.writeKCAP(dest, dataStream);
+        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+            qstmKCAP.writeKCAP(dest, localDataStream);
+            
+            long aligned = Utils.align(dest.getPosition() - start, 0x10);
+            dest.setPosition(start + aligned);
+            
+            vctmKCAP.writeKCAP(dest, localDataStream);
+            dataStream.add(localDataStream);
+        }
     }
     
     class TDTMEntry {

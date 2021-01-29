@@ -39,7 +39,17 @@ public class Main {
             else if("unpack".equalsIgnoreCase(args[0])) {
                 File input = new File(args[1]); // folder with ARCVINFO.BIN and ARCV0.BIN
                 File output = new File(args[2]); // folder to extract into
+                
+                if (!input.isDirectory()) {
+                    LOGGER.severe("The input value must be a directory.");
+                    return;
+                }
 
+                if (output.isFile()) {
+                    LOGGER.severe("The out value must be a directory.");
+                    return;
+                }
+                
                 try(Access access = new FileAccess(new File(input, "ARCVINFO.BIN"))) {
                     VCRAFile info = new VCRAFile(access);
                     info.extractARCV(new File(input, "ARCV0.BIN"), output);

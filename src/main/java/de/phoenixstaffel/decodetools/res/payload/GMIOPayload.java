@@ -8,8 +8,8 @@ import de.phoenixstaffel.decodetools.PixelFormat;
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.Utils;
 import de.phoenixstaffel.decodetools.res.DummyResData;
-import de.phoenixstaffel.decodetools.res.IResData;
 import de.phoenixstaffel.decodetools.res.NameablePayload;
+import de.phoenixstaffel.decodetools.res.ResData;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 
 public class GMIOPayload extends NameablePayload {
@@ -193,7 +193,7 @@ public class GMIOPayload extends NameablePayload {
     }
     
     @Override
-    public void writeKCAP(Access dest, IResData dataStream) {
+    public void writeKCAP(Access dest, ResData dataStream) {
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
             if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
@@ -201,7 +201,7 @@ public class GMIOPayload extends NameablePayload {
                         + image.getHeight() + " | This file will cause problems!");
             
             byte[] pixelData = format.convertToFormat(image);
-            dataAddress = dataStream.add(pixelData, hasName(), getParent());
+            dataAddress = dataStream.add(pixelData, hasName());
         }
         
         dest.writeInteger(getType().getMagicValue());
@@ -252,7 +252,7 @@ public class GMIOPayload extends NameablePayload {
             size = pixelData.length;
         }
         
-        data.add(pixelData, size, hasName(), getParent());
+        data.add(pixelData, size, hasName());
     }
     
     @Override
