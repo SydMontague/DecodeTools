@@ -52,7 +52,7 @@ public class ARCVFile {
             Path filePath = inputDir.toPath().relativize(t.toPath());
             Main.LOGGER.info("Adding " + filePath);
             try {
-                return addFile(t.toPath(), filePath.toString().replace("\\\\", "/")); // fuck windows
+                return addFile(t.toPath(), filePath.toString().replace("\\", "/")); // fuck windows
             }
             catch (Exception e) {
                 Main.LOGGER.log(Level.WARNING, "Exception while adding file to ARCVFile: " + filePath, e);
