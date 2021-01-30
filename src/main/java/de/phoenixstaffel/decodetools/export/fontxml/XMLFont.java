@@ -156,7 +156,7 @@ public class XMLFont {
             
             int yTrans = getBase() - yOffset;
             if(yTrans > 127 || yTrans < -128) 
-                Main.LOGGER.warning(() -> "Character '" + id + "' results in a Y-Translation that out of the bounds of a byte. Reduce the font size.");
+                Main.LOGGER.warning(() -> "Character '" + id + "' results in a Y-Translation that is out of the bounds of a byte. Reduce the font size.");
         }
         
         public TNFOEntry toTNFOEntry() {
@@ -239,7 +239,7 @@ public class XMLFont {
             return xAdvance;
         }
         
-        public void setxAdvance(int xAdvance) {
+        public void setXAdvance(int xAdvance) {
             this.xAdvance = xAdvance;
         }
         
