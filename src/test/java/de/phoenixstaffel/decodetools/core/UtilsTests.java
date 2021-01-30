@@ -3,6 +3,9 @@ package de.phoenixstaffel.decodetools.core;
 import static de.phoenixstaffel.decodetools.TestUtils.assertException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
@@ -10,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -137,13 +141,13 @@ public class UtilsTests {
     
     @Test
     public void testFlipImage() throws IOException {
-        BufferedImage normal = ImageIO.read(UtilsTests.class.getResourceAsStream("/unflipped.png"));
-        BufferedImage hori = ImageIO.read(UtilsTests.class.getResourceAsStream("/flippedHori.png"));
-        BufferedImage verti = ImageIO.read(UtilsTests.class.getResourceAsStream("/flippedVerti.png"));
+        BufferedImage normal = ImageIO.read(UtilsTests.class.getResource("/unflipped.png"));
+        BufferedImage hori = ImageIO.read(UtilsTests.class.getResource("/flippedHori.png"));
+        BufferedImage verti = ImageIO.read(UtilsTests.class.getResource("/flippedVerti.png"));
         
-        assertTrue(normal != null);
-        assertTrue(hori != null);
-        assertTrue(verti != null);
+        assertNotNull(normal);
+        assertNotNull(hori);
+        assertNotNull(verti);
         
         int[] horiData = hori.getRGB(0, 0, hori.getWidth(), hori.getHeight(), null, 0, hori.getWidth());
         int[] vertiData = verti.getRGB(0, 0, verti.getWidth(), verti.getHeight(), null, 0, verti.getWidth());
@@ -152,18 +156,18 @@ public class UtilsTests {
         BufferedImage flippedHori = Utils.mirrorImageHorizontal(normal, true);
         int[] flippedHoriData = flippedHori.getRGB(0, 0, flippedHori.getWidth(), flippedHori.getHeight(), null, 0, flippedHori.getWidth());
         
-        assertFalse(flippedHori == normal);
+        assertNotSame(flippedHori, normal);
         assertTrue(Arrays.equals(flippedHoriData, horiData));
         
         BufferedImage flippedVerti = Utils.mirrorImageVertical(normal, true);
         int[] flippedVertiData = flippedVerti.getRGB(0, 0, flippedVerti.getWidth(), flippedVerti.getHeight(), null, 0, flippedVerti.getWidth());
         
-        assertFalse(flippedVerti == normal);
+        assertNotSame(flippedVerti, normal);
         assertTrue(Arrays.equals(flippedVertiData, vertiData));
         
         BufferedImage b2 = Utils.mirrorImageHorizontal(normal);
         
-        assertTrue(b2 == normal);
+        assertSame(b2, normal);
         
         Utils.mirrorImageHorizontal(b2);
         
@@ -176,17 +180,16 @@ public class UtilsTests {
     
     //FIXME the order is not guaranteed, check if it's necessary and act accordingly
     @Test
-    public void testListFiles() {
-        List<File> expected = Arrays.asList(new File("./listFile/test.test"),
-                                            new File("./listFile/test1.test"),
-                                            new File("./listFile/test2.test"),
-                                            new File("./listFile/Test3.test"),
-                                            new File("./listFile/bla/aest.test"),
-                                            new File("./listFile/bla/best.test"),
-                                            new File("./listFile/cla/cest.test"),
-                                            new File("./listFile/cla/dest.test"));
-        
-        File root = new File("./listFile");
+    public void testListFiles() throws IOException {
+        File root = Files.createTempDirectory("listFiles").toFile(); //new File("./listFile");
+        List<File> expected = Arrays.asList(new File(root, "test.test"),
+                                            new File(root, "test1.test"),
+                                            new File(root, "test2.test"),
+                                            new File(root, "Test3.test"),
+                                            new File(root, "bla/aest.test"),
+                                            new File(root, "bla/best.test"),
+                                            new File(root, "cla/cest.test"),
+                                            new File(root, "cla/dest.test"));
         
         expected.forEach(a -> {
             try {
@@ -202,12 +205,7 @@ public class UtilsTests {
 
         assertTrue(Utils.listFiles(null).isEmpty());
         assertEquals(expected, files);
-        assertEquals(Arrays.asList(new File("./listFile/test.test")), Utils.listFiles(new File("./listFile/test.test")));
-        
-        expected.forEach(a -> a.delete());
-        new File("./listFile/bla").delete();
-        new File("./listFile/cla").delete();
-        root.delete();
+        assertEquals(Arrays.asList(new File(root, "test.test")), Utils.listFiles(new File(root, "test.test")));
     }
     
     @Test
