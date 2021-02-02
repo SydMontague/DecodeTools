@@ -267,7 +267,7 @@ public class HSMPKCAP extends AbstractKCAP {
         
         dest.setPosition(start + contentStart);
 
-        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+        try (ResData localDataStream = new ResData(dataStream)) {
             for (ResPayload entry : getEntries()) {
                 // align content start
                 long aligned = Utils.align(dest.getPosition() - start, 0x10);

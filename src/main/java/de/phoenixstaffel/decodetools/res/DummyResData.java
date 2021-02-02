@@ -8,17 +8,17 @@ import de.phoenixstaffel.decodetools.core.Utils;
 
 public class DummyResData implements IResData {
     private final List<ResDataEntry> list = new ArrayList<>();
-    private final int offset;
+    private final Optional<DummyResData> parent;
     
     private int count = 0;
     private int currentSize = 0;
     
-    public DummyResData(int offset) {
-        this.offset = Utils.align(offset, 0x80);
+    public DummyResData(DummyResData parent) {
+        this.parent = Optional.ofNullable(parent);
     }
     
     public DummyResData() {
-        this(0);
+        this(null);
     }
     
     public int add(byte[] data, int size, boolean onlyOnce) {
@@ -30,7 +30,7 @@ public class DummyResData implements IResData {
         byte[] padding = new byte[Utils.align(getSize(), 0x80) - getSize()];
         currentSize += padding.length;
         
-        int address = currentSize + offset;
+        int address = currentSize + getOffset();
         count++;
         
         if (onlyOnce)
@@ -53,6 +53,10 @@ public class DummyResData implements IResData {
             this.count += data.getDataEntries();
         }
     }
+
+    private int getOffset() {
+        return Utils.align(parent.map(IResData::getCurrentAddress).orElse(0), 0x80);
+    }
     
     @Override
     public int getDataEntries() {
@@ -66,6 +70,6 @@ public class DummyResData implements IResData {
     
     @Override
     public int getCurrentAddress() {
-        return offset + getSize();
+        return getOffset() + getSize();
     }
 }

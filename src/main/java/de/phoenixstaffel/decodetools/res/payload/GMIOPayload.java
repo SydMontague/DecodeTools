@@ -15,27 +15,34 @@ import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
 public class GMIOPayload extends NameablePayload {
     private static final int VERSION = 6;
     
-    private short unknown1;
-    private byte unknown1_1;
-    private byte unknown1_2;
+    // magic value (4 byte)
+    // version (4 byte)
+    // always 0x3001 (2 byte)
+    private byte dataId; // data ID? Based on GMIP head, can overflow
+    private byte unknown1;
     // dataPointer (4 byte)
     
-    private int unknown2;
+    // hasAlpha (4 byte)
     // uv width (2 byte)
     // uv height (2 byte)
-    private int unknown3;
-    private int unknown4;
+    // always 0x0001 (2 byte)
+    // depends on format (2 byte)
+    // for $toon$ and $phong$ files (1 byte)
+    // always 0x01 (byte)
+    // bits per block (2 byte)
     
-    private int unknown5;
+    private byte unknown2;
+    private byte unknown3;
+    private short unknown4;
     // width (2 byte)
     // height (2 byte)
-    private int unknown6;
-    private int unknown7;
+    // always 0x01 (4 byte)
+    // always 0x00 (4 byte)
     
     private PixelFormat format;
-    private int unknown8; // padding?
-    private int unknown9; // padding?
-    private int unknown10; // additional data length?
+    // always 0x00 (4 byte)
+    // hasExtraData (4 byte)
+    // extraDataSize (4 byte)
     
     private byte[] extraData;
     
@@ -51,22 +58,13 @@ public class GMIOPayload extends NameablePayload {
     public GMIOPayload(AbstractKCAP parent) {
         super(parent, null);
         
-        this.unknown1 = 0x3001;
-        this.unknown1_1 = 0;
-        this.unknown1_2 = 0;
-        
-        this.unknown2 = 0;
-        this.unknown3 = 0;
-        this.unknown4 = 0;
-        this.unknown5 = 0;
-        this.unknown6 = 0;
-        this.unknown7 = 0;
+        this.dataId = 0;
+        this.unknown1 = 0;
+        this.unknown2 = 0x22;
+        this.unknown3 = 0x02;
+        this.unknown4 = 0x22;
         
         this.format = PixelFormat.RGBA8;
-
-        this.unknown8 = 0;
-        this.unknown9 = 0;
-        this.unknown10 = 0;
         this.extraData = new byte[0];
         
         this.uvHeight = 1f;
@@ -83,30 +81,36 @@ public class GMIOPayload extends NameablePayload {
         
         source.readInteger(); // magic value
         int version = source.readInteger();
-        unknown1 = source.readShort(); // always 0x3001
-        unknown1_1 = source.readByte();
-        unknown1_2 = source.readByte();
+        source.readShort(); // always 0x3001
+        dataId = source.readByte();
+        unknown1 = source.readByte();
         int dataPointer = source.readInteger();
         
-        unknown2 = source.readInteger();
+        source.readInteger(); // hasAlpha
         short uvSizeX = source.readShort();
         short uvSizeY = source.readShort();
-        unknown3 = source.readInteger();
-        unknown4 = source.readInteger();
-        
-        unknown5 = source.readInteger();
+        source.readShort(); // always 1
+        source.readShort();
+        source.readByte();
+        source.readByte(); // always 1
+        source.readShort();
+
+        unknown2 = source.readByte();
+        unknown3 = source.readByte();
+        unknown4 = source.readShort();
         short width = version == VERSION ? source.readShort() : uvSizeX;
         short height = version == VERSION ? source.readShort() : uvSizeY;
-        unknown6 = version == VERSION ? source.readInteger() : 0;
-        unknown7 = version == VERSION ? source.readInteger() : 0;
-        
+        if(version == VERSION) {
+            source.readInteger(); // always 1
+            source.readInteger(); // always 0
+        }
         format = PixelFormat.valueOf(source.readInteger());
         
-        unknown8 = source.readInteger();
-        unknown9 = source.readInteger();
-        unknown10 = source.readInteger();
+        source.readInteger(); // always 0
+        boolean hasExtraData = source.readInteger() == 1;
+        int extraDataLength = source.readInteger();
         
-        extraData = source.readByteArray(unknown10);
+        extraData = hasExtraData ? source.readByteArray(extraDataLength) : new byte[0];
         
         if (width == 0 || height == 0 || dataPointer == 0xFFFFFFFF)
             return;
@@ -206,29 +210,38 @@ public class GMIOPayload extends NameablePayload {
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(VERSION);
-        dest.writeShort(unknown1);
-        dest.writeByte(unknown1_1);
-        dest.writeByte(unknown1_2);
+        dest.writeShort((short) 0x3001);
+        dest.writeByte(dataId);
+        dest.writeByte(unknown1);
         dest.writeInteger(dataAddress);
         
-        dest.writeInteger(unknown2);
+        dest.writeInteger(format.hasAlpha() ? 2 : 0);
         dest.writeShort(image == null ? 0 : (short) (image.getWidth() * uvWidth)); // uv width?
         dest.writeShort(image == null ? 0 : (short) (image.getHeight() * uvHeight)); // uv height?
-        dest.writeInteger(unknown3);
-        dest.writeInteger(unknown4);
+        dest.writeShort((short) 1); // always 1
+        dest.writeShort(format.getUnknown());
+        dest.writeByte((byte) (isShaderTexture() ? 1 : 0));
+        dest.writeByte((byte) 1);
+        dest.writeShort(format.getBlockSize());
         
-        dest.writeInteger(unknown5);
+        dest.writeByte(unknown2);
+        dest.writeByte(unknown3);
+        dest.writeShort(unknown4);
         dest.writeShort(image == null ? 0 : (short) image.getWidth()); // width
         dest.writeShort(image == null ? 0 : (short) image.getHeight()); // height
-        dest.writeInteger(unknown6);
-        dest.writeInteger(unknown7);
+        dest.writeInteger(1);
+        dest.writeInteger(0);
         
         dest.writeInteger(format.getId());
-        dest.writeInteger(unknown8);
-        dest.writeInteger(unknown9);
-        dest.writeInteger(unknown10);
+        dest.writeInteger(0);
+        dest.writeInteger(extraData.length > 0 ? 1 : 0);
+        dest.writeInteger(extraData.length);
         
         dest.writeByteArray(extraData);
+    }
+    
+    public boolean isShaderTexture() {
+        return hasName() && getName().startsWith("$");
     }
     
     @Override

@@ -180,7 +180,7 @@ public class TDTMKCAP extends AbstractKCAP {
         dest.writeInteger(vctmKCAP.getSize());
         
         // write entries
-        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+        try (ResData localDataStream = new ResData(dataStream)) {
             qstmKCAP.writeKCAP(dest, localDataStream);
             
             long aligned = Utils.align(dest.getPosition() - start, 0x10);

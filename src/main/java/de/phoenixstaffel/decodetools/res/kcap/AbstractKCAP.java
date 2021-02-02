@@ -56,7 +56,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
     
     @Override
     public void fillDummyResData(DummyResData data) {
-        DummyResData localData = new DummyResData(data.getCurrentAddress());
+        DummyResData localData = new DummyResData(data);
         getEntries().forEach(a -> a.fillDummyResData(localData));
         data.add(localData);
     }

@@ -123,7 +123,7 @@ public class NormalKCAP extends AbstractKCAP {
         // move write pointer to start of content
         dest.setPosition(start + contentStart);
         
-        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+        try (ResData localDataStream = new ResData(dataStream)) {
             for (ResPayload entry : entries) {
                 if (entry.getType() == null) // null entries have no content
                     continue;

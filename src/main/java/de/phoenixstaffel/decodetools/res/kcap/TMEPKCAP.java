@@ -112,7 +112,7 @@ public class TMEPKCAP extends AbstractKCAP {
         // move write pointer to start of content
         dest.setPosition(start + contentStart);
         
-        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+        try (ResData localDataStream = new ResData(dataStream)) {
             for (ResPayload entry : entries) {
                 // align content start
                 long aligned = Utils.align(dest.getPosition() - start, 0x10);

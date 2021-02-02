@@ -12,16 +12,16 @@ import de.phoenixstaffel.decodetools.core.Utils;
 public class ResData implements IResData, Closeable {
     private final ByteArrayOutputStream stream = new ByteArrayOutputStream();
     private final List<ResDataEntry> list = new ArrayList<>();
-    private final int offset;
+    private final Optional<ResData> parent;
     
     private int count = 0;
     
-    public ResData(int offset) {
-        this.offset = Utils.align(offset, 0x80);
+    public ResData(ResData parent) {
+        this.parent = Optional.ofNullable(parent);
     }
     
     public ResData() {
-        this(0);
+        this(null);
     }
     
     @Override
@@ -34,7 +34,7 @@ public class ResData implements IResData, Closeable {
 
         stream.writeBytes(new byte[Utils.align(getSize(), 0x80) - getSize()]);
         
-        int address = stream.size() + offset;
+        int address = stream.size() + getOffset();
         count++;
         
         if (onlyOnce)
@@ -51,6 +51,10 @@ public class ResData implements IResData, Closeable {
             stream.writeBytes(data.getStream().toByteArray());
             this.count += data.getDataEntries();
         }
+    }
+    
+    private int getOffset() {
+        return Utils.align(parent.map(IResData::getCurrentAddress).orElse(0), 0x80);
     }
     
     @Override
@@ -79,6 +83,6 @@ public class ResData implements IResData, Closeable {
     
     @Override
     public int getCurrentAddress() {
-        return offset + getSize();
+        return getOffset() + getSize();
     }
 }

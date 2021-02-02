@@ -180,7 +180,7 @@ public class GMIPKCAP extends AbstractKCAP {
         // write entries
         dest.setPosition(start + contentStart);
         
-        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+        try (ResData localDataStream = new ResData(dataStream)) {
             for (ResPayload entry : entries) {
                 // align content start
                 long aligned = Utils.align(dest.getPosition() - start, 0x04);

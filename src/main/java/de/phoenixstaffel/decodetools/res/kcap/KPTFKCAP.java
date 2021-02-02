@@ -152,7 +152,7 @@ public class KPTFKCAP extends AbstractKCAP {
         // move write pointer to start of content
         dest.setPosition(start + contentStart);
 
-        try (ResData localDataStream = new ResData(dataStream.getCurrentAddress())) {
+        try (ResData localDataStream = new ResData(dataStream)) {
             // write TNFO
             long aligned = Utils.align(dest.getPosition() - start, 0x10);
             dest.setPosition(start + aligned);
