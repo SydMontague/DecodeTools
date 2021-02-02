@@ -120,18 +120,21 @@ public class GMIOPayload extends NameablePayload {
         
         byte[] pixelData = source.readByteArray((width * height * format.getBPP()) / 8, (long) dataPointer + dataStart);
         
-        // FIXME prevent 1x1 ETC1A4 textures that corrupt shit
-        int[] convertedPixels = format.convertToRGBA(pixelData, width, height);
-        convertedPixels = format.isTiled() ? Utils.untile(width, height, convertedPixels) : convertedPixels;
-        
-        BufferedImage i = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        i.setRGB(0, 0, width, height, convertedPixels, 0, width);
-        
-        // flip image to make them logical for humans
-        if (format != PixelFormat.ETC1 && format != PixelFormat.ETC1A4)
-            i = Utils.mirrorImageVertical(i);
-        
-        image = i;
+        if (format != PixelFormat.SHADER && (width < 4 || height < 4))
+            Main.LOGGER.severe("Found image with width or height smaller than 4. Those are not supported.");
+        else {
+            int[] convertedPixels = format.convertToRGBA(pixelData, width, height);
+            convertedPixels = format.isTiled() ? Utils.untile(width, height, convertedPixels) : convertedPixels;
+            
+            BufferedImage i = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            i.setRGB(0, 0, width, height, convertedPixels, 0, width);
+            
+            // flip image to make them logical for humans
+            if (format != PixelFormat.ETC1 && format != PixelFormat.ETC1A4)
+                i = Utils.mirrorImageVertical(i);
+            
+            image = i;
+        }
     }
     
     public double getUVHeight() {
@@ -170,12 +173,14 @@ public class GMIOPayload extends NameablePayload {
         return image;
     }
     
-    public void setImage(BufferedImage image) {
-        if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
-            Main.LOGGER.warning(() -> "Given image resolution are not powers of two, but they are required to be. \n" + "Resolution: " + image.getWidth() + "x"
-                    + image.getHeight() + " | Exporting this file will cause problems!");
+    public boolean setImage(BufferedImage image) {
+        if (!isValidResolution(image, format)) {
+            Main.LOGGER.severe(() -> String.format("Tried to import image with resolution %dx%d, which is not a power of 4 or smaller than 4.", image.getWidth(), image.getHeight()));
+            return false;
+        }
         
         this.image = image;
+        return true;
     }
     
     public PixelFormat getFormat() {
@@ -200,9 +205,11 @@ public class GMIOPayload extends NameablePayload {
     public void writeKCAP(Access dest, ResData dataStream) {
         int dataAddress = 0xFFFFFFFF;
         if (image != null) {
-            if (!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
-                Main.LOGGER.warning(() -> "Saving image " + getName() + " with illegal resolution. \n" + "Resolution: " + image.getWidth() + "x"
-                        + image.getHeight() + " | This file will cause problems!");
+            if (!isValidResolution(image, format))
+                Main.LOGGER.severe(() -> String.format("Saving image %s with illegal resolution: %dx%d | This file will cause problems!",
+                                                       getName(),
+                                                       image.getWidth(),
+                                                       image.getHeight()));
             
             byte[] pixelData = format.convertToFormat(image);
             dataAddress = dataStream.add(pixelData, hasName());
@@ -279,5 +286,18 @@ public class GMIOPayload extends NameablePayload {
     
     public int getHeight() {
         return image != null ? image.getHeight() : 0;
+    }
+    
+    private static boolean isValidResolution(BufferedImage image, PixelFormat format) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        if(format == PixelFormat.SHADER && width == 256 && height == 1)
+            return true;
+        
+        if(!Utils.isPowOf2(image.getWidth()) || !Utils.isPowOf2(image.getHeight()))
+            return false;
+        
+        return width >= 4 && height >= 4;
     }
 }

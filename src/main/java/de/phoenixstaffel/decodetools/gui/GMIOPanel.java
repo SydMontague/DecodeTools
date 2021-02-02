@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -253,10 +254,13 @@ public class GMIOPanel extends PayloadPanel {
             
             try {
                 BufferedImage localImage = ImageIO.read(fileDialogue.getSelectedFile());
-                getSelectedFile().setImage(localImage);
-                setSelectedFile(getSelectedFile());
-                uvHeightSpinner.setValue(getSelectedFile().getUVHeightAbsolute());
-                uvWidthSpinner.setValue(getSelectedFile().getUVWidthAbsolute());
+                if (getSelectedFile().setImage(localImage)) {
+                    setSelectedFile(getSelectedFile());
+                    uvHeightSpinner.setValue(getSelectedFile().getUVHeightAbsolute());
+                    uvWidthSpinner.setValue(getSelectedFile().getUVWidthAbsolute());
+                }
+                else
+                    JOptionPane.showMessageDialog(null, "Couldn't set image. Please check the log.");
             }
             catch (IOException ex) {
                 Main.LOGGER.log(Level.WARNING, "Could not read image file, not an image?", ex);
