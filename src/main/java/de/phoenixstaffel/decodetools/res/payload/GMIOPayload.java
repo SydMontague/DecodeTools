@@ -69,7 +69,7 @@ public class GMIOPayload extends NameablePayload {
         
         this.uvHeight = 1f;
         this.uvWidth = 1f;
-        this.image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        this.image = new BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB);
     }
     
     public GMIOPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
