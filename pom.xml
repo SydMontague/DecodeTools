@@ -104,6 +104,12 @@
       <version>${lwjgl.version}</version>
       <classifier>natives-${platform}</classifier>
     </dependency>
+    
+    <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.2</version>
+    </dependency>
   </dependencies>
 
   <build>

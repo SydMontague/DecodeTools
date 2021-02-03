@@ -31,6 +31,9 @@ import de.phoenixstaffel.decodetools.PixelFormat;
 import de.phoenixstaffel.decodetools.gui.util.JImage;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
 import javax.swing.JSpinner;
+import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.TextureWrap;
+import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.UnknownEnum;
+import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.TextureFiltering;
 
 public class GMIOPanel extends PayloadPanel {
     private static final long serialVersionUID = -4042970327489697448L;
@@ -42,13 +45,24 @@ public class GMIOPanel extends PayloadPanel {
     private final JImage image = new JImage();
     private final JPanel panel = new JPanel();
     private final JSeparator separator = new JSeparator();
-    private final JComboBox<PixelFormat> comboBox = new JComboBox<>();
-    private final JLabel lblFormat = new JLabel("Format");
     private final JLabel resolution = new JLabel("0x0");
     private final JLabel lblUvWidth = new JLabel("UV Width");
     private final JLabel lblUvHeight = new JLabel("UV Height");
     private final JSpinner uvWidthSpinner = new JSpinner();
     private final JSpinner uvHeightSpinner = new JSpinner();
+
+    private final JComboBox<PixelFormat> formatBox = new JComboBox<>();
+    private final JComboBox<TextureWrap> wrapSBox = new JComboBox<>();
+    private final JComboBox<TextureWrap> wrapTBox = new JComboBox<>();
+    private final JComboBox<UnknownEnum> unknownBox = new JComboBox<>();
+    private final JComboBox<TextureFiltering> minFilterBox = new JComboBox<>();
+    private final JComboBox<TextureFiltering> magFilterBox = new JComboBox<>();
+    private final JLabel lblFormat = new JLabel("Format");
+    private final JLabel lblWrapS = new JLabel("Wrap S");
+    private final JLabel lblWrapT = new JLabel("Wrap T");
+    private final JLabel lblUnknown = new JLabel("Unknown");
+    private final JLabel lblMinFilter = new JLabel("Min Filter");
+    private final JLabel lblMagFilter = new JLabel("Mag Filter");
     
     public GMIOPanel(Object selected) {
         setSelectedFile(selected);
@@ -58,13 +72,49 @@ public class GMIOPanel extends PayloadPanel {
         
         image.setMinimumSize(new Dimension(100, 100));
         image.setBackground(Color.LIGHT_GRAY);
-        comboBox.setModel(new DefaultComboBoxModel<>(PixelFormat.values()));
-        comboBox.addItemListener(a -> {
+        
+        formatBox.setModel(new DefaultComboBoxModel<>(PixelFormat.values()));
+        formatBox.addItemListener(a -> {
            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
                return;
            
            selectedGMIO.setFormat((PixelFormat) a.getItem());
         });
+        wrapSBox.setModel(new DefaultComboBoxModel<>(TextureWrap.values()));
+        wrapSBox.addItemListener(a -> {
+            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
+                return;
+            
+            selectedGMIO.setWrapS((TextureWrap) a.getItem());
+         });
+        wrapTBox.setModel(new DefaultComboBoxModel<>(TextureWrap.values()));
+        wrapTBox.addItemListener(a -> {
+            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
+                return;
+            
+            selectedGMIO.setWrapT((TextureWrap) a.getItem());
+         });
+        unknownBox.setModel(new DefaultComboBoxModel<>(UnknownEnum.values()));
+        unknownBox.addItemListener(a -> {
+            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
+                return;
+            
+            selectedGMIO.setUnknown((UnknownEnum) a.getItem());
+         });
+        minFilterBox.setModel(new DefaultComboBoxModel<>(TextureFiltering.values()));
+        minFilterBox.addItemListener(a -> {
+            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
+                return;
+            
+            selectedGMIO.setMinFilter((TextureFiltering) a.getItem());
+         });
+        magFilterBox.setModel(new DefaultComboBoxModel<>(TextureFiltering.values()));
+        magFilterBox.addItemListener(a -> {
+            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
+                return;
+            
+            selectedGMIO.setMagFilter((TextureFiltering) a.getItem());
+         });
         
         uvWidthSpinner.addChangeListener(a -> selectedGMIO.setUVWidthAbsolute((int) uvWidthSpinner.getValue()));
         uvHeightSpinner.addChangeListener(a -> selectedGMIO.setUVHeightAbsolute((int) uvHeightSpinner.getValue()));
@@ -115,7 +165,7 @@ public class GMIOPanel extends PayloadPanel {
                             .addComponent(lblFormat)
                             .addContainerGap(125, Short.MAX_VALUE))
                         .addGroup(gl_panel.createSequentialGroup()
-                            .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(formatBox, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE)
                             .addGap(10)
                             .addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
                                 .addGroup(gl_panel.createSequentialGroup()
@@ -133,6 +183,46 @@ public class GMIOPanel extends PayloadPanel {
                         .addComponent(uvWidthSpinner, GroupLayout.PREFERRED_SIZE, 60, GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblUvWidth))
                     .addContainerGap(99, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(lblWrapS)
+                    .addContainerGap(113, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(lblWrapT)
+                    .addContainerGap(113, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(lblUnknown)
+                    .addContainerGap(113, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(lblMinFilter)
+                    .addContainerGap(113, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(lblMagFilter)
+                    .addContainerGap(113, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(wrapSBox, 0, 149, Short.MAX_VALUE)
+                    .addContainerGap())
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(magFilterBox, 0, 149, Short.MAX_VALUE)
+                    .addContainerGap())
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(minFilterBox, 0, 149, Short.MAX_VALUE)
+                    .addContainerGap())
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(unknownBox, 0, 149, Short.MAX_VALUE)
+                    .addContainerGap())
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(wrapTBox, 0, 149, Short.MAX_VALUE)
+                    .addContainerGap())
         );
         gl_panel.setVerticalGroup(
             gl_panel.createParallelGroup(Alignment.LEADING)
@@ -141,7 +231,7 @@ public class GMIOPanel extends PayloadPanel {
                     .addComponent(lblFormat)
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(formatBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(resolution))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
@@ -151,7 +241,27 @@ public class GMIOPanel extends PayloadPanel {
                     .addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
                         .addComponent(uvWidthSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(uvHeightSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(353, Short.MAX_VALUE))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(lblWrapS)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(wrapSBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(lblWrapT)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(wrapTBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(lblUnknown)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(unknownBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(lblMinFilter)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(minFilterBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(lblMagFilter)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(magFilterBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(123, Short.MAX_VALUE))
         );
         
         panel.setLayout(gl_panel);
@@ -166,7 +276,12 @@ public class GMIOPanel extends PayloadPanel {
             this.selectedGMIO = (GMIOPayload) file;
         
         image.setImage(selectedGMIO == null ? null : selectedGMIO.getImage());
-        comboBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getFormat());
+        formatBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getFormat());
+        wrapSBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getWrapS());
+        wrapTBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getWrapT());
+        unknownBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getUnknown());
+        minFilterBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getMinFilter());
+        magFilterBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getMagFilter());
         if(this.selectedGMIO != null) {
             uvHeightSpinner.setModel(new SpinnerNumberModel(selectedGMIO.getUVHeightAbsolute(), 0, null, 1));
             uvWidthSpinner.setModel(new SpinnerNumberModel(selectedGMIO.getUVWidthAbsolute(), 0, null, 1));

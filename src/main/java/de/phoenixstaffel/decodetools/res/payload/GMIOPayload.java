@@ -3,6 +3,8 @@ package de.phoenixstaffel.decodetools.res.payload;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
+import javax.annotation.Nonnull;
+
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.PixelFormat;
 import de.phoenixstaffel.decodetools.core.Access;
@@ -31,9 +33,12 @@ public class GMIOPayload extends NameablePayload {
     // always 0x01 (byte)
     // bits per block (2 byte)
     
-    private byte unknown2;
-    private byte unknown3;
-    private short unknown4;
+    // texture flags (4 byte)
+    private TextureWrap wrapS;
+    private TextureWrap wrapT;
+    private UnknownEnum unknown;
+    private TextureFiltering minFilter;
+    private TextureFiltering magFilter; // ?
     // width (2 byte)
     // height (2 byte)
     // always 0x01 (4 byte)
@@ -60,9 +65,11 @@ public class GMIOPayload extends NameablePayload {
         
         this.dataId = 0;
         this.unknown1 = 0;
-        this.unknown2 = 0x22;
-        this.unknown3 = 0x02;
-        this.unknown4 = 0x22;
+        this.wrapS = TextureWrap.REPEAT;
+        this.wrapT = TextureWrap.REPEAT;
+        this.unknown = UnknownEnum.NORMAL;
+        this.minFilter = TextureFiltering.LINEAR;
+        this.magFilter = TextureFiltering.LINEAR;
         
         this.format = PixelFormat.RGBA8;
         this.extraData = new byte[0];
@@ -95,9 +102,13 @@ public class GMIOPayload extends NameablePayload {
         source.readByte(); // always 1
         source.readShort();
 
-        unknown2 = source.readByte();
-        unknown3 = source.readByte();
-        unknown4 = source.readShort();
+        int textureFlags = source.readInteger();
+        this.wrapS = TextureWrap.valueOf((int) Utils.getSubInteger(textureFlags, 0, 4));
+        this.wrapT = TextureWrap.valueOf((int) Utils.getSubInteger(textureFlags, 4, 4));
+        this.unknown = UnknownEnum.valueOf((int) Utils.getSubInteger(textureFlags, 8, 4));
+        this.minFilter = TextureFiltering.valueOf((int) Utils.getSubInteger(textureFlags, 16, 4));
+        this.magFilter = TextureFiltering.valueOf((int) Utils.getSubInteger(textureFlags, 20, 4));
+        
         short width = version == VERSION ? source.readShort() : uvSizeX;
         short height = version == VERSION ? source.readShort() : uvSizeY;
         if(version == VERSION) {
@@ -168,6 +179,62 @@ public class GMIOPayload extends NameablePayload {
     public void setUVHeightAbsolute(int uvHeight) {
         this.uvHeight = (float) uvHeight / getHeight();
     }
+
+    public int getWidth() {
+        return image != null ? image.getWidth() : 0;
+    }
+    
+    public int getHeight() {
+        return image != null ? image.getHeight() : 0;
+    }
+    
+    public TextureFiltering getMagFilter() {
+        return magFilter;
+    }
+    
+    public void setMagFilter(@Nonnull TextureFiltering magFilter) {
+        this.magFilter = magFilter;
+    }
+    
+    public TextureFiltering getMinFilter() {
+        return minFilter;
+    }
+    
+    public void setMinFilter(@Nonnull TextureFiltering minFilter) {
+        this.minFilter = minFilter;
+    }
+    
+    public TextureWrap getWrapS() {
+        return wrapS;
+    }
+    
+    public void setWrapS(@Nonnull TextureWrap wrapS) {
+        this.wrapS = wrapS;
+    }
+    
+    public TextureWrap getWrapT() {
+        return wrapT;
+    }
+    
+    public void setWrapT(@Nonnull TextureWrap wrapT) {
+        this.wrapT = wrapT;
+    }
+    
+    public UnknownEnum getUnknown() {
+        return unknown;
+    }
+    
+    public void setUnknown(@Nonnull UnknownEnum unknown) {
+        this.unknown = unknown;
+    }
+    
+    public PixelFormat getFormat() {
+        return format;
+    }
+    
+    public void setFormat(PixelFormat format) {
+        this.format = format;
+    }
     
     public BufferedImage getImage() {
         return image;
@@ -183,12 +250,8 @@ public class GMIOPayload extends NameablePayload {
         return true;
     }
     
-    public PixelFormat getFormat() {
-        return format;
-    }
-    
-    public void setFormat(PixelFormat format) {
-        this.format = format;
+    public boolean isShaderTexture() {
+        return hasName() && getName().startsWith("$");
     }
     
     @Override
@@ -231,9 +294,10 @@ public class GMIOPayload extends NameablePayload {
         dest.writeByte((byte) 1);
         dest.writeShort(format.getBlockSize());
         
-        dest.writeByte(unknown2);
-        dest.writeByte(unknown3);
-        dest.writeShort(unknown4);
+        dest.writeByte((byte) (wrapT.getValue() << 4 | wrapS.getValue()));
+        dest.writeByte((byte) unknown.ordinal());
+        dest.writeByte((byte) (minFilter.getValue() << 4 | magFilter.getValue()));
+        dest.writeByte((byte) 0);
         dest.writeShort(image == null ? 0 : (short) image.getWidth()); // width
         dest.writeShort(image == null ? 0 : (short) image.getHeight()); // height
         dest.writeInteger(1);
@@ -245,10 +309,6 @@ public class GMIOPayload extends NameablePayload {
         dest.writeInteger(extraData.length);
         
         dest.writeByteArray(extraData);
-    }
-    
-    public boolean isShaderTexture() {
-        return hasName() && getName().startsWith("$");
     }
     
     @Override
@@ -280,14 +340,6 @@ public class GMIOPayload extends NameablePayload {
         return hasName() ? getName() : "GMIO " + " " + format + " " + getWidth() + " " + getHeight();
     }
     
-    public int getWidth() {
-        return image != null ? image.getWidth() : 0;
-    }
-    
-    public int getHeight() {
-        return image != null ? image.getHeight() : 0;
-    }
-    
     private static boolean isValidResolution(BufferedImage image, PixelFormat format) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -300,4 +352,76 @@ public class GMIOPayload extends NameablePayload {
         
         return width >= 4 && height >= 4;
     }
+
+    public enum TextureWrap {
+        CLAMP_TO_EDGE(1),
+        REPEAT(2),
+        MIRRORED_REPEAT(3),
+        CLAMP_TO_BORDER(5);
+
+        private final int value;
+        
+        private TextureWrap(int value) {
+            this.value = value;
+        }
+        
+        public static TextureWrap valueOf(int subInteger) {
+            switch(subInteger) {
+                case 2:
+                    return REPEAT;
+                case 3:
+                    return MIRRORED_REPEAT;
+                case 5:
+                    return CLAMP_TO_BORDER;
+                case 1:
+                default:
+                    return CLAMP_TO_EDGE;
+            }
+        }
+        
+        public int getValue() {
+            return value;
+        }
+    }
+    
+    public enum UnknownEnum {
+        NONE,
+        KPTF,
+        NORMAL;
+        
+        public static UnknownEnum valueOf(int subInteger) {
+            switch (subInteger) {
+                case 0:
+                    return NONE;
+                case 1:
+                    return KPTF;
+                case 2:
+                default:
+                    return NORMAL;
+            }
+        }
+    }
+    
+    public enum TextureFiltering {
+        NEAREST(1),
+        LINEAR(2);
+        
+        private final int value;
+        
+        private TextureFiltering(int value) {
+            this.value = value;
+        }
+
+        public static TextureFiltering valueOf(int subInteger) {
+            if(subInteger == 1)
+                return NEAREST;
+
+            return LINEAR;
+        }
+        
+        public int getValue() {
+            return value;
+        }
+    }
+    
 }
