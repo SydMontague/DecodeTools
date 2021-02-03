@@ -7,6 +7,7 @@ import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
@@ -38,7 +39,7 @@ import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.TextureFiltering;
 public class GMIOPanel extends PayloadPanel {
     private static final long serialVersionUID = -4042970327489697448L;
     
-    private GMIOPayload selectedGMIO = null;
+    private transient Optional<GMIOPayload> selectedGMIO = Optional.empty();
     
     private final JButton exportButton = new JButton("Export");
     private final JButton importButton = new JButton("Import");
@@ -74,50 +75,51 @@ public class GMIOPanel extends PayloadPanel {
         image.setBackground(Color.LIGHT_GRAY);
         
         formatBox.setModel(new DefaultComboBoxModel<>(PixelFormat.values()));
-        formatBox.addItemListener(a -> {
-           if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
-               return;
-           
-           selectedGMIO.setFormat((PixelFormat) a.getItem());
-        });
         wrapSBox.setModel(new DefaultComboBoxModel<>(TextureWrap.values()));
-        wrapSBox.addItemListener(a -> {
-            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
-                return;
-            
-            selectedGMIO.setWrapS((TextureWrap) a.getItem());
-         });
         wrapTBox.setModel(new DefaultComboBoxModel<>(TextureWrap.values()));
-        wrapTBox.addItemListener(a -> {
-            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
-                return;
-            
-            selectedGMIO.setWrapT((TextureWrap) a.getItem());
-         });
         unknownBox.setModel(new DefaultComboBoxModel<>(UnknownEnum.values()));
-        unknownBox.addItemListener(a -> {
-            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
-                return;
-            
-            selectedGMIO.setUnknown((UnknownEnum) a.getItem());
-         });
         minFilterBox.setModel(new DefaultComboBoxModel<>(TextureFiltering.values()));
-        minFilterBox.addItemListener(a -> {
-            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
-                return;
-            
-            selectedGMIO.setMinFilter((TextureFiltering) a.getItem());
-         });
         magFilterBox.setModel(new DefaultComboBoxModel<>(TextureFiltering.values()));
-        magFilterBox.addItemListener(a -> {
-            if(a.getStateChange() != ItemEvent.SELECTED || selectedGMIO == null)
+        
+        formatBox.addItemListener(a -> {
+            if (a.getStateChange() != ItemEvent.SELECTED)
                 return;
             
-            selectedGMIO.setMagFilter((TextureFiltering) a.getItem());
-         });
+            selectedGMIO.ifPresent(b -> b.setFormat((PixelFormat) a.getItem()));
+        });
+        wrapSBox.addItemListener(a -> {
+            if (a.getStateChange() != ItemEvent.SELECTED)
+                return;
+            
+            selectedGMIO.ifPresent(b -> b.setWrapS((TextureWrap) a.getItem()));
+        });
+        wrapTBox.addItemListener(a -> {
+            if (a.getStateChange() != ItemEvent.SELECTED)
+                return;
+            
+            selectedGMIO.ifPresent(b -> b.setWrapT((TextureWrap) a.getItem()));
+        });
+        unknownBox.addItemListener(a -> {
+            if (a.getStateChange() != ItemEvent.SELECTED)
+                return;
+            
+            selectedGMIO.ifPresent(b -> b.setUnknown((UnknownEnum) a.getItem()));
+        });
+        minFilterBox.addItemListener(a -> {
+            if (a.getStateChange() != ItemEvent.SELECTED)
+                return;
+            
+            selectedGMIO.ifPresent(b -> b.setMinFilter((TextureFiltering) a.getItem()));
+        });
+        magFilterBox.addItemListener(a -> {
+            if (a.getStateChange() != ItemEvent.SELECTED)
+                return;
+            
+            selectedGMIO.ifPresent(b -> b.setMagFilter((TextureFiltering) a.getItem()));
+        });
         
-        uvWidthSpinner.addChangeListener(a -> selectedGMIO.setUVWidthAbsolute((int) uvWidthSpinner.getValue()));
-        uvHeightSpinner.addChangeListener(a -> selectedGMIO.setUVHeightAbsolute((int) uvHeightSpinner.getValue()));
+        uvWidthSpinner.addChangeListener(a -> selectedGMIO.ifPresent(b -> b.setUVWidthAbsolute((int) uvWidthSpinner.getValue())));
+        uvHeightSpinner.addChangeListener(a -> selectedGMIO.ifPresent(b -> b.setUVHeightAbsolute((int) uvHeightSpinner.getValue())));
         
         //@formatter:off
         panel.setBorder(new MatteBorder(0, 1, 0, 0, new Color(0, 0, 0)));
@@ -271,25 +273,23 @@ public class GMIOPanel extends PayloadPanel {
     
     @Override
     public void setSelectedFile(Object file) {
-        this.selectedGMIO = null;
-        if (file instanceof GMIOPayload)
-            this.selectedGMIO = (GMIOPayload) file;
+        this.selectedGMIO = file instanceof GMIOPayload ? Optional.ofNullable((GMIOPayload) file) : Optional.empty();
         
-        image.setImage(selectedGMIO == null ? null : selectedGMIO.getImage());
-        formatBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getFormat());
-        wrapSBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getWrapS());
-        wrapTBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getWrapT());
-        unknownBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getUnknown());
-        minFilterBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getMinFilter());
-        magFilterBox.setSelectedItem(selectedGMIO == null ? null : selectedGMIO.getMagFilter());
-        if(this.selectedGMIO != null) {
-            uvHeightSpinner.setModel(new SpinnerNumberModel(selectedGMIO.getUVHeightAbsolute(), 0, null, 1));
-            uvWidthSpinner.setModel(new SpinnerNumberModel(selectedGMIO.getUVWidthAbsolute(), 0, null, 1));
-        }
-        resolution.setText(selectedGMIO == null ? null : selectedGMIO.getWidth() + "x" + selectedGMIO.getHeight());
+        image.setImage(selectedGMIO.map(GMIOPayload::getImage).orElse(null));
+        formatBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getFormat).orElse(null));
+        wrapSBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getWrapS).orElse(null));
+        wrapTBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getWrapT).orElse(null));
+        unknownBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getUnknown).orElse(null));
+        minFilterBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getMinFilter).orElse(null));
+        magFilterBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getMagFilter).orElse(null));
+        selectedGMIO.ifPresent(a -> {
+            uvHeightSpinner.setModel(new SpinnerNumberModel(a.getUVHeightAbsolute(), 0, null, 1));
+            uvWidthSpinner.setModel(new SpinnerNumberModel(a.getUVWidthAbsolute(), 0, null, 1));
+        });
+        resolution.setText(selectedGMIO.map(a -> a.getWidth() + "x" + a.getHeight()).orElse(null));
     }
     
-    public GMIOPayload getSelectedFile() {
+    public Optional<GMIOPayload> getSelectedFile() {
         return selectedGMIO;
     }
     
@@ -306,10 +306,7 @@ public class GMIOPanel extends PayloadPanel {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (getSelectedFile() == null)
-                return;
-            
-            BufferedImage lImage = getSelectedFile().getImage();
+            BufferedImage lImage = getSelectedFile().map(GMIOPayload::getImage).orElseGet(() -> null);
             
             if(lImage == null)
                 return;
@@ -357,7 +354,9 @@ public class GMIOPanel extends PayloadPanel {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (getSelectedFile() == null)
+            Optional<GMIOPayload> selected = getSelectedFile();
+            
+            if (!selected.isPresent())
                 return;
             
             JFileChooser fileDialogue = new JFileChooser("./Input");
@@ -369,10 +368,10 @@ public class GMIOPanel extends PayloadPanel {
             
             try {
                 BufferedImage localImage = ImageIO.read(fileDialogue.getSelectedFile());
-                if (getSelectedFile().setImage(localImage)) {
+                if (selected.get().setImage(localImage)) {
                     setSelectedFile(getSelectedFile());
-                    uvHeightSpinner.setValue(getSelectedFile().getUVHeightAbsolute());
-                    uvWidthSpinner.setValue(getSelectedFile().getUVWidthAbsolute());
+                    uvHeightSpinner.setValue(selected.get().getUVHeightAbsolute());
+                    uvWidthSpinner.setValue(selected.get().getUVWidthAbsolute());
                 }
                 else
                     JOptionPane.showMessageDialog(null, "Couldn't set image. Please check the log.");
