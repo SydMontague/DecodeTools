@@ -22,6 +22,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.MatteBorder;
@@ -29,12 +31,12 @@ import javax.swing.filechooser.FileFilter;
 
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.PixelFormat;
+import de.phoenixstaffel.decodetools.gui.util.FunctionAction;
 import de.phoenixstaffel.decodetools.gui.util.JImage;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload;
-import javax.swing.JSpinner;
+import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.TextureFiltering;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.TextureWrap;
 import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.UnknownEnum;
-import de.phoenixstaffel.decodetools.res.payload.GMIOPayload.TextureFiltering;
 
 public class GMIOPanel extends PayloadPanel {
     private static final long serialVersionUID = -4042970327489697448L;
@@ -58,12 +60,15 @@ public class GMIOPanel extends PayloadPanel {
     private final JComboBox<UnknownEnum> unknownBox = new JComboBox<>();
     private final JComboBox<TextureFiltering> minFilterBox = new JComboBox<>();
     private final JComboBox<TextureFiltering> magFilterBox = new JComboBox<>();
+    private final JTextField fileNameField = new JTextField();
     private final JLabel lblFormat = new JLabel("Format");
     private final JLabel lblWrapS = new JLabel("Wrap S");
     private final JLabel lblWrapT = new JLabel("Wrap T");
     private final JLabel lblUnknown = new JLabel("Unknown");
     private final JLabel lblMinFilter = new JLabel("Min Filter");
     private final JLabel lblMagFilter = new JLabel("Mag Filter");
+    private final JLabel lblFileName = new JLabel("File Name");
+    private final JButton btnUpdateName = new JButton("Update Name");
     
     public GMIOPanel(Object selected) {
         setSelectedFile(selected);
@@ -80,6 +85,8 @@ public class GMIOPanel extends PayloadPanel {
         unknownBox.setModel(new DefaultComboBoxModel<>(UnknownEnum.values()));
         minFilterBox.setModel(new DefaultComboBoxModel<>(TextureFiltering.values()));
         magFilterBox.setModel(new DefaultComboBoxModel<>(TextureFiltering.values()));
+        
+        btnUpdateName.setAction(new FunctionAction("Update Name", a -> selectedGMIO.ifPresent(b -> b.setName(fileNameField.getText()))));
         
         formatBox.addItemListener(a -> {
             if (a.getStateChange() != ItemEvent.SELECTED)
@@ -129,18 +136,17 @@ public class GMIOPanel extends PayloadPanel {
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-                        .addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(exportButton)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(importButton))
-                        .addComponent(image, GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
-                    .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(image, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))
+                    .addGap(54)
                     .addComponent(separator, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addGap(11)
+                    .addGap(221)
                     .addComponent(panel, GroupLayout.PREFERRED_SIZE, 170, GroupLayout.PREFERRED_SIZE))
         );
-        
         groupLayout.setVerticalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
@@ -156,6 +162,9 @@ public class GMIOPanel extends PayloadPanel {
                     .addContainerGap()
                     .addComponent(separator, GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE))
         );
+        
+
+        fileNameField.setColumns(10);
         
         GroupLayout gl_panel = new GroupLayout(panel);
         gl_panel.setHorizontalGroup(
@@ -188,23 +197,23 @@ public class GMIOPanel extends PayloadPanel {
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblWrapS)
-                    .addContainerGap(113, Short.MAX_VALUE))
+                    .addContainerGap(124, Short.MAX_VALUE))
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblWrapT)
-                    .addContainerGap(113, Short.MAX_VALUE))
+                    .addContainerGap(124, Short.MAX_VALUE))
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblUnknown)
-                    .addContainerGap(113, Short.MAX_VALUE))
+                    .addContainerGap(115, Short.MAX_VALUE))
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblMinFilter)
-                    .addContainerGap(113, Short.MAX_VALUE))
+                    .addContainerGap(116, Short.MAX_VALUE))
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblMagFilter)
-                    .addContainerGap(113, Short.MAX_VALUE))
+                    .addContainerGap(112, Short.MAX_VALUE))
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(wrapSBox, 0, 149, Short.MAX_VALUE)
@@ -224,6 +233,18 @@ public class GMIOPanel extends PayloadPanel {
                 .addGroup(gl_panel.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(wrapTBox, 0, 149, Short.MAX_VALUE)
+                    .addContainerGap())
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(lblFileName)
+                    .addContainerGap(113, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(fileNameField, GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                    .addContainerGap())
+                .addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
+                    .addContainerGap(70, Short.MAX_VALUE)
+                    .addComponent(btnUpdateName)
                     .addContainerGap())
         );
         gl_panel.setVerticalGroup(
@@ -263,7 +284,13 @@ public class GMIOPanel extends PayloadPanel {
                     .addComponent(lblMagFilter)
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addComponent(magFilterBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(123, Short.MAX_VALUE))
+                    .addGap(8)
+                    .addComponent(lblFileName)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(fileNameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(btnUpdateName)
+                    .addContainerGap(46, Short.MAX_VALUE))
         );
         
         panel.setLayout(gl_panel);
@@ -275,6 +302,7 @@ public class GMIOPanel extends PayloadPanel {
     public void setSelectedFile(Object file) {
         this.selectedGMIO = file instanceof GMIOPayload ? Optional.ofNullable((GMIOPayload) file) : Optional.empty();
         
+        fileNameField.setText(selectedGMIO.map(GMIOPayload::getName).orElse(null));
         image.setImage(selectedGMIO.map(GMIOPayload::getImage).orElse(null));
         formatBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getFormat).orElse(null));
         wrapSBox.setSelectedItem(selectedGMIO.map(GMIOPayload::getWrapS).orElse(null));

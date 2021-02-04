@@ -35,7 +35,7 @@ public abstract class NameablePayload extends ResPayload {
      * @param name the new name of this instance
      */
     public void setName(String name) {
-        this.name = name;
+        this.name = name.isEmpty() ? null : name;
     }
 
     @Override
