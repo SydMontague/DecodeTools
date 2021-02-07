@@ -32,6 +32,11 @@ public class HSEMKCAP extends AbstractKCAP {
         source.readInteger();
         source.readInteger();
         source.readInteger();
+
+        if(source.getPosition() - info.startAddress != info.headerSize) {
+            source.setPosition(info.startAddress + info.headerSize);
+            Main.LOGGER.warning("HSEM was at wrong position after loading header.");
+        }
         
         // load the KCAP pointers to the entries
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);

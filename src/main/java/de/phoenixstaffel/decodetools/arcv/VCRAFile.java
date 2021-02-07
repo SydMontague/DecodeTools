@@ -3,6 +3,7 @@ package de.phoenixstaffel.decodetools.arcv;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -63,10 +64,11 @@ public class VCRAFile {
         entries.add(entry);
     }
     
-    public void extractARCV(File inputARCV, File outputDir) {
-        try(Access arcv = new FileAccess(inputARCV)) {
+    public void extractARCV(Path inputARCV, Path outputDir) {
+        try(Access arcv = new FileAccess(inputARCV.toFile())) {
             for(VCRAEntry entry : entries) {
-                File outputFile = new File(outputDir, entry.getPath());
+                
+                Path outputFile = outputDir.resolve(entry.getPath());
                 byte[] raw = arcv.readByteArray(entry.getCompressedSize(), entry.getSector() * 0x800L);
                 byte[] output;
                 
@@ -79,8 +81,8 @@ public class VCRAFile {
                     inflater.inflate(output);
                 }
                 
-                Files.createDirectories(outputFile.toPath().getParent());
-                Files.write(outputFile.toPath(), output, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                Files.createDirectories(outputFile.getParent());
+                Files.write(outputFile, output, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             }
         }
         catch (IOException | DataFormatException e) {

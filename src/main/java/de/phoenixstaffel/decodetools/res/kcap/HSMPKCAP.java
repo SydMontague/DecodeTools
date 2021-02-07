@@ -78,6 +78,11 @@ public class HSMPKCAP extends AbstractKCAP {
         source.readByteArray(diff == 0 ? 0x10 : (int) diff); // padding
         
         // load the KCAP pointers to the entries
+        if(source.getPosition() - info.startAddress != info.headerSize) {
+            source.setPosition(info.startAddress + info.headerSize);
+            Main.LOGGER.warning("HSMP was at wrong position after loading header.");
+        }
+        
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
         
         KCAPPointer xtvpPtr = pointer.get(0);

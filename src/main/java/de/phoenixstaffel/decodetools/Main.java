@@ -52,7 +52,7 @@ public class Main {
                 
                 try(Access access = new FileAccess(new File(input, "ARCVINFO.BIN"))) {
                     VCRAFile info = new VCRAFile(access);
-                    info.extractARCV(new File(input, "ARCV0.BIN"), output);
+                    info.extractARCV(new File(input, "ARCV0.BIN").toPath(), output.toPath());
                 }
             }
         }

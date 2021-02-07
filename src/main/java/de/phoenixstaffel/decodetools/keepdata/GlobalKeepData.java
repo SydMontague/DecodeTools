@@ -193,4 +193,24 @@ public class GlobalKeepData {
         
         return new NormalKCAP(null, entries, true);
     }
+
+    public List<Digimon> getDigimonData() {
+        return digimonData;
+    }
+
+    public List<DigimonRaising> getRaiseData() {
+        return raiseData;
+    }
+
+    public List<EvoRequirement> getEvoRequirements() {
+        return evoRequirements;
+    }
+
+    public List<Skill> getSkills() {
+        return skills;
+    }
+
+    public List<Finisher> getFinisher() {
+        return finisher;
+    }
 }

@@ -55,7 +55,7 @@ public class ARCVFile {
                 return addFile(t.toPath(), filePath.toString().replace("\\", "/")); // fuck windows
             }
             catch (Exception e) {
-                Main.LOGGER.log(Level.WARNING, "Exception while adding file to ARCVFile: " + filePath, e);
+                Main.LOGGER.log(Level.WARNING, e, () -> "Exception while adding file to ARCVFile: " + filePath);
             }
             
             return null;

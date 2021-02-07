@@ -305,7 +305,7 @@ public class MainWindow extends JFrame implements Observer {
                     File output = outputFileDialogue.getSelectedFile();
                     
                     try (Access access = new FileAccess(new File(input, "ARCVINFO.BIN"))){
-                        new VCRAFile(access).extractARCV(new File(input, "ARCV0.BIN"), output);
+                        new VCRAFile(access).extractARCV(new File(input, "ARCV0.BIN").toPath(), output.toPath());
                     }
                     catch (IOException e1) {
                         Main.LOGGER.log(Level.WARNING, "Error while extracting ARCV files!", e1);
