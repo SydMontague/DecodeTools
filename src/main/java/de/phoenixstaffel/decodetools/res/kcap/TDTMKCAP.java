@@ -88,8 +88,8 @@ public class TDTMKCAP extends AbstractKCAP {
     @Override
     public List<ResPayload> getEntries() {
         List<ResPayload> entries = new ArrayList<>();
-        entries.add(new NormalKCAP(this, qstm, true));
-        entries.add(new NormalKCAP(this, vctm, true));
+        entries.add(new NormalKCAP(this, qstm, true, false));
+        entries.add(new NormalKCAP(this, vctm, true, false));
         
         return Collections.unmodifiableList(entries);
     }
@@ -98,9 +98,9 @@ public class TDTMKCAP extends AbstractKCAP {
     public ResPayload get(int i) {
         switch (i) {
             case 0:
-                return new NormalKCAP(this, qstm, true);
+                return new NormalKCAP(this, qstm, true, false);
             case 1:
-                return new NormalKCAP(this, vctm, true);
+                return new NormalKCAP(this, vctm, true, false);
             default:
                 throw new NoSuchElementException();
         }

@@ -365,4 +365,12 @@ public class Utils {
         for (int i = list.size(); i < size; i++)
             list.add(value);
     }
+    
+    public static long parseLongOrDefault(String val, long defaultVal) {
+        try {
+            return Long.parseLong(val);
+        } catch (NumberFormatException e) {
+            return defaultVal;
+        }
+    }
 }

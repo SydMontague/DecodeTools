@@ -162,6 +162,7 @@ public abstract class ResPayload {
         file.delete();
         if (!file.exists())
             try {
+                file.getParentFile().mkdirs();
                 file.createNewFile();
             }
             catch (IOException e1) {

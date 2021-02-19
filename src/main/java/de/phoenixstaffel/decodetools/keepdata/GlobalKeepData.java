@@ -72,8 +72,8 @@ public class GlobalKeepData {
         return input.getEntries().stream().map(a -> new StreamAccess(((GenericPayload) a).getData())).map(generator).collect(Collectors.toList());
     }
     
-    private static NormalKCAP convertListToKCAP(List<? extends KeepData> data, boolean genericAligned) {
-        return new NormalKCAP(null, data.stream().map(KeepData::toPayload).collect(Collectors.toList()), genericAligned);
+    private static NormalKCAP convertListToKCAP(List<? extends KeepData> data, boolean genericAligned, boolean isUnknownFlagSet) {
+        return new NormalKCAP(null, data.stream().map(KeepData::toPayload).collect(Collectors.toList()), genericAligned, isUnknownFlagSet);
     }
     
     public GlobalKeepData(AbstractKCAP kcap) {
@@ -136,22 +136,22 @@ public class GlobalKeepData {
     public AbstractKCAP toKCAP() {
         List<ResPayload> entries = new ArrayList<>();
 
-        entries.add(convertListToKCAP(digimonData, false));
-        entries.add(convertListToKCAP(raiseData, false));
+        entries.add(convertListToKCAP(digimonData, false, false));
+        entries.add(convertListToKCAP(raiseData, false, false));
         entries.add(levelParam);
         entries.add(wakeupTimes);
-        entries.add(convertListToKCAP(evoRequirements, true));
+        entries.add(convertListToKCAP(evoRequirements, true, false));
         entries.add(items);
         entries.add(unk1);
-        entries.add(convertListToKCAP(skills, true));
-        entries.add(convertListToKCAP(finisher, true));
+        entries.add(convertListToKCAP(skills, true, false));
+        entries.add(convertListToKCAP(finisher, true, false));
         entries.add(enemyData);
         entries.add(unk3);
         entries.add(shops);
         entries.add(unk5);
         entries.add(unk6);
         entries.add(enemyMapData);
-        entries.add(unk7);
+        entries.add(unk7); // true
         entries.add(fish);
         entries.add(fishSpots);
         entries.add(dishes);
@@ -161,10 +161,10 @@ public class GlobalKeepData {
         entries.add(cards);
         entries.add(cardSets);
         entries.add(cardTrades);
-        entries.add(unk12);
+        entries.add(unk12); // true
         entries.add(treasureParam);
         entries.add(treasureLoot);
-        entries.add(arena);
+        entries.add(arena); // true
         entries.add(void0);
         entries.add(void1);
         entries.add(void2);
@@ -179,10 +179,10 @@ public class GlobalKeepData {
         entries.add(unk20);
         entries.add(unk21);
         entries.add(storageCards);
-        entries.add(unk22);
+        entries.add(unk22); // true
         entries.add(unk23);
         entries.add(unk24);
-        entries.add(unk25);
+        entries.add(unk25); // true
         entries.add(typeEffectiveness);
         entries.add(unk27);
         entries.add(unk28);
@@ -191,7 +191,7 @@ public class GlobalKeepData {
         entries.add(decodeLevel);
         entries.add(unk31);
         
-        return new NormalKCAP(null, entries, true);
+        return new NormalKCAP(null, entries, true, true);
     }
 
     public List<Digimon> getDigimonData() {

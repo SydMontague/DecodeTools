@@ -181,7 +181,7 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
         
     }
     
-    static class KCAPInformation {
+    public static class KCAPInformation {
         long startAddress;
         
         int size;

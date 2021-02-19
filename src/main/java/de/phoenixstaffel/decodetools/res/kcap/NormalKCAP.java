@@ -46,8 +46,8 @@ public class NormalKCAP extends AbstractKCAP {
                     + expectedEnd);
     }
     
-    public NormalKCAP(AbstractKCAP parent, List<? extends ResPayload> entries, boolean genericAligned) {
-        super(parent, 0);
+    public NormalKCAP(AbstractKCAP parent, List<? extends ResPayload> entries, boolean genericAligned, boolean isUnknownFlagSet) {
+        super(parent, isUnknownFlagSet ? 0x00010000 : 0);
         
         this.entries.addAll(entries);
         this.genericAligned = genericAligned;
