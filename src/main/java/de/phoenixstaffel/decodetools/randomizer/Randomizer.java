@@ -17,7 +17,8 @@ import de.phoenixstaffel.decodetools.core.Utils;
 // TODO name and package temporary
 public class Randomizer {
     
-    private Randomizer() {}
+    private Randomizer() {
+    }
     
     /*-
      *  working/
@@ -48,6 +49,7 @@ public class Randomizer {
     }
     
     private static final String TOOL = "3dstool";
+    private static final String ARMIPS = "armips";
     
     public static boolean extract3DSFile(Path working, Path inputFile) {
         try {
@@ -104,7 +106,7 @@ public class Randomizer {
                            && extractExeFS.start().waitFor() == 0
                            && extractRomFS.start().waitFor() == 0;
             
-            if(success)
+            if (success)
                 try (Access access = new FileAccess(arcvinfo.toFile())) {
                     new VCRAFile(access).extractARCV(arcv0, working.resolve("part0/arcv"));
                 }
@@ -128,19 +130,43 @@ public class Randomizer {
         return false;
     }
     
+    private static void handleCodeASMFile(Path path, Path tempDir) {
+        try {
+            Path codeBin = tempDir.resolve("part0/exefs/code.bin");
+            Path codeBin2 = tempDir.resolve("part0/exefs/code2.bin");
+            Files.copy(codeBin, codeBin2);
+            Files.delete(codeBin);
+            Files.copy(codeBin2, codeBin);
+            Files.delete(codeBin2);
+            ProcessBuilder applyASM = new ProcessBuilder().command(ARMIPS, path.toAbsolutePath().toString()).directory(tempDir.toFile());
+            applyASM.start().waitFor();
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public static boolean rebuild3DS(Path inputDir, Path outputROM, List<Path> modFolders) {
-
+        
         try {
             Path tempDir = Files.createTempDirectory(Paths.get("."), "rebuild");
             Path buildDir = Files.createTempDirectory("build");
-
+            
             // TODO formalise rebuild dir, allowing more forms of modification such as xdelta
             Utils.listFiles(inputDir.toFile()).stream().map(File::toPath).forEach(a -> createTmpLink(tempDir, a, inputDir.relativize(a)));
-            modFolders.forEach(modFolder -> Utils.listFiles(modFolder.toFile()).stream().map(File::toPath)
-                                                 .forEach(a -> createTmpLink(tempDir, a, modFolder.relativize(a))));
-
+            modFolders.forEach(modFolder -> Utils.listFiles(modFolder.toFile()).stream().map(File::toPath).forEach(a -> {
+                if (a.toString().endsWith("code.bin.asm"))
+                    handleCodeASMFile(a, tempDir);
+                else
+                    createTmpLink(tempDir, a, modFolder.relativize(a));
+            }));
+            
             new ARCVFile(tempDir.resolve("part0/arcv").toFile()).saveFiles(tempDir.resolve("part0/romfs").toFile());
-
+            
             ProcessBuilder buildRomFS = new ProcessBuilder().command(TOOL,
                                                                      "-c",
                                                                      "--type",
@@ -205,7 +231,7 @@ public class Randomizer {
         catch (IOException e) {
             e.printStackTrace();
         }
-
+        
         return false;
     }
     

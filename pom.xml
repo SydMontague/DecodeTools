@@ -59,21 +59,11 @@
 
   <dependencies>
     <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>5.7.0</version>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>5.7.0</version>
+        <groupId>com.amihaiemil.web</groupId>
+        <artifactId>eo-yaml</artifactId>
+        <version>5.1.9</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.yaml</groupId>
-      <artifactId>snakeyaml</artifactId>
-      <version>1.27</version>
-    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -103,12 +93,6 @@
       <artifactId>lwjgl</artifactId>
       <version>${lwjgl.version}</version>
       <classifier>natives-${platform}</classifier>
-    </dependency>
-    
-    <dependency>
-        <groupId>com.google.code.findbugs</groupId>
-        <artifactId>jsr305</artifactId>
-        <version>3.0.2</version>
     </dependency>
   </dependencies>
 

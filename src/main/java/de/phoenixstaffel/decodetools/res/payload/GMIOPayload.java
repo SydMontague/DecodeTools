@@ -3,8 +3,6 @@ package de.phoenixstaffel.decodetools.res.payload;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
-import javax.annotation.Nonnull;
-
 import de.phoenixstaffel.decodetools.Main;
 import de.phoenixstaffel.decodetools.PixelFormat;
 import de.phoenixstaffel.decodetools.core.Access;
@@ -192,7 +190,7 @@ public class GMIOPayload extends NameablePayload {
         return magFilter;
     }
     
-    public void setMagFilter(@Nonnull TextureFiltering magFilter) {
+    public void setMagFilter(TextureFiltering magFilter) {
         this.magFilter = magFilter;
     }
     
@@ -200,7 +198,7 @@ public class GMIOPayload extends NameablePayload {
         return minFilter;
     }
     
-    public void setMinFilter(@Nonnull TextureFiltering minFilter) {
+    public void setMinFilter(TextureFiltering minFilter) {
         this.minFilter = minFilter;
     }
     
@@ -208,7 +206,7 @@ public class GMIOPayload extends NameablePayload {
         return wrapS;
     }
     
-    public void setWrapS(@Nonnull TextureWrap wrapS) {
+    public void setWrapS(TextureWrap wrapS) {
         this.wrapS = wrapS;
     }
     
@@ -216,7 +214,7 @@ public class GMIOPayload extends NameablePayload {
         return wrapT;
     }
     
-    public void setWrapT(@Nonnull TextureWrap wrapT) {
+    public void setWrapT(TextureWrap wrapT) {
         this.wrapT = wrapT;
     }
     
@@ -224,7 +222,7 @@ public class GMIOPayload extends NameablePayload {
         return unknown;
     }
     
-    public void setUnknown(@Nonnull UnknownEnum unknown) {
+    public void setUnknown(UnknownEnum unknown) {
         this.unknown = unknown;
     }
     

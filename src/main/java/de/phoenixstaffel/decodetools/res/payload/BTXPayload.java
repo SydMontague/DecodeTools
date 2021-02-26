@@ -18,7 +18,6 @@ public class BTXPayload extends ResPayload {
     private final int fileId;
     
     private List<Tuple<Integer, BTXEntry>> entries = new LinkedList<>();
-    private int unknown;
     
     // TODO make cleaner/nicer
     public BTXPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
@@ -39,7 +38,7 @@ public class BTXPayload extends ResPayload {
         
         source.setPosition(start + headerSize + (postStart == 0 ? 0 : 4));
         
-        unknown = source.readInteger();
+        source.readInteger(); // always 1
         int numEntries = source.readInteger();
         
         List<Tuple<Integer, Long>> pointers = new LinkedList<>();
@@ -83,6 +82,11 @@ public class BTXPayload extends ResPayload {
         }
     }
     
+    public BTXPayload(AbstractKCAP parent) {
+        super(parent);
+        this.fileId = parent != null ? parent.getEntryCount() : 0;
+    }
+    
     @Override
     public int getSize() {
         int size = 0x18 + entries.size() * 8;
@@ -117,7 +121,7 @@ public class BTXPayload extends ResPayload {
         if (entries.stream().noneMatch(a -> a.getValue().getMeta().isPresent()))
             dest.writeInteger(0); // padding
             
-        dest.writeInteger(unknown);
+        dest.writeInteger(1); // always 1
         dest.writeInteger(entries.size());
         
         long pointer = dest.getPosition() + entries.size() * 8;
@@ -243,10 +247,10 @@ public class BTXPayload extends ResPayload {
         /**
          * Gets the id of the speaker associated to the message.
          * 
-         * Their names are found in files 12-14 in the LanguageKeep_jp.res,
-         * 0XXX -> File 12
-         * 1XXX -> File 13
-         * 2XXX -> File 14
+         * Their names are found in files 11-14 in the LanguageKeep_jp.res,
+         * 0XXX -> BTX 11
+         * 1XXX -> BTX 13
+         * 2XXX -> BTX 14
          * 
          * @return the speaker ID
          */

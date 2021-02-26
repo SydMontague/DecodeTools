@@ -2,6 +2,7 @@ package de.phoenixstaffel.decodetools.keepdata;
 
 import de.phoenixstaffel.decodetools.core.Access;
 import de.phoenixstaffel.decodetools.core.StreamAccess;
+import de.phoenixstaffel.decodetools.keepdata.enums.MoveKind;
 import de.phoenixstaffel.decodetools.keepdata.enums.Special;
 import de.phoenixstaffel.decodetools.keepdata.enums.Status;
 import de.phoenixstaffel.decodetools.res.payload.GenericPayload;
@@ -16,7 +17,7 @@ public class Skill implements KeepData {
     private Special special;
     private short range;
     private float unk2;
-    private int kind;
+    private MoveKind kind;
     private int damage;
     private int unk3;
     private int unk4;
@@ -35,7 +36,7 @@ public class Skill implements KeepData {
         this.special = Special.values()[access.readShort()];
         this.range = access.readShort();
         this.unk2 = access.readFloat();
-        this.kind = access.readInteger();
+        this.kind = MoveKind.values()[access.readInteger()];
         this.damage = access.readInteger();
         this.unk3 = access.readInteger();
         this.unk4 = access.readInteger();
@@ -66,7 +67,7 @@ public class Skill implements KeepData {
         access.writeShort((short) this.special.ordinal());
         access.writeShort(this.range);
         access.writeFloat(this.unk2);
-        access.writeInteger(this.kind);
+        access.writeInteger(this.kind.ordinal());
         access.writeInteger(this.damage);
         access.writeInteger(this.unk3);
         access.writeInteger(this.unk4);
@@ -148,11 +149,11 @@ public class Skill implements KeepData {
         this.unk2 = unk2;
     }
     
-    public int getKind() {
+    public MoveKind getKind() {
         return kind;
     }
     
-    public void setKind(int kind) {
+    public void setKind(MoveKind kind) {
         this.kind = kind;
     }
     

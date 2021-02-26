@@ -10,21 +10,15 @@ module net.digimonworld.decode.decode_tools {
     exports de.phoenixstaffel.decodetools.core;
     exports de.phoenixstaffel.decodetools.arcv;
     exports de.phoenixstaffel.decodetools.res.payload;
-    exports de.phoenixstaffel.decodetools.dataminer;
     exports de.phoenixstaffel.decodetools.gui.util;
-    exports de.phoenixstaffel.decodetools.core.jna;
     exports de.phoenixstaffel.decodetools.keepdata.enums;
     exports de.phoenixstaffel.decodetools.res.payload.xdio;
     exports de.phoenixstaffel.decodetools.res.payload.xtvo;
     exports de.phoenixstaffel.decodetools.res.payload.qstm;
     
-    requires transitive com.sun.jna;
-    requires com.sun.jna.platform;
     requires transitive java.desktop;
     requires transitive java.logging;
     requires java.xml;
-    requires jsr305;
     requires org.lwjgl;
     requires org.lwjgl.assimp;
-    requires org.yaml.snakeyaml;
 }
