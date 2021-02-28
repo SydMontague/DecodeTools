@@ -15,6 +15,10 @@ public class EvoRequirement implements KeepData {
             requirements.add(new Requirement(access));
     }
     
+    public EvoRequirement(List<Requirement> requirements) {
+        this.requirements = requirements;
+    }
+    
     @Override
     public GenericPayload toPayload() {
         byte[] buffer = new byte[requirements.size() * 0x0C];
@@ -26,12 +30,20 @@ public class EvoRequirement implements KeepData {
         return new GenericPayload(null, buffer);
     }
     
+    public List<Requirement> getRequirements() {
+        return requirements;
+    }
+    
+    public void setRequirements(List<Requirement> requirements) {
+        this.requirements = requirements;
+    }
+    
     private void write(Access access) {
         requirements.forEach(a -> a.write(access));
     }
     
-    class Requirement {
-        private Level level;
+    public static class Requirement {
+        private SuperGroup level;
         private byte group;
         private Operator operator;
         private Comperator comperator;
@@ -40,13 +52,22 @@ public class EvoRequirement implements KeepData {
         private int value;
         
         public Requirement(Access source) {
-            level = Level.valueOf(source.readByte());
+            level = SuperGroup.valueOf(source.readByte());
             group = source.readByte();
             operator = Operator.valueOf(source.readByte());
             comperator = Comperator.valueOf(source.readByte());
             
             type = Type.valueOf(source.readInteger());
             value = source.readInteger();
+        }
+        
+        public Requirement(SuperGroup level, byte group, Operator operator, Comperator comperator, Type type, int value) {
+            this.level = level;
+            this.group = group;
+            this.operator = operator;
+            this.comperator = comperator;
+            this.type = type;
+            this.value = value;
         }
         
         public void write(Access access) {
@@ -71,9 +92,57 @@ public class EvoRequirement implements KeepData {
             
             return b.toString();
         }
+
+        public SuperGroup getLevel() {
+            return level;
+        }
+
+        public void setLevel(SuperGroup level) {
+            this.level = level;
+        }
+
+        public byte getGroup() {
+            return group;
+        }
+
+        public void setGroup(byte group) {
+            this.group = group;
+        }
+
+        public Operator getOperator() {
+            return operator;
+        }
+
+        public void setOperator(Operator operator) {
+            this.operator = operator;
+        }
+
+        public Comperator getComperator() {
+            return comperator;
+        }
+
+        public void setComperator(Comperator comperator) {
+            this.comperator = comperator;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public void setType(Type type) {
+            this.type = type;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
     }
     
-    enum Operator {
+    public enum Operator {
         QUOTA((byte) 0),
         AND((byte) 1),
         OR((byte) 2);
@@ -97,7 +166,7 @@ public class EvoRequirement implements KeepData {
         }
     }
     
-    enum Level {
+    public enum SuperGroup {
         QUOTA((byte) 0),
         MANDATORY((byte) 1),
         NORMAL((byte) 2),
@@ -105,7 +174,7 @@ public class EvoRequirement implements KeepData {
         
         private final byte value;
         
-        private Level(byte value) {
+        private SuperGroup(byte value) {
             this.value = value;
         }
         
@@ -113,8 +182,8 @@ public class EvoRequirement implements KeepData {
             return value;
         }
         
-        public static Level valueOf(byte i) {
-            for (Level t : values())
+        public static SuperGroup valueOf(byte i) {
+            for (SuperGroup t : values())
                 if (t.value == i)
                     return t;
                 
@@ -122,7 +191,7 @@ public class EvoRequirement implements KeepData {
         }
     }
     
-    enum Comperator {
+    public enum Comperator {
         QUOTA((byte) 0),
         EQUALS((byte) 1),
         GREATER_THAN((byte) 2),
@@ -148,7 +217,7 @@ public class EvoRequirement implements KeepData {
         }
     }
     
-    enum Type {
+    public enum Type {
         QUOTA(0),
         HP(1),
         HP_DIV10(2),

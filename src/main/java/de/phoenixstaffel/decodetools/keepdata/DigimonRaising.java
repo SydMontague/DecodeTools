@@ -232,4 +232,31 @@ public class DigimonRaising implements KeepData {
         this.evolveTo = evolveTo;
     }
     
+    public void setEvolveTo(int index, short evolveTo) {
+        if(index < 0 || index >= 6)
+            throw new IllegalArgumentException("Only index 0 to 5 are valid!");
+        
+        this.evolveTo[index] = evolveTo;
+    }
+
+    public short getEvolveTo(int index) {
+        if(index < 0 || index >= 6)
+            throw new IllegalArgumentException("Only index 0 to 5 are valid!");
+        
+        return evolveTo[index];
+    }
+    
+    public void setEvolveFrom(int index, short evolveFrom) {
+        if(index < 0 || index >= 5)
+            throw new IllegalArgumentException("Only index 0 to 4 are valid!");
+        
+        this.evolveFrom[index] = evolveFrom;
+    }
+
+    public short getEvolveFrom(int index) {
+        if(index < 0 || index >= 5)
+            throw new IllegalArgumentException("Only index 0 to 4 are valid!");
+        
+        return evolveFrom[index];
+    }
 }
