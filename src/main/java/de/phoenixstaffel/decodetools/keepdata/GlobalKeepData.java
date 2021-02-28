@@ -18,7 +18,7 @@ public class GlobalKeepData {
     private final GenericPayload levelParam;
     private final GenericPayload wakeupTimes;
     private final List<EvoRequirement> evoRequirements;
-    private final GenericPayload items;
+    private final List<Item> items;
     private final GenericPayload unk1;
     private final List<Skill> skills;
     private final List<Finisher> finisher;
@@ -68,6 +68,26 @@ public class GlobalKeepData {
     private final GenericPayload decodeLevel;
     private final GenericPayload unk31;
     
+    private static <T> List<T> convertGenericToList(GenericPayload input, Function<StreamAccess, T> generator) {
+        List<T> list = new ArrayList<>();
+        try(StreamAccess access = new StreamAccess(input.getData())) {
+            while(access.getPosition() < access.getSize())
+                list.add(generator.apply(access));
+        }
+        return list;
+    }
+    
+    private static GenericPayload convertListToGeneric(List<? extends GenericKeepData> data) {
+        int size = data.stream().collect(Collectors.summingInt(GenericKeepData::getSize));
+        byte[] buffer = new byte[size];
+        
+        try(StreamAccess access = new StreamAccess(buffer)) {
+            data.forEach(a -> a.write(access));
+        }
+        
+        return new GenericPayload(null, buffer);
+    }
+    
     private static <T> List<T> convertKCAPtoList(AbstractKCAP input, Function<StreamAccess, T> generator) {
         return input.getEntries().stream().map(a -> new StreamAccess(((GenericPayload) a).getData())).map(generator).collect(Collectors.toList());
     }
@@ -82,7 +102,7 @@ public class GlobalKeepData {
         this.levelParam = (GenericPayload) kcap.get(2);
         this.wakeupTimes = (GenericPayload) kcap.get(3);
         this.evoRequirements = convertKCAPtoList((AbstractKCAP) kcap.get(4), EvoRequirement::new);
-        this.items = (GenericPayload) kcap.get(5);
+        this.items = convertGenericToList((GenericPayload) kcap.get(5), Item::new);
         this.unk1 = (GenericPayload) kcap.get(6);
         this.skills = convertKCAPtoList((AbstractKCAP) kcap.get(7), Skill::new);
         this.finisher = convertKCAPtoList((AbstractKCAP) kcap.get(8), Finisher::new);
@@ -141,7 +161,7 @@ public class GlobalKeepData {
         entries.add(levelParam);
         entries.add(wakeupTimes);
         entries.add(convertListToKCAP(evoRequirements, true, false));
-        entries.add(items);
+        entries.add(convertListToGeneric(items));
         entries.add(unk1);
         entries.add(convertListToKCAP(skills, true, false));
         entries.add(convertListToKCAP(finisher, true, false));
@@ -212,5 +232,9 @@ public class GlobalKeepData {
 
     public List<Finisher> getFinisher() {
         return finisher;
+    }
+    
+    public List<Item> getItems() {
+        return items;
     }
 }

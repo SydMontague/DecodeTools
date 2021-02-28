@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -162,7 +163,7 @@ public abstract class ResPayload {
         file.delete();
         if (!file.exists())
             try {
-                file.getParentFile().mkdirs();
+                Optional.ofNullable(file.getParentFile()).ifPresent(File::mkdirs);
                 file.createNewFile();
             }
             catch (IOException e1) {
