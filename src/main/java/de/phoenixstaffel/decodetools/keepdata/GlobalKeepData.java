@@ -22,12 +22,12 @@ public class GlobalKeepData {
     private final GenericPayload unk1;
     private final List<Skill> skills;
     private final List<Finisher> finisher;
-    private final GenericPayload enemyData;
+    private final List<EnemyData> enemyData;
     private final GenericPayload unk3;
     private final GenericPayload shops;
     private final GenericPayload unk5;
     private final GenericPayload unk6;
-    private final GenericPayload enemyMapData;
+    private final List<MapEnemyData> enemyMapData;
     private final AbstractKCAP unk7;
     private final GenericPayload fish;
     private final GenericPayload fishSpots;
@@ -60,7 +60,7 @@ public class GlobalKeepData {
     private final GenericPayload unk23;
     private final GenericPayload unk24;
     private final AbstractKCAP unk25;
-    private final GenericPayload typeEffectiveness;
+    private final TypeAlignmentChart typeAlignmentChart;
     private final GenericPayload unk27;
     private final GenericPayload unk28;
     private final GenericPayload unk29;
@@ -106,12 +106,12 @@ public class GlobalKeepData {
         this.unk1 = (GenericPayload) kcap.get(6);
         this.skills = convertKCAPtoList((AbstractKCAP) kcap.get(7), Skill::new);
         this.finisher = convertKCAPtoList((AbstractKCAP) kcap.get(8), Finisher::new);
-        this.enemyData = (GenericPayload) kcap.get(9);
+        this.enemyData = convertGenericToList((GenericPayload) kcap.get(9), EnemyData::new);
         this.unk3 = (GenericPayload) kcap.get(10);
         this.shops = (GenericPayload) kcap.get(11);
         this.unk5 = (GenericPayload) kcap.get(12);
         this.unk6 = (GenericPayload) kcap.get(13);
-        this.enemyMapData = (GenericPayload) kcap.get(14);
+        this.enemyMapData = convertGenericToList((GenericPayload) kcap.get(14), MapEnemyData::new);
         this.unk7 = (AbstractKCAP) kcap.get(15);
         this.fish = (GenericPayload) kcap.get(16);
         this.fishSpots = (GenericPayload) kcap.get(17);
@@ -144,7 +144,7 @@ public class GlobalKeepData {
         this.unk23 = (GenericPayload) kcap.get(44);
         this.unk24 = (GenericPayload) kcap.get(45);
         this.unk25 = (AbstractKCAP) kcap.get(46);
-        this.typeEffectiveness = (GenericPayload) kcap.get(47);
+        this.typeAlignmentChart = new TypeAlignmentChart((GenericPayload) kcap.get(47));
         this.unk27 = (GenericPayload) kcap.get(48);
         this.unk28 = (GenericPayload) kcap.get(49);
         this.unk29 = (GenericPayload) kcap.get(50);
@@ -165,12 +165,12 @@ public class GlobalKeepData {
         entries.add(unk1);
         entries.add(convertListToKCAP(skills, true, false));
         entries.add(convertListToKCAP(finisher, true, false));
-        entries.add(enemyData);
+        entries.add(convertListToGeneric(enemyData));
         entries.add(unk3);
         entries.add(shops);
         entries.add(unk5);
         entries.add(unk6);
-        entries.add(enemyMapData);
+        entries.add(convertListToGeneric(enemyMapData));
         entries.add(unk7); // true
         entries.add(fish);
         entries.add(fishSpots);
@@ -203,7 +203,7 @@ public class GlobalKeepData {
         entries.add(unk23);
         entries.add(unk24);
         entries.add(unk25); // true
-        entries.add(typeEffectiveness);
+        entries.add(typeAlignmentChart.toPayload());
         entries.add(unk27);
         entries.add(unk28);
         entries.add(unk29);
@@ -236,5 +236,9 @@ public class GlobalKeepData {
     
     public List<Item> getItems() {
         return items;
+    }
+    
+    public TypeAlignmentChart getTypeAlignmentChart() {
+        return typeAlignmentChart;
     }
 }
