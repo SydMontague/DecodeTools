@@ -1,10 +1,12 @@
 package de.phoenixstaffel.decodetools.keepdata;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import de.phoenixstaffel.decodetools.core.MappedSet;
 import de.phoenixstaffel.decodetools.core.StreamAccess;
 import de.phoenixstaffel.decodetools.res.ResPayload;
 import de.phoenixstaffel.decodetools.res.kcap.AbstractKCAP;
@@ -22,7 +24,7 @@ public class GlobalKeepData {
     private final GenericPayload unk1;
     private final List<Skill> skills;
     private final List<Finisher> finisher;
-    private final List<EnemyData> enemyData;
+    private final MappedSet<Short, EnemyData> enemyData;
     private final GenericPayload unk3;
     private final GenericPayload shops;
     private final GenericPayload unk5;
@@ -40,7 +42,7 @@ public class GlobalKeepData {
     private final GenericPayload cardTrades;
     private final AbstractKCAP unk12;
     private final GenericPayload treasureParam;
-    private final GenericPayload treasureLoot;
+    private final List<TreasureLoot> treasureLoot;
     private final AbstractKCAP arena;
     private final VoidPayload void0;
     private final VoidPayload void1;
@@ -70,18 +72,18 @@ public class GlobalKeepData {
     
     private static <T> List<T> convertGenericToList(GenericPayload input, Function<StreamAccess, T> generator) {
         List<T> list = new ArrayList<>();
-        try(StreamAccess access = new StreamAccess(input.getData())) {
-            while(access.getPosition() < access.getSize())
+        try (StreamAccess access = new StreamAccess(input.getData())) {
+            while (access.getPosition() < access.getSize())
                 list.add(generator.apply(access));
         }
         return list;
     }
     
-    private static GenericPayload convertListToGeneric(List<? extends GenericKeepData> data) {
+    private static GenericPayload convertListToGeneric(Collection<? extends GenericKeepData> data) {
         int size = data.stream().collect(Collectors.summingInt(GenericKeepData::getSize));
         byte[] buffer = new byte[size];
         
-        try(StreamAccess access = new StreamAccess(buffer)) {
+        try (StreamAccess access = new StreamAccess(buffer)) {
             data.forEach(a -> a.write(access));
         }
         
@@ -106,7 +108,7 @@ public class GlobalKeepData {
         this.unk1 = (GenericPayload) kcap.get(6);
         this.skills = convertKCAPtoList((AbstractKCAP) kcap.get(7), Skill::new);
         this.finisher = convertKCAPtoList((AbstractKCAP) kcap.get(8), Finisher::new);
-        this.enemyData = convertGenericToList((GenericPayload) kcap.get(9), EnemyData::new);
+        this.enemyData = new MappedSet<>(EnemyData.class, EnemyData::getEnemyId, convertGenericToList((GenericPayload) kcap.get(9), EnemyData::new));
         this.unk3 = (GenericPayload) kcap.get(10);
         this.shops = (GenericPayload) kcap.get(11);
         this.unk5 = (GenericPayload) kcap.get(12);
@@ -124,7 +126,7 @@ public class GlobalKeepData {
         this.cardTrades = (GenericPayload) kcap.get(24);
         this.unk12 = (AbstractKCAP) kcap.get(25);
         this.treasureParam = (GenericPayload) kcap.get(26);
-        this.treasureLoot = (GenericPayload) kcap.get(27);
+        this.treasureLoot = convertGenericToList((GenericPayload) kcap.get(27), TreasureLoot::new);
         this.arena = (AbstractKCAP) kcap.get(28);
         this.void0 = (VoidPayload) kcap.get(29);
         this.void1 = (VoidPayload) kcap.get(30);
@@ -155,7 +157,7 @@ public class GlobalKeepData {
     
     public AbstractKCAP toKCAP() {
         List<ResPayload> entries = new ArrayList<>();
-
+        
         entries.add(convertListToKCAP(digimonData, false, false));
         entries.add(convertListToKCAP(raiseData, false, false));
         entries.add(levelParam);
@@ -183,7 +185,7 @@ public class GlobalKeepData {
         entries.add(cardTrades);
         entries.add(unk12); // true
         entries.add(treasureParam);
-        entries.add(treasureLoot);
+        entries.add(convertListToGeneric(treasureLoot));
         entries.add(arena); // true
         entries.add(void0);
         entries.add(void1);
@@ -213,23 +215,23 @@ public class GlobalKeepData {
         
         return new NormalKCAP(null, entries, true, true);
     }
-
+    
     public List<Digimon> getDigimonData() {
         return digimonData;
     }
-
+    
     public List<DigimonRaising> getRaiseData() {
         return raiseData;
     }
-
+    
     public List<EvoRequirement> getEvoRequirements() {
         return evoRequirements;
     }
-
+    
     public List<Skill> getSkills() {
         return skills;
     }
-
+    
     public List<Finisher> getFinisher() {
         return finisher;
     }
@@ -240,5 +242,17 @@ public class GlobalKeepData {
     
     public TypeAlignmentChart getTypeAlignmentChart() {
         return typeAlignmentChart;
+    }
+    
+    public List<TreasureLoot> getTreasureLoot() {
+        return treasureLoot;
+    }
+    
+    public MappedSet<Short, EnemyData> getEnemyData() {
+        return enemyData;
+    }
+    
+    public List<MapEnemyData> getEnemyMapData() {
+        return enemyMapData;
     }
 }
