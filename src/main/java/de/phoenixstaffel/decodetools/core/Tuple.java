@@ -38,4 +38,8 @@ public class Tuple<K, V> {
     public V getValue() {
         return value;
     }
+    
+    public static <K, V> Tuple<K, V> of(K key, V value) {
+        return new Tuple<>(key, value);
+    }
 }

@@ -59,9 +59,9 @@
 
   <dependencies>
     <dependency>
-        <groupId>com.amihaiemil.web</groupId>
-        <artifactId>eo-yaml</artifactId>
-        <version>5.1.9</version>
+      <groupId>com.amihaiemil.web</groupId>
+      <artifactId>eo-yaml</artifactId>
+      <version>5.1.9</version>
     </dependency>
 
     <dependency>
@@ -110,6 +110,7 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.1.1</version>
         <configuration>
+          <classifier>${platform}</classifier>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
@@ -154,21 +155,11 @@
         </executions>
         <configuration>
           <artifactItems>
-            <artifactItem>
-              <groupId>net.java.dev.jna</groupId>
-              <artifactId>jna-platform</artifactId>
-              <version>5.7.0</version>
-            </artifactItem>
-            <artifactItem>
-              <groupId>net.java.dev.jna</groupId>
-              <artifactId>jna</artifactId>
-              <version>5.7.0</version>
-            </artifactItem>
-            <artifactItem>
-              <groupId>org.yaml</groupId>
-              <artifactId>snakeyaml</artifactId>
-              <version>1.27</version>
-            </artifactItem>
+            <dependency>
+              <groupId>com.amihaiemil.web</groupId>
+              <artifactId>eo-yaml</artifactId>
+              <version>5.1.9</version>
+            </dependency>
 
             <artifactItem>
               <groupId>org.lwjgl</groupId>
