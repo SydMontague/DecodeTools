@@ -110,7 +110,6 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.1.1</version>
         <configuration>
-          <classifier>${platform}</classifier>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
