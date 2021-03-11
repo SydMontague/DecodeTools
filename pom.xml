@@ -8,6 +8,14 @@
   <name>DecodeTools</name>
   <description>Tools for modding and data mining Decode</description>
 
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub SydMontague Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/SydMontague/DecodeTools</url>
+    </repository>
+  </distributionManagement>
+
   <properties>
     <lwjgl.version>3.2.3</lwjgl.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
