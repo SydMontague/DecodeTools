@@ -12,10 +12,9 @@ Handling: The flaw has no noticeable effects. Reading works flawlessly, re-expor
 =====
 Name: life01.res/life02.res format
 Description: The maps life01 and life02 are using and old version of the KCAP format (probably from Re:Digitize), 
-             that is following different rules. The new KCAP implementation does not support those rules.
-Severity: Moderate
-Handling: Re-Export both maps with the old KCAP implementation, to convert them.
-Proper fix: change new KCAP implementation to support the life files, by reading the headerSize field?
+             that is following different rules.
+Severity: Minor
+Handling: Re-Export both maps to convert them.
 
 =====
 Name: ETC1 re-export
@@ -28,6 +27,6 @@ Handling: It's unavoidable and can be neglected
 Name: Irregular MipMaps
 Description: Some files have textures with MipMaps for Human characters, without there being any indication in the
              corresponding GMIO. They also don't seem to be used (by Citra), so they may be a left-over.
-Severity: Moderate
-Handling: The affected files need to be re-exported to remove the MipMaps in order for ARCV rebuilds to succeed.
+Severity: Minor
+Handling: The affected files should be re-exported to remove the MipMaps.
           Use the dedicated Tools -> Re-Export malformatted files function.
