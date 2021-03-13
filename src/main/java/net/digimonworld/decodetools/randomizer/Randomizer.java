@@ -154,7 +154,7 @@ public class Randomizer {
         
         try {
             Path tempDir = Files.createTempDirectory(Paths.get("."), "rebuild");
-            Path buildDir = Files.createTempDirectory("build");
+            Path buildDir = Files.createTempDirectory(Paths.get("."), "build");
             
             // TODO formalise rebuild dir, allowing more forms of modification such as xdelta
             Utils.listFiles(inputDir.toFile()).stream().map(File::toPath).forEach(a -> createTmpLink(tempDir, a, inputDir.relativize(a)));
