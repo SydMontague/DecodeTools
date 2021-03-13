@@ -397,7 +397,7 @@ public class GMIOPanel extends PayloadPanel {
             try {
                 BufferedImage localImage = ImageIO.read(fileDialogue.getSelectedFile());
                 if (selected.get().setImage(localImage)) {
-                    setSelectedFile(getSelectedFile());
+                    setSelectedFile(getSelectedFile().orElse(null));
                     uvHeightSpinner.setValue(selected.get().getUVHeightAbsolute());
                     uvWidthSpinner.setValue(selected.get().getUVWidthAbsolute());
                 }
