@@ -167,7 +167,7 @@ public class Randomizer {
             
             new ARCVFile(tempDir.resolve("part0/arcv").toFile()).saveFiles(tempDir.resolve("part0/romfs").toFile());
             
-            ProcessBuilder buildRomFS = new ProcessBuilder().command(TOOL,
+            ProcessBuilder buildRomFS = new ProcessBuilder().inheritIO().command(TOOL,
                                                                      "-c",
                                                                      "--type",
                                                                      "romfs",
@@ -176,7 +176,7 @@ public class Randomizer {
                                                                      "--romfs-dir",
                                                                      tempDir.resolve("part0/romfs").toString());
             
-            ProcessBuilder buildExeFS = new ProcessBuilder().command(TOOL,
+            ProcessBuilder buildExeFS = new ProcessBuilder().inheritIO().command(TOOL,
                                                                      "-cz",
                                                                      "--type",
                                                                      "exefs",
@@ -187,10 +187,10 @@ public class Randomizer {
                                                                      "--header",
                                                                      tempDir.resolve("part0/exefsheader.bin").toString());
             
-            ProcessBuilder buildCXI = new ProcessBuilder().command(TOOL,
+            ProcessBuilder buildCXI = new ProcessBuilder().inheritIO().command(TOOL,
                                                                    "-ctf",
                                                                    "cxi",
-                                                                   buildDir.resolve(buildDir.resolve("part0.bin")).toString(),
+                                                                   buildDir.resolve("part0.bin").toString(),
                                                                    "--header",
                                                                    tempDir.resolve("part0/ncchheader.bin").toString(),
                                                                    "--exh",
@@ -203,7 +203,7 @@ public class Randomizer {
                                                                    buildDir.resolve("romfs.bin").toString(),
                                                                    "--not-encrypt");
             
-            ProcessBuilder buildCCI = new ProcessBuilder().command(TOOL,
+            ProcessBuilder buildCCI = new ProcessBuilder().inheritIO().command(TOOL,
                                                                    "-ctf017",
                                                                    "cci",
                                                                    outputROM.toString(),
