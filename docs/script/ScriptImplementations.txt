@@ -1,0 +1,151 @@
+0x00 - END
+0x01 - R0 = <VAL8>
+0x02 - R0 = <VAL16>
+0x03 - R0 = <VAL32>
+0x04 - R0 = <VALF64>
+0x05 - R0 = -<VAL8>
+0x06 - R0 = -<VAL16>
+0x07 - R0 = <VAL32>
+0x08 - R0 = <VAL32> + FP
+0x09 - R0 = FP + <VAL8> // signed
+0x0A - R0 = [<VAL32>] // uint8
+0x0B - R0 = [<VAL32>] // uint16
+0x0C - R0 = [<VAL32>] // int32
+0x0D - R0 = [<VAL32>] // int64
+0x0E - R0 = [<VAL32>] // int8
+0x0F - R0 = [<VAL32>] // int16
+0x10 - R0 = [<VAL32>+FP] // uint8
+0x11 - R0 = [<VAL32>+FP] // uint16
+0x12 - R0 = [<VAL32>+FP] // int32
+0x13 - R0 = [<VAL32>+FP] // int64
+0x14 - R0 = [<VAL32>+FP] // int8
+0x15 - R0 = [<VAL32>+FP] // int16
+0x16 - R0 = [<VAL8>+FP] // uint8
+0x17 - R0 = [<VAL8>+FP] // uint16
+0x18 - R0 = [<VAL8>+FP] // int32
+0x19 - R0 = [<VAL8>+FP] // int64
+0x1A - R0 = [<VAL8>+FP] // int8
+0x1B - R0 = [<VAL8>+FP] // int16
+0x1C - R0 = toUint8
+0x1D - R0 = toUint16
+0x1E - R0 = toUint32
+0x1F - R0 = toInt64
+0x20 - R0 = toInt8
+0x21 - R0 = toInt16
+0x22 - STR R0, [POP] // uint8
+0x23 - STR R0, [POP] // uint16
+0x24 - STR R0, [POP] // uint32
+0x25 - STR R0, [POP] // int64
+0x26 - MEMCOPY [POP], R0, <VAL32>
+0x27 - MEMCOPY [POP], R0, <VAL8>
+0x28 - STR #0, [R0] // uint8
+0x29 - STR #0, [R0] // uint16
+0x2A - STR #0, [R0] // uint32
+0x2B - STR #0, [R0] // int64
+0x2C - FILLZERO R0, <VAL32>
+0x2D - FILLZERO R0, <VAL8>
+0x2E - R0 = intToFloat
+0x2F - R0 = intToDouble
+0x30 - R0 = unsignedIntToFloat
+0x31 - R0 = unsignedIntToDouble
+0x32 - R0 = floatToInt
+0x33 - R0 = floatToDouble
+0x34 - R0 = doubleToInt
+0x35 - R0 = doubleToFloat
+0x36 - R0 = intToBool
+0x37 - R0 = doubleToBool
+0x38 - R0 = [POP] + R0 // INT
+0x39 - R0 = [POP] + R0 // FLOAT
+0x3A - R0 = [POP] + R0 // DOUBLE
+0x3B - R0 = [POP] - R0 // INT
+0x3C - R0 = [POP] - R0 // FLOAT
+0x3D - R0 = [POP] - R0 // DOUBLE
+0x3E - R0 = [POP] * R0 // INT
+0x3F - R0 = [POP] * R0 // INT
+0x40 - R0 = [POP] * R0 // FLOAT
+0x41 - R0 = [POP] * R0 // DOUBLE
+0x42 - R0 = [POP] / R0 // UINT
+0x43 - R0 = [POP] / R0 // INT
+0x44 - R0 = [POP] / R0 // FLOAT
+0x45 - R0 = [POP] / R0 // DOUBLE
+0x46 - R0 = [POP] % R0 // UINT
+0x47 - R0 = [POP] % R0 // INT
+0x48 - R0 = [POP] >>> R0
+0x49 - R0 = [POP] >> R0
+0x4A - R0 = [POP] << R0
+0x4B - R0 = [POP] & R0
+0x4C - R0 = [POP] ^ R0
+0x4D - R0 = [POP] | R0
+0x4E - R0 = -R0 // INT
+0x4F - R0 = -R0 // FLOAT
+0x50 - R0 = -R0 // DOUBLE
+0x51 - R0 = ~R0
+0x52 - [R0] = <VAL8> | [R0]   |||   R0 = [R0] & <VAL8>
+0x53 - [R0] = <VAL8> + [R0] // uint8
+0x54 - [R0] = <VAL8> + [R0] // uint16
+0x55 - [R0] = <VAL8> + [R0] // uint32
+0x56 - [R0] = <VAL8> + [R0] // float
+0x57 - [R0] = <VAL8> + [R0] // double
+0x58 - [R0] = <VAL8> + [R0] // int8, extended
+0x59 - [R0] = <VAL8> + [R0] // int16, extended
+0x5A - [R0] = <VAL32> + [R0]
+0x5B - R0 = [R0]      [R0] = <VAL8> + [R0] // uint8
+0x5C - R0 = [R0]      [R0] = <VAL8> + [R0] // uint16
+0x5D - R0 = [R0]      [R0] = <VAL8> + [R0] // uint32
+0x5E - R0 = [R0]      [R0] = <VAL8> + [R0] // float
+0x5F - R0 = [R0]      [R0] = <VAL8> + [R0] // double
+0x60 - R0 = [R0]      [R0] = <VAL8> + [R0] // int8
+0x61 - R0 = [R0]      [R0] = <VAL8> + [R0] // int16
+0x62 - R0 = [R0]      [R0] = <VAL32> + [R0]
+0x63 - R0 = [POP] == R0 // int
+0x64 - R0 = [POP] == R0 // float
+0x65 - R0 = [POP] == R0 // double, pops 8
+0x66 - R0 = [POP] != R0 // int
+0x67 - R0 = [POP] != R0 // float
+0x68 - R0 = [POP] != R0 // double, pops 8
+0x69 - R0 = [POP]  < R0 // int
+0x6A - R0 = [POP]  < R0 // float
+0x6B - R0 = [POP]  < R0 // double, pops 8
+0x6C - R0 = [POP] <= R0 // int
+0x6D - R0 = [POP] <= R0 // float
+0x6E - R0 = [POP] <= R0 // double, pops 8
+0x6F - R0 = [POP]  < R0 // uint 
+0x70 - R0 = [POP] <= R0 // uint
+0x71 - R0 = [POP]  > R0 // int
+0x72 - R0 = [POP]  > R0 // float
+0x73 - R0 = [POP]  > R0 // double, pops 8
+0x74 - R0 = [POP] >= R0 // int
+0x75 - R0 = [POP] >= R0 // float
+0x76 - R0 = [POP] >= R0 // double, pops 8
+0x77 - R0 = [POP]  > R0 // uint
+0x78 - R0 = [POP] >= R0 // uint
+0x79 - R0 = R0 == 0
+0x7A - J PC+<VAL32>
+0x7B - JZ PC+<VAL32>
+0x7C - JNZ PC+<VAL32> 
+0x7D - J PC+<VAL8>
+0x7E - JZ PC+<VAL8>
+0x7F - JNZ PC+<VAL8>
+0x80 - CALL <VAL32>             // pushs PC+4 and FP to stack, set FP to SP
+0x81 - SWITCH <VAL32>           // calls address from stack, based on given value
+0x82 - RET                      // sets SP to FP, POPs to FP and PC
+0x83 - R0 = NATIVECALL <VAL32>  // calls ARM code, SP as param, 
+0x84 - EXITNZ                   // ends script loop if R0 != 0
+0x85 - R0 = ALLOC <VAL32>       // allocates bytes on stack, nulls them
+0x86 - R0 = ALLOC <VAL8>        // allocates bytes on stack, nulls them
+0x87 - PUSH R0 // 32-bit
+0x88 - PUSH R0 // 64-bit
+0x89 - PUSH R0 <VAL32> // VAL bytes, up to 4
+0x8A - PUSH R0 <VAL8>  // VAL bytes, up to 4
+0x8B - POP
+0x8C - POP 8
+0x8D - POP <VAL32>
+0x8E - POP <VAL8>
+0x8F - ADVANCE <VAL32> // lookup offset at <VAL32> that equals R0, advance PC by it
+
+R4,0x08 // 
+R4,0x0C // 
+R4,0x18 // R0
+R4,0x20 // Program Counter
+R4,0x24 // SP Stack Pointer
+R4,0x28 // FP Frame Pointer (SP of calling method)
