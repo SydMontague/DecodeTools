@@ -2,12 +2,15 @@ package net.digimonworld.decodetools.res;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 
 import net.digimonworld.decodetools.core.Access;
 import net.digimonworld.decodetools.core.FileAccess;
 import net.digimonworld.decodetools.core.StreamAccess;
+import net.digimonworld.decodetools.core.Utils;
 import net.digimonworld.decodetools.res.kcap.AbstractKCAP;
 import net.digimonworld.decodetools.res.payload.GenericPayload;
 
@@ -271,6 +274,7 @@ public class DecodeScript {
         byte[] rest = access.readByteArray(totalSize - codeSize - stringSize - 0x18);
         
         StreamAccess codeAccess = new StreamAccess(code);
+        StreamAccess stringAccess = new StreamAccess(string);
         StreamAccess restAccess = new StreamAccess(rest);
         
         Map<Integer, String> labelMap = new HashMap<>();
@@ -355,25 +359,43 @@ public class DecodeScript {
             
             switch (instr.paramType) {
                 case NONE:
-                    System.out.println(Long.toHexString(codeAccess.getPosition() - 1) + " " + instr.code);
+                    System.out.println(String.format("0x%06X %11s", codeAccess.getPosition() - 1, instr.code));
                     break;
                 case VAL8:
-                    System.out.println(Long.toHexString(codeAccess.getPosition() - 1) + " " + instr.code + " " + codeAccess.readByte());
+                    System.out.println(String.format("0x%06X %11s %d", codeAccess.getPosition() - 1, instr.code, codeAccess.readByte()));
                     break;
                 case VAL16:
-                    System.out.println(Long.toHexString(codeAccess.getPosition() - 1) + " " + instr.code + " " + codeAccess.readShort());
+                    System.out.println(String.format("0x%06X %11s %d", codeAccess.getPosition() - 1, instr.code, codeAccess.readShort()));
                     break;
                 case VAL32:
                     int value = codeAccess.readInteger();
                     String str = label == null ? Integer.toString(value) : label;
-                    
-                    System.out.println(Long.toHexString(codeAccess.getPosition() - 5) + " " + instr.code + " " + str);
+
+                    System.out.println(String.format("0x%06X %11s %s", codeAccess.getPosition() - 5, instr.code, str));
                     break;
                 case VAL64:
-                    System.out.println(Long.toHexString(codeAccess.getPosition() - 1) + " " + instr.code + " " + codeAccess.readLong());
+                    System.out.println(String.format("0x%06X %11s %d", codeAccess.getPosition() - 1, instr.code, codeAccess.readLong()));
                     break;
             }
         }
+        System.out.println();
+        codeAccess.setPosition(Utils.align(codeAccess.getPosition(), 4));
+        while (codeAccess.getPosition() < codeAccess.getSize()) {
+            System.out.println(String.format("0x%06X 0x%08X", codeAccess.getPosition(), codeAccess.readInteger()));
+        }
+
+        System.out.println();
+        
+        while (stringAccess.getPosition() < stringAccess.getSize()) {
+            int val = stringAccess.readInteger();
+            
+            System.out.println(String.format("0x%06X 0x%08X %4s", stringAccess.getPosition() + codeSize - 4, val, toASCIIString(val)));
+        }
+
+    }
+    
+    private static String toASCIIString(int val) {
+        return new String(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(val).array()).replaceAll("\\p{C}", " ");
     }
     
     private static Map<Integer, Integer> map = new HashMap<>();

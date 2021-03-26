@@ -15,6 +15,7 @@ module net.digimonworld.decode.decode_tools {
     exports net.digimonworld.decodetools.res.payload.xdio;
     exports net.digimonworld.decodetools.res.payload.xtvo;
     exports net.digimonworld.decodetools.res.payload.qstm;
+    exports net.digimonworld.decodetools.map;
     
     requires transitive java.desktop;
     requires transitive java.logging;
