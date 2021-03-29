@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.digimonworld</groupId>
   <artifactId>decodetools</artifactId>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <name>DecodeTools</name>
   <description>Tools for modding and data mining Decode</description>
 
@@ -75,7 +75,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
 

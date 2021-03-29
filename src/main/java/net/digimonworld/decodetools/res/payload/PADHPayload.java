@@ -44,7 +44,6 @@ public class PADHPayload extends ResPayload {
             source.readInteger(); // section ptr, not necessary for this use
             
         for (int i = 0; i < sections; i++) {
-            source.readInteger(); // section ID
             mnkcSections.add(new MNKCSection(source));
         }
         
@@ -103,13 +102,12 @@ public class PADHPayload extends ResPayload {
         int sectionPtr = 0x20 + mnkcSections.size() * 4;
         for (MNKCSection section : mnkcSections) {
             dest.writeInteger(sectionPtr);
-            sectionPtr += section.getSize() + 4;
+            sectionPtr += section.getSize();
         }
         
         for (int i = 0; i < mnkcSections.size(); i++) {
             MNKCSection section = mnkcSections.get(i);
             
-            dest.writeInteger(i);
             section.write(dest);
         }
         
@@ -124,7 +122,7 @@ public class PADHPayload extends ResPayload {
     }
     
     private int getMNKCSize() {
-        return 0x28 + mnkcSections.stream().collect(Collectors.summingInt(a -> 8 + a.getSize()));
+        return 0x28 + mnkcSections.stream().collect(Collectors.summingInt(a -> 4 + a.getSize()));
     }
     
     private int getTEKCSize() {
@@ -132,11 +130,13 @@ public class PADHPayload extends ResPayload {
     }
     
     public static class MNKCSection {
+        private int unk;
         private List<MNKCFace> faces = new ArrayList<>();
         private List<MNKCVertex> vertices = new ArrayList<>();
         private List<MNKCEntry3> unknown = new ArrayList<>();
         
         public MNKCSection(Access access) {
+            unk = access.readInteger();
             int type1Count = access.readInteger();
             int type2Count = access.readInteger();
             access.readInteger(); // entry3 size, always 0x20
@@ -150,6 +150,7 @@ public class PADHPayload extends ResPayload {
         }
         
         public void write(Access dest) {
+            dest.writeInteger(unk);
             dest.writeInteger(faces.size());
             dest.writeInteger(vertices.size());
             dest.writeInteger(0x20); // entry3 size, always 0x20
@@ -160,7 +161,7 @@ public class PADHPayload extends ResPayload {
         }
         
         public int getSize() {
-            return 0x0C + faces.size() * MNKCFace.SIZE + vertices.size() * MNKCVertex.SIZE + unknown.size() * MNKCEntry3.SIZE;
+            return 0x10 + faces.size() * MNKCFace.SIZE + vertices.size() * MNKCVertex.SIZE + unknown.size() * MNKCEntry3.SIZE;
         }
         
         public List<MNKCFace> getFaces() {
