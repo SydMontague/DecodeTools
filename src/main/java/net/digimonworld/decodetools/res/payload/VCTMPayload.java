@@ -34,8 +34,8 @@ public class VCTMPayload extends ResPayload {
     private float unknown4;
     private float unknown5;
     
-    private VCTMEntry[] data1;
-    private VCTMEntry[] data2;
+    private VCTMEntry[] data1; // frame count
+    private VCTMEntry[] data2; // frame data
     
     public VCTMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         this(source, dataStart, parent);

@@ -11,8 +11,7 @@ import net.digimonworld.decodetools.res.kcap.AbstractKCAP;
 import net.digimonworld.decodetools.res.payload.qstm.QSTMEntry;
 
 public class QSTMPayload extends ResPayload {
-    private short unknown1;
-    private short unknown2; // numAttribtues
+    private short unknown1; // known values 0 1 2 4
     
     private List<QSTMEntry> entries = new ArrayList<>();
     
@@ -21,10 +20,18 @@ public class QSTMPayload extends ResPayload {
         
         source.readInteger(); // magic value
         unknown1 = source.readShort();
-        unknown2 = source.readShort();
+        short numEntries = source.readShort();
         
-        for(int i = 0; i < unknown2; i++) 
+        for(int i = 0; i < numEntries; i++) 
             entries.add(QSTMEntry.loadEntry(source));
+    }
+    
+    public short getUnknown1() {
+        return unknown1;
+    }
+    
+    public List<QSTMEntry> getEntries() {
+        return entries;
     }
     
     @Override
@@ -41,7 +48,7 @@ public class QSTMPayload extends ResPayload {
     public void writeKCAP(Access dest, ResData dataStream) {
         dest.writeInteger(getType().getMagicValue());
         dest.writeShort(unknown1);
-        dest.writeShort(unknown2);
+        dest.writeShort((short) entries.size());
         
         entries.forEach(a -> a.writeKCAP(dest));
     }

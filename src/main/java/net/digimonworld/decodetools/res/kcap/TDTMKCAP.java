@@ -14,6 +14,7 @@ import net.digimonworld.decodetools.res.payload.QSTMPayload;
 import net.digimonworld.decodetools.res.payload.VCTMPayload;
 
 //TODO figure out how TDTM works and abstrahize it per entry
+// sets up the animation data, i.e. initial positions, which anim data to use and more
 public class TDTMKCAP extends AbstractKCAP {
     private static final int TDTM_VERSION = 2;
     
@@ -192,8 +193,9 @@ public class TDTMKCAP extends AbstractKCAP {
     }
     
     class TDTMEntry {
-        private byte unknown1; // mode
-        private byte unknown2;
+        // 0 = translation? 1 = rotation?
+        private byte unknown1; // mode, known values 0 1 2 3
+        private byte unknown2; // a multiple of 0x10
         private short jointId;
         private int qstmId;
         

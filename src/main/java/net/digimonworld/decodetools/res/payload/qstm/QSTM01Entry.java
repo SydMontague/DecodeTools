@@ -3,10 +3,10 @@ package net.digimonworld.decodetools.res.payload.qstm;
 import net.digimonworld.decodetools.core.Access;
 
 public class QSTM01Entry implements QSTMEntry {
-    private byte unk1;
-    private byte unk2;
-    private byte unk3;
-    private byte unk4;
+    private byte unk1; // known good 1 2
+    private byte unk2; // known good 0 1
+    private byte unk3; // known good 1
+    private byte unk4; // known good 0
     
     public QSTM01Entry(Access source) {
         unk1 = source.readByte();

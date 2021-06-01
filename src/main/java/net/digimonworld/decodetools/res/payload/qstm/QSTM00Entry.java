@@ -6,9 +6,9 @@ import java.util.List;
 import net.digimonworld.decodetools.core.Access;
 
 public class QSTM00Entry implements QSTMEntry {
-    private byte unk1;
+    private byte unk1; // known good 0 1 2
 
-    private List<Float> values = new ArrayList<>();
+    private List<Float> values = new ArrayList<>(); // 1 or 3 values
     
     public QSTM00Entry(Access source) {
         unk1 = source.readByte();
