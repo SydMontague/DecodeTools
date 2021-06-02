@@ -6,17 +6,24 @@ import java.util.List;
 import net.digimonworld.decodetools.core.Access;
 
 public class QSTM00Entry implements QSTMEntry {
-    private byte unk1; // known good 0 1 2
-
+    private Axis axis;
     private List<Float> values = new ArrayList<>(); // 1 or 3 values
     
     public QSTM00Entry(Access source) {
-        unk1 = source.readByte();
+        axis = Axis.fromByte(source.readByte());
         byte entryCount = source.readByte();
-        source.readShort(); // padding
+        source.readShort(); // padding or always 0
         
-        for(int i = 0; i < entryCount; i++)
+        for (int i = 0; i < entryCount; i++)
             values.add(source.readFloat());
+    }
+    
+    public Axis getAxis() {
+        return axis;
+    }
+    
+    public List<Float> getValues() {
+        return values;
     }
     
     @Override
@@ -34,7 +41,7 @@ public class QSTM00Entry implements QSTMEntry {
         dest.writeShort(getType().getId());
         dest.writeShort((short) (4 + values.size() * 4));
         
-        dest.writeByte(unk1);
+        dest.writeByte(axis.byteValue());
         dest.writeByte((byte) values.size());
         dest.writeShort((short) 0); // padding
         

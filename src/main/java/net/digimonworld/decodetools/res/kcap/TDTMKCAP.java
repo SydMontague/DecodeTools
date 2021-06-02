@@ -193,35 +193,37 @@ public class TDTMKCAP extends AbstractKCAP {
     }
     
     class TDTMEntry {
-        // 0 = translation? 1 = rotation?
-        private byte unknown1; // mode, known values 0 1 2 3
+        private TDTMMode mode;
         private byte unknown2; // a multiple of 0x10
         private short jointId;
         private int qstmId;
         
-        public TDTMEntry() {
-            // everything 0
-        }
-        
-        public TDTMEntry(byte unknown1, byte unknown2, short jointId, int qstmId) {
-            this.unknown1 = unknown1;
+        public TDTMEntry(TDTMMode unknown1, byte unknown2, short jointId, int qstmId) {
+            this.mode = unknown1;
             this.unknown2 = unknown2;
             this.jointId = jointId;
             this.qstmId = qstmId;
         }
         
         public TDTMEntry(Access source) {
-            this.unknown1 = source.readByte();
+            this.mode = TDTMMode.values()[source.readByte()];
             this.unknown2 = source.readByte();
             this.jointId = source.readShort();
             this.qstmId = source.readInteger();
         }
         
         public void writeKCAP(Access dest) {
-            dest.writeByte(unknown1);
+            dest.writeByte((byte) mode.ordinal());
             dest.writeByte(unknown2);
             dest.writeShort(jointId);
             dest.writeInteger(qstmId);
         }
+    }
+    
+    enum TDTMMode {
+        TRANSLATION,
+        ROTATION,
+        SCALE,
+        LOCAL_SCALE;
     }
 }

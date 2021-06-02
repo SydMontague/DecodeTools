@@ -28,7 +28,11 @@ public class VCTMPayload extends ResPayload {
     private int coordStart;
     private int entriesStart;
     
-    private int unknown1;
+    private byte unk1; // iterpolation type (< 0xC)
+    private byte unk2;
+    private byte unk3;
+    private byte unk4;
+    
     private short sizeValue1;
     private short sizeValue2;
     private float unknown4;
@@ -50,7 +54,11 @@ public class VCTMPayload extends ResPayload {
         coordStart = source.readInteger();
         entriesStart = source.readInteger();
         
-        unknown1 = source.readInteger();
+        unk1 = source.readByte();
+        unk2 = source.readByte();
+        unk3 = source.readByte();
+        unk4 = source.readByte();
+        
         sizeValue1 = source.readShort();
         sizeValue2 = source.readShort();
         unknown4 = source.readFloat();
@@ -99,7 +107,11 @@ public class VCTMPayload extends ResPayload {
         dest.writeInteger(coordStart);
         dest.writeInteger(entriesStart);
         
-        dest.writeInteger(unknown1);
+        dest.writeByte(unk1);
+        dest.writeByte(unk2);
+        dest.writeByte(unk3);
+        dest.writeByte(unk4);
+        
         dest.writeShort(sizeValue1);
         dest.writeShort(sizeValue2);
         dest.writeFloat(unknown4);
