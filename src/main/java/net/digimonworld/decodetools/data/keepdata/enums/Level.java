@@ -1,4 +1,4 @@
-package net.digimonworld.decodetools.keepdata.enums;
+package net.digimonworld.decodetools.data.keepdata.enums;
 
 public enum Level {
     NONE("None"),

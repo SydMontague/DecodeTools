@@ -1,10 +1,11 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
 
 import net.digimonworld.decodetools.core.Access;
 import net.digimonworld.decodetools.core.StreamAccess;
+import net.digimonworld.decodetools.data.DecodeData;
 import net.digimonworld.decodetools.res.payload.GenericPayload;
 
-public class DigimonRaising implements KeepData {
+public class DigimonRaising implements DecodeData {
     private int sleepSchedule;
     private int favoriteFood;
     private byte energyCap;
@@ -238,6 +239,20 @@ public class DigimonRaising implements KeepData {
         
         this.evolveTo[index] = evolveTo;
     }
+    
+    public boolean addEvolveTo(short to) {
+        for(int i = 0; i < 6; i++) {
+            if(this.evolveTo[i] == to)
+                return true;
+            
+            if(this.evolveTo[i] == 0) {
+                this.evolveTo[i] = to;
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     public short getEvolveTo(int index) {
         if(index < 0 || index >= 6)
@@ -252,11 +267,35 @@ public class DigimonRaising implements KeepData {
         
         this.evolveFrom[index] = evolveFrom;
     }
+    
+    
+    public boolean addEvolveFrom(short from) {
+        for(int i = 0; i < 6; i++) {
+            if(this.evolveFrom[i] == from)
+                return true;
+            
+            if(this.evolveFrom[i] == 0) {
+                this.evolveFrom[i] = from;
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     public short getEvolveFrom(int index) {
         if(index < 0 || index >= 5)
             throw new IllegalArgumentException("Only index 0 to 4 are valid!");
         
         return evolveFrom[index];
+    }
+    
+    public void setGains(int hp, int mp, int off, int def, int spd, int brn) {
+        setGainHP((short) hp);
+        setGainMP((short) mp);
+        setGainOFF((short) off);
+        setGainDEF((short) def);
+        setGainSPD((short) spd);
+        setGainBRN((short) brn);
     }
 }

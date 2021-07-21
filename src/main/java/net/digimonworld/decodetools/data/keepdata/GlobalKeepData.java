@@ -1,13 +1,11 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
+
+import static net.digimonworld.decodetools.data.DataUtils.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import net.digimonworld.decodetools.core.MappedSet;
-import net.digimonworld.decodetools.core.StreamAccess;
 import net.digimonworld.decodetools.res.ResPayload;
 import net.digimonworld.decodetools.res.kcap.AbstractKCAP;
 import net.digimonworld.decodetools.res.kcap.NormalKCAP;
@@ -69,34 +67,6 @@ public class GlobalKeepData {
     private final GenericPayload unk30;
     private final GenericPayload decodeLevel;
     private final GenericPayload unk31;
-    
-    private static <T> List<T> convertGenericToList(GenericPayload input, Function<StreamAccess, T> generator) {
-        List<T> list = new ArrayList<>();
-        try (StreamAccess access = new StreamAccess(input.getData())) {
-            while (access.getPosition() < access.getSize())
-                list.add(generator.apply(access));
-        }
-        return list;
-    }
-    
-    private static GenericPayload convertListToGeneric(Collection<? extends GenericKeepData> data) {
-        int size = data.stream().collect(Collectors.summingInt(GenericKeepData::getSize));
-        byte[] buffer = new byte[size];
-        
-        try (StreamAccess access = new StreamAccess(buffer)) {
-            data.forEach(a -> a.write(access));
-        }
-        
-        return new GenericPayload(null, buffer);
-    }
-    
-    private static <T> List<T> convertKCAPtoList(AbstractKCAP input, Function<StreamAccess, T> generator) {
-        return input.getEntries().stream().map(a -> new StreamAccess(((GenericPayload) a).getData())).map(generator).collect(Collectors.toList());
-    }
-    
-    private static NormalKCAP convertListToKCAP(List<? extends KeepData> data, boolean genericAligned, boolean isUnknownFlagSet) {
-        return new NormalKCAP(null, data.stream().map(KeepData::toPayload).collect(Collectors.toList()), genericAligned, isUnknownFlagSet);
-    }
     
     public GlobalKeepData(AbstractKCAP kcap) {
         this.digimonData = convertKCAPtoList((AbstractKCAP) kcap.get(0), Digimon::new);

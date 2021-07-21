@@ -1,7 +1,7 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data;
 
 import net.digimonworld.decodetools.res.payload.GenericPayload;
 
-public interface KeepData {
+public interface DecodeData {
     public GenericPayload toPayload();
 }

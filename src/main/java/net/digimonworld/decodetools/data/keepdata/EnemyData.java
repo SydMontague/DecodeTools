@@ -1,7 +1,7 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
 
 import net.digimonworld.decodetools.core.Access;
-import net.digimonworld.decodetools.keepdata.enums.DropType;
+import net.digimonworld.decodetools.data.keepdata.enums.DropType;
 
 public class EnemyData implements GenericKeepData {
     

@@ -23,10 +23,10 @@ public class TDTMKCAP extends AbstractKCAP {
     private List<QSTMPayload> qstm = new ArrayList<>();
     private List<VCTMPayload> vctm = new ArrayList<>();
     
-    private float time1;
-    private float time2;
-    private float time3;
-    private float time4;
+    private float time1; // start
+    private float time2; // end
+    private float time3; // loop start
+    private float time4; // loop end
     
     protected TDTMKCAP(AbstractKCAP parent, Access source, int dataStart, KCAPInformation info) {
         super(parent, info.flags);
@@ -58,7 +58,7 @@ public class TDTMKCAP extends AbstractKCAP {
         List<KCAPPointer> pointer = loadKCAPPointer(source, info.entries);
         
         if (pointer.size() != 2)
-            throw new IllegalArgumentException("A TDTM KCAP has always two elements, but this one has " + pointer.size() + "!");
+            throw new IllegalArgumentException("A TDTM KCAP always has two elements, but this one has " + pointer.size() + "!");
         
         source.setPosition(info.startAddress + pointer.get(0).getOffset());
         NormalKCAP qstmKCAP = (NormalKCAP) AbstractKCAP.craftKCAP(source, this, dataStart);
@@ -194,7 +194,13 @@ public class TDTMKCAP extends AbstractKCAP {
     
     class TDTMEntry {
         private TDTMMode mode;
-        private byte unknown2; // a multiple of 0x10
+        
+        /*
+         * 0x10 joint    -> 3x translation | 4x rotation | 3x scale | 4x local scale
+         * 0x20 texture  -> 2x translation | 1x rotation | 2x scale | none
+         * 0x30 material -> 3x color (RGB) | 1x transparency
+         */
+        private byte unknown2;
         private short jointId;
         private int qstmId;
         

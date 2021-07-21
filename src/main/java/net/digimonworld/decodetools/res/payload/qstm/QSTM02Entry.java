@@ -11,6 +11,14 @@ public class QSTM02Entry implements QSTMEntry {
         this.vctmId = source.readInteger();
     }
     
+    public Axis getAxis() {
+        return axis;
+    }
+    
+    public int getVctmId() {
+        return vctmId;
+    }
+    
     @Override
     public short getSize() {
         return 12;

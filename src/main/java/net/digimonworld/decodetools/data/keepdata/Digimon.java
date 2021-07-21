@@ -1,13 +1,14 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
 
 import net.digimonworld.decodetools.core.Access;
 import net.digimonworld.decodetools.core.StreamAccess;
-import net.digimonworld.decodetools.keepdata.enums.Attribute;
-import net.digimonworld.decodetools.keepdata.enums.Level;
-import net.digimonworld.decodetools.keepdata.enums.Special;
+import net.digimonworld.decodetools.data.DecodeData;
+import net.digimonworld.decodetools.data.keepdata.enums.Attribute;
+import net.digimonworld.decodetools.data.keepdata.enums.Level;
+import net.digimonworld.decodetools.data.keepdata.enums.Special;
 import net.digimonworld.decodetools.res.payload.GenericPayload;
 
-public class Digimon implements KeepData{
+public class Digimon implements DecodeData{
     private short id;
     private short chrId;
     private short evoListPos;

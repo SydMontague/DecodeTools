@@ -1,4 +1,4 @@
-package net.digimonworld.decodetools.map;
+package net.digimonworld.decodetools.data.map;
 
 import java.util.ArrayList;
 import java.util.List;

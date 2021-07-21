@@ -1,12 +1,13 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
 
 import net.digimonworld.decodetools.core.Access;
 import net.digimonworld.decodetools.core.StreamAccess;
-import net.digimonworld.decodetools.keepdata.enums.Special;
-import net.digimonworld.decodetools.keepdata.enums.Status;
+import net.digimonworld.decodetools.data.DecodeData;
+import net.digimonworld.decodetools.data.keepdata.enums.Special;
+import net.digimonworld.decodetools.data.keepdata.enums.Status;
 import net.digimonworld.decodetools.res.payload.GenericPayload;
 
-public class Finisher implements KeepData {
+public class Finisher implements DecodeData {
     private short unk1;
     private Special type;
     private int unk2;

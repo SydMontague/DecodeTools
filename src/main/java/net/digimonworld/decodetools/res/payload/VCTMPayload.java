@@ -28,9 +28,11 @@ public class VCTMPayload extends ResPayload {
     private int coordStart;
     private int entriesStart;
     
-    private byte unk1; // iterpolation type (< 0xC)
-    private byte unk2;
-    private byte unk3;
+    private InterpolationMode interpolationMode; // iterpolation type (< 0xC)
+    private byte componentCount;
+    private boolean isComponent16Bit; // false -> float32, true -> float16)
+    private TimeScale timeScale;
+    private TimeType timeType;
     private byte unk4;
     
     private short sizeValue1;
@@ -54,16 +56,23 @@ public class VCTMPayload extends ResPayload {
         coordStart = source.readInteger();
         entriesStart = source.readInteger();
         
-        unk1 = source.readByte();
-        unk2 = source.readByte();
-        unk3 = source.readByte();
+        interpolationMode = InterpolationMode.values()[source.readByte()];
+        
+        int componentFlags = source.readByte();
+        componentCount = (byte) (componentFlags >> 4);
+        isComponent16Bit = (componentFlags & 0xF) == 1;
+
+        int timeFlags = source.readByte();
+        timeScale = TimeScale.values()[timeFlags >> 4];
+        timeType = TimeType.values()[timeFlags & 0xF];
+        
         unk4 = source.readByte();
         
         sizeValue1 = source.readShort();
         sizeValue2 = source.readShort();
         unknown4 = source.readFloat();
         unknown5 = source.readFloat();
-        
+
         data1 = new VCTMEntry[numEntries];
         data2 = new VCTMEntry[numEntries];
         
@@ -76,6 +85,14 @@ public class VCTMPayload extends ResPayload {
             data2[i] = new VCTMEntry(source.readByteArray(sizeValue1));
         
         source.setPosition(Utils.align(source.getPosition(), 0x04));
+    }
+    
+    public InterpolationMode getInterpolationMode() {
+        return interpolationMode;
+    }
+    
+    public byte getUnk4() {
+        return unk4;
     }
     
     class VCTMEntry {
@@ -107,9 +124,9 @@ public class VCTMPayload extends ResPayload {
         dest.writeInteger(coordStart);
         dest.writeInteger(entriesStart);
         
-        dest.writeByte(unk1);
-        dest.writeByte(unk2);
-        dest.writeByte(unk3);
+        dest.writeByte((byte) interpolationMode.ordinal());
+        dest.writeByte((byte) (componentCount << 4 | (isComponent16Bit ? 1 : 0)));
+        dest.writeByte((byte) (timeScale.ordinal() << 4 | timeType.ordinal()));
         dest.writeByte(unk4);
         
         dest.writeShort(sizeValue1);
@@ -129,5 +146,55 @@ public class VCTMPayload extends ResPayload {
             
         long diff = Utils.align(dest.getPosition(), 0x04) - dest.getPosition();
         dest.writeByteArray(new byte[(int) diff]);
+    }
+    
+    public enum InterpolationMode {
+        UNK0,
+        UNK1,
+        UNK2,
+        UNK3,
+        LINEAR_1D,
+        LINEAR_2D,
+        LINEAR_3D,
+        LINEAR_4D,
+        SPHERICAL_LINEAR, // slerp
+        UNK9,
+        UNKA,
+        UNKB;
+    }
+    
+    public enum TimeScale {
+        EVERY_1_FRAMES(1f),
+        EVERY_5_FRAMES(5f),
+        EVERY_6_FRAMES(6f),
+        EVERY_10_FRAMES(10f),
+        EVERY_12_FRAMES(12f),
+        EVERY_15_FRAMES(15f),
+        EVERY_20_FRAMES(20f),
+        EVERY_30_FRAMES(30f),
+
+        FPS_1(1/1f),
+        FPS_5(1/5f),
+        FPS_6(1/6f),
+        FPS_10(1/10f),
+        FPS_12(1/12f),
+        FPS_15(1/15f),
+        FPS_20(1/20f),
+        FPS_30(1/30f);
+        
+        final float value;
+        
+        private TimeScale(float value) {
+            this.value = value;
+        }
+    }
+    
+    enum TimeType {
+        FLOAT,
+        NONE,
+        INT16,
+        INT8,
+        UINT16,
+        UINT8;
     }
 }

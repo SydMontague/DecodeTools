@@ -26,10 +26,10 @@ public class TNOJPayload extends NameablePayload {
     private float zOffset;
     private float unknown3;
     
-    private float unknown4;
-    private float unknown5;
-    private float unknown6;
-    private float unknown7;
+    private float rotationX;
+    private float rotationY;
+    private float rotationZ;
+    private float rotationW;
     
     private float scaleX; // ? scales the vertices of this joint + children
     private float scaleY; // ?
@@ -56,10 +56,10 @@ public class TNOJPayload extends NameablePayload {
         this.zOffset = offsetVector[2];
         this.unknown3 = offsetVector[3];
         
-        this.unknown4 = unknownVector[0];
-        this.unknown5 = unknownVector[1];
-        this.unknown6 = unknownVector[2];
-        this.unknown7 = unknownVector[3];
+        this.rotationX = unknownVector[0];
+        this.rotationY = unknownVector[1];
+        this.rotationZ = unknownVector[2];
+        this.rotationW = unknownVector[3];
         
         this.scaleX = scaleVector[0];
         this.scaleY = scaleVector[1];
@@ -92,10 +92,10 @@ public class TNOJPayload extends NameablePayload {
         zOffset = source.readFloat();
         unknown3 = source.readFloat();
         
-        unknown4 = source.readFloat();
-        unknown5 = source.readFloat();
-        unknown6 = source.readFloat();
-        unknown7 = source.readFloat();
+        rotationX = source.readFloat();
+        rotationY = source.readFloat();
+        rotationZ = source.readFloat();
+        rotationW = source.readFloat();
         
         scaleX = source.readFloat();
         scaleY = source.readFloat();
@@ -158,10 +158,10 @@ public class TNOJPayload extends NameablePayload {
         dest.writeFloat(zOffset);
         dest.writeFloat(unknown3);
         
-        dest.writeFloat(unknown4);
-        dest.writeFloat(unknown5);
-        dest.writeFloat(unknown6);
-        dest.writeFloat(unknown7);
+        dest.writeFloat(rotationX);
+        dest.writeFloat(rotationY);
+        dest.writeFloat(rotationZ);
+        dest.writeFloat(rotationW);
         
         dest.writeFloat(scaleX);
         dest.writeFloat(scaleY);
@@ -228,19 +228,19 @@ public class TNOJPayload extends NameablePayload {
     }
     
     public float getRotationX() {
-        return unknown4;
+        return rotationX;
     }
     
     public float getRotationY() {
-        return unknown5;
+        return rotationY;
     }
     
     public float getRotationZ() {
-        return unknown6;
+        return rotationZ;
     }
     
     public float getRotationW() {
-        return unknown7;
+        return rotationW;
     }
     
     public double[] getAngles() {

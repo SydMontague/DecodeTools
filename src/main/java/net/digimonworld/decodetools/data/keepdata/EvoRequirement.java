@@ -1,13 +1,14 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import net.digimonworld.decodetools.core.Access;
 import net.digimonworld.decodetools.core.StreamAccess;
+import net.digimonworld.decodetools.data.DecodeData;
 import net.digimonworld.decodetools.res.payload.GenericPayload;
 
-public class EvoRequirement implements KeepData {
+public class EvoRequirement implements DecodeData {
     private List<Requirement> requirements = new ArrayList<>(); 
     
     public EvoRequirement(Access access) {

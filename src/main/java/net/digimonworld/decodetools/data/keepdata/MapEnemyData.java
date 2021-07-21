@@ -1,4 +1,4 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;

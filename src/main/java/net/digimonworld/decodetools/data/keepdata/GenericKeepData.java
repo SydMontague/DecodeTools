@@ -1,4 +1,4 @@
-package net.digimonworld.decodetools.keepdata;
+package net.digimonworld.decodetools.data.keepdata;
 
 import net.digimonworld.decodetools.core.Access;
 
