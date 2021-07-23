@@ -154,13 +154,12 @@ public class BTXPayload extends ResPayload {
         return entries;
     }
     
+    public Optional<BTXEntry> getEntryById(int id) {
+        return entries.stream().filter(a -> a.getKey() == id).findFirst().map(Tuple::getValue);
+    }
+    
     public String getStringById(int id) {
-        Optional<Tuple<Integer, BTXEntry>> entry = entries.stream().filter(a -> a.getKey() == id).findFirst();
-        
-        if (entry.isPresent())
-            return entry.get().getValue().getString();
-        
-        return null;
+        return getEntryById(id).map(BTXEntry::getString).orElse(null);
     }
     
     @Override
