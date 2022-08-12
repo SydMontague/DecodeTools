@@ -218,11 +218,11 @@ public class BTXPayload extends ResPayload {
             unknown11 = source.readInteger();
         }
                  
-		public BTXMeta(int btxid, int speakerid, short unk1, byte unk2, byte unk3, int unk4, int unk5, int unk6, int unk7,
+	public BTXMeta(int btxid, int speakerid, short unk1, byte unk2, byte unk3, int unk4, int unk5, int unk6, int unk7,
 				int unk8, int unk9, int unk10, int unk11, int unk12) {
-			id = btxid;
-		  	speaker = speakerid;
-        	unknown2_1 = unk1;
+            id = btxid;
+            speaker = speakerid;
+            unknown2_1 = unk1;
             unknown2_2 = unk2;
             unknown2_3 = unk3;
             unknown3 = unk4;
@@ -234,10 +234,10 @@ public class BTXPayload extends ResPayload {
             unknown9 = unk10;
             unknown10 = unk11;
             unknown11 = unk12;
-		}
+	}
 
 
-		public void writeKCAP(Access dest) {
+	public void writeKCAP(Access dest) {
             dest.writeInteger(id);
             dest.writeInteger(speaker);
             dest.writeShort(unknown2_1);
