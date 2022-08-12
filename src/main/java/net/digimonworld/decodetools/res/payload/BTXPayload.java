@@ -194,6 +194,9 @@ public class BTXPayload extends ResPayload {
         private int unknown9;
         private int unknown10;
         private int unknown11;
+        private int unknown12;
+        private int unknown13;
+        private int unknown14;
         
         public BTXMeta(Access source) {
             id = source.readInteger();
@@ -214,8 +217,27 @@ public class BTXPayload extends ResPayload {
             unknown10 = source.readInteger();
             unknown11 = source.readInteger();
         }
-        
-        public void writeKCAP(Access dest) {
+                 
+		public BTXMeta(int btxid, int speakerid, short unk1, byte unk2, byte unk3, int unk4, int unk5, int unk6, int unk7,
+				int unk8, int unk9, int unk10, int unk11, int unk12) {
+			id = btxid;
+		  	speaker = speakerid;
+        	unknown2_1 = unk1;
+            unknown2_2 = unk2;
+            unknown2_3 = unk3;
+            unknown3 = unk4;
+            unknown4 = unk5;
+            unknown5 = unk6;
+            unknown6 = unk7;
+            unknown7 = unk8;         
+            unknown8 = unk9;
+            unknown9 = unk10;
+            unknown10 = unk11;
+            unknown11 = unk12;
+		}
+
+
+		public void writeKCAP(Access dest) {
             dest.writeInteger(id);
             dest.writeInteger(speaker);
             dest.writeShort(unknown2_1);
@@ -268,7 +290,44 @@ public class BTXPayload extends ResPayload {
         public byte  getUnk3() {
             return unknown2_3;
         }
-    }
+        
+        public int  getUnk4() {
+            return unknown3;
+        }
+        
+        public int  getUnk5() {
+            return unknown4;
+        }
+        
+        public int  getUnk6() {
+            return unknown5;
+        }
+        
+        public int  getUnk7() {
+            return unknown6;
+        }
+        
+        public int  getUnk8() {
+            return unknown7;
+        }  
+        
+        public int  getUnk9() {
+            return unknown8;
+        }
+        
+        public int  getUnk10() {
+            return unknown9;
+        }
+        
+        public int  getUnk11() {
+            return unknown10;
+        }
+        
+        public int  getUnk12() {
+            return unknown11;
+        }
+
+        }
     
     /**
      * An entry to a BTX, containing a String and an optional {@link BTXMeta}.
