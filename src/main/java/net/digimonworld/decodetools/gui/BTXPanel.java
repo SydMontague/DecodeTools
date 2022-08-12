@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.GroupLayout;
@@ -18,6 +19,7 @@ import net.digimonworld.decodetools.core.Tuple;
 import net.digimonworld.decodetools.gui.util.FunctionAction;
 import net.digimonworld.decodetools.res.payload.BTXPayload;
 import net.digimonworld.decodetools.res.payload.BTXPayload.BTXEntry;
+import net.digimonworld.decodetools.res.payload.BTXPayload.BTXMeta;
 
 import javax.swing.JScrollPane;
 
@@ -46,8 +48,21 @@ public class BTXPanel extends PayloadPanel {
                     String[] split = b.split(";");
                     int id = Integer.parseInt(split[0]);
                     String string = split[1];
-                    
-                    list.add(new Tuple<>(id, new BTXEntry(string, null)));
+                    int speaker = Integer.parseInt(split[2]);
+                    short unk1=Short.parseShort(split[3]);
+                    byte unk2 = Byte.parseByte(split[4]);
+                    byte unk3 = Byte.parseByte(split[5]);
+                    int unk4 =Integer.parseInt(split[6]);
+                    int unk5 = Integer.parseInt(split[7]);                   
+                    int unk6 =Integer.parseInt(split[8]);
+                    int unk7 = Integer.parseInt(split[9]);
+                    int unk8 = Integer.parseInt(split[10]);
+                    int unk9 = Integer.parseInt(split[11]);
+                    int unk10 = Integer.parseInt(split[12]);
+                    int unk11 = Integer.parseInt(split[13]);
+                    int unk12 = Integer.parseInt(split[14]);
+                    BTXMeta btxmeta = new BTXMeta(id,speaker,unk1,unk2,unk3,unk4,unk5,unk6,unk7,unk8,unk9,unk10,unk11,unk12);
+                    list.add(new Tuple<>(id, new BTXEntry(string, btxmeta)));
                 });
             }
             catch (FileNotFoundException e) {
@@ -95,6 +110,15 @@ public class BTXPanel extends PayloadPanel {
             model.addColumn("Unk1");
             model.addColumn("Unk2");
             model.addColumn("Unk3");
+            model.addColumn("Unk4");  
+            model.addColumn("Unk5");
+            model.addColumn("Unk6");
+            model.addColumn("Unk7");
+            model.addColumn("Unk8");
+            model.addColumn("Unk9");
+            model.addColumn("Unk10");
+            model.addColumn("Unk11");
+            model.addColumn("Unk12");
             
             payload.getEntries().forEach(a -> {
                 int id = a.getKey();
@@ -103,8 +127,16 @@ public class BTXPanel extends PayloadPanel {
                 Short unk1 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk1() : null;
                 Byte unk2 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk2() : null;
                 Byte unk3 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk3() : null;
-                
-                model.addRow(new Object[] { id, string, speaker, unk1, unk2, unk3 });
+                Integer unk4 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk4() : null;
+                Integer unk5 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk5() : null;
+                Integer unk6 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk6() : null;
+                Integer unk7 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk7() : null;
+                Integer unk8 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk8() : null;
+                Integer unk9 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk9() : null;
+                Integer unk10 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk10() : null;
+                Integer unk11 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk11() : null;
+                Integer unk12 = a.getValue().getMeta().isPresent() ? a.getValue().getMeta().get().getUnk12() : null;
+                model.addRow(new Object[] { id, string, speaker, unk1, unk2, unk3,unk4,unk5,unk6,unk7,unk8,unk9,unk10,unk11,unk12});
             });
             
             table.setModel(model);
