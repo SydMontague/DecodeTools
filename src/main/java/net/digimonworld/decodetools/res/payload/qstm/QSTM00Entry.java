@@ -7,12 +7,16 @@ import net.digimonworld.decodetools.core.Access;
 
 public class QSTM00Entry implements QSTMEntry {
     private Axis axis;
+    // see QSTM01 mode
+    private byte mode;
+    
     private List<Float> values = new ArrayList<>(); // 1 or 3 values
     
     public QSTM00Entry(Access source) {
         axis = Axis.fromByte(source.readByte());
         byte entryCount = source.readByte();
-        source.readShort(); // padding or always 0
+        mode = source.readByte();
+        source.readByte(); // padding or always 0
         
         for (int i = 0; i < entryCount; i++)
             values.add(source.readFloat());
@@ -43,7 +47,8 @@ public class QSTM00Entry implements QSTMEntry {
         
         dest.writeByte(axis.byteValue());
         dest.writeByte((byte) values.size());
-        dest.writeShort((short) 0); // padding
+        dest.writeByte(mode);
+        dest.writeByte((byte) 0); // padding
         
         values.forEach(dest::writeFloat);
     }

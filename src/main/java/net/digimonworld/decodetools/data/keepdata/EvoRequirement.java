@@ -237,7 +237,9 @@ public class EvoRequirement implements DecodeData {
         DIGIMON(15),
         DIGIMEMORY(16),
         REINCARNATED(17),
+        DIGIMON_RAISED(18),
         TRIGGER(19),
+        LIVES(20),
         EVO_ITEM(21),
         DECODE_LEVEL(22);
         

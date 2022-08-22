@@ -196,7 +196,12 @@ public abstract class AbstractKCAP extends ResPayload implements Iterable<ResPay
             this.startAddress = startAddress;
             
             this.size = source.readInteger();
-            this.flags = source.readInteger();
+            /*
+             * 0x0001 | 0 -> entryAddress = start + entryTable[entryId].offset
+             *          1 -> entryAddress = start + entryTable[0].offset + entryTable[0].size * entryId
+             * 
+             */
+            this.flags = source.readInteger(); // 0x0001 -> single entry KCAP? 
             
             this.entries = source.readInteger();
             this.typeEntries = source.readInteger();

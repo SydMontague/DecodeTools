@@ -30,13 +30,18 @@ public class VCTMPayload extends ResPayload {
     
     private InterpolationMode interpolationMode; // iterpolation type (< 0xC)
     private byte componentCount;
-    private boolean isComponent16Bit; // false -> float32, true -> float16)
+    private ComponentType componentType;
     private TimeScale timeScale;
     private TimeType timeType;
+    
+    /*
+     * Some loop modes?
+     * Upper 4 bits for startTime < currentTime && currentTime <= endTime
+     */
     private byte unk4;
     
-    private short sizeValue1;
-    private short sizeValue2;
+    private short coordSize;
+    private short entrySize;
     private float unknown4;
     private float unknown5;
     
@@ -60,29 +65,29 @@ public class VCTMPayload extends ResPayload {
         
         int componentFlags = source.readByte();
         componentCount = (byte) (componentFlags >> 4);
-        isComponent16Bit = (componentFlags & 0xF) == 1;
-
+        componentType = ComponentType.values()[componentFlags & 0xF];
+        
         int timeFlags = source.readByte();
         timeScale = TimeScale.values()[timeFlags >> 4];
         timeType = TimeType.values()[timeFlags & 0xF];
         
         unk4 = source.readByte();
         
-        sizeValue1 = source.readShort();
-        sizeValue2 = source.readShort();
+        coordSize = source.readShort();
+        entrySize = source.readShort();
         unknown4 = source.readFloat();
         unknown5 = source.readFloat();
-
+        
         data1 = new VCTMEntry[numEntries];
         data2 = new VCTMEntry[numEntries];
         
         source.setPosition(start + entriesStart);
         for (int i = 0; i < numEntries; i++)
-            data1[i] = new VCTMEntry(source.readByteArray(sizeValue2));
+            data1[i] = new VCTMEntry(source.readByteArray(entrySize));
         
         source.setPosition(start + coordStart);
         for (int i = 0; i < numEntries; i++)
-            data2[i] = new VCTMEntry(source.readByteArray(sizeValue1));
+            data2[i] = new VCTMEntry(source.readByteArray(coordSize));
         
         source.setPosition(Utils.align(source.getPosition(), 0x04));
     }
@@ -109,7 +114,7 @@ public class VCTMPayload extends ResPayload {
     
     @Override
     public int getSize() {
-        return 0x20 + Utils.align(data1.length * sizeValue2, 0x04) + Utils.align(data2.length * sizeValue1, 0x04);
+        return 0x20 + Utils.align(data1.length * entrySize, 0x04) + Utils.align(data2.length * coordSize, 0x04);
     }
     
     @Override
@@ -125,12 +130,12 @@ public class VCTMPayload extends ResPayload {
         dest.writeInteger(entriesStart);
         
         dest.writeByte((byte) interpolationMode.ordinal());
-        dest.writeByte((byte) (componentCount << 4 | (isComponent16Bit ? 1 : 0)));
+        dest.writeByte((byte) (componentCount << 4 | componentType.ordinal()));
         dest.writeByte((byte) (timeScale.ordinal() << 4 | timeType.ordinal()));
         dest.writeByte(unk4);
         
-        dest.writeShort(sizeValue1);
-        dest.writeShort(sizeValue2);
+        dest.writeShort(coordSize);
+        dest.writeShort(entrySize);
         dest.writeFloat(unknown4);
         dest.writeFloat(unknown5);
         
@@ -158,7 +163,7 @@ public class VCTMPayload extends ResPayload {
         LINEAR_3D,
         LINEAR_4D,
         SPHERICAL_LINEAR, // slerp
-        UNK9,
+        NONE,
         UNKA,
         UNKB;
     }
@@ -172,15 +177,15 @@ public class VCTMPayload extends ResPayload {
         EVERY_15_FRAMES(15f),
         EVERY_20_FRAMES(20f),
         EVERY_30_FRAMES(30f),
-
-        FPS_1(1/1f),
-        FPS_5(1/5f),
-        FPS_6(1/6f),
-        FPS_10(1/10f),
-        FPS_12(1/12f),
-        FPS_15(1/15f),
-        FPS_20(1/20f),
-        FPS_30(1/30f);
+        
+        FPS_1(1 / 1f),
+        FPS_5(1 / 5f),
+        FPS_6(1 / 6f),
+        FPS_10(1 / 10f),
+        FPS_12(1 / 12f),
+        FPS_15(1 / 15f),
+        FPS_20(1 / 20f),
+        FPS_30(1 / 30f);
         
         final float value;
         
@@ -192,6 +197,15 @@ public class VCTMPayload extends ResPayload {
     enum TimeType {
         FLOAT,
         NONE,
+        INT16,
+        INT8,
+        UINT16,
+        UINT8;
+    }
+    
+    enum ComponentType {
+        FLOAT32,
+        FLOAT16,
         INT16,
         INT8,
         UINT16,

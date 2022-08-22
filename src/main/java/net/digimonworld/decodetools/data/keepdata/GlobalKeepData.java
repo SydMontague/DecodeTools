@@ -23,9 +23,9 @@ public class GlobalKeepData {
     private final List<Skill> skills;
     private final List<Finisher> finisher;
     private final MappedSet<Short, EnemyData> enemyData;
-    private final GenericPayload unk3;
+    private final GenericPayload trainingStations;
     private final GenericPayload shops;
-    private final GenericPayload unk5;
+    private final GenericPayload accessories;
     private final GenericPayload unk6;
     private final List<MapEnemyData> enemyMapData;
     private final AbstractKCAP unk7;
@@ -79,9 +79,9 @@ public class GlobalKeepData {
         this.skills = convertKCAPtoList((AbstractKCAP) kcap.get(7), Skill::new);
         this.finisher = convertKCAPtoList((AbstractKCAP) kcap.get(8), Finisher::new);
         this.enemyData = new MappedSet<>(EnemyData.class, EnemyData::getEnemyId, convertGenericToList((GenericPayload) kcap.get(9), EnemyData::new));
-        this.unk3 = (GenericPayload) kcap.get(10);
+        this.trainingStations = (GenericPayload) kcap.get(10);
         this.shops = (GenericPayload) kcap.get(11);
-        this.unk5 = (GenericPayload) kcap.get(12);
+        this.accessories = (GenericPayload) kcap.get(12);
         this.unk6 = (GenericPayload) kcap.get(13);
         this.enemyMapData = convertGenericToList((GenericPayload) kcap.get(14), MapEnemyData::new);
         this.unk7 = (AbstractKCAP) kcap.get(15);
@@ -138,9 +138,9 @@ public class GlobalKeepData {
         entries.add(convertListToKCAP(skills, true, false));
         entries.add(convertListToKCAP(finisher, true, false));
         entries.add(convertListToGeneric(enemyData));
-        entries.add(unk3);
+        entries.add(trainingStations);
         entries.add(shops);
-        entries.add(unk5);
+        entries.add(accessories);
         entries.add(unk6);
         entries.add(convertListToGeneric(enemyMapData));
         entries.add(unk7); // true

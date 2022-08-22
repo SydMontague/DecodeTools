@@ -11,7 +11,7 @@ import net.digimonworld.decodetools.res.kcap.AbstractKCAP;
 import net.digimonworld.decodetools.res.payload.qstm.QSTMEntry;
 
 public class QSTMPayload extends ResPayload {
-    private short unknown1; // known values 0 1 2 4
+    private short unknown1; // known values 0 1 2 4, never read?
     
     private List<QSTMEntry> entries = new ArrayList<>();
     

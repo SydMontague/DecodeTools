@@ -3,16 +3,28 @@ package net.digimonworld.decodetools.res.payload.qstm;
 import net.digimonworld.decodetools.core.Access;
 
 public class QSTM01Entry implements QSTMEntry {
-    private byte unk1; // known good 1 2
-    private byte unk2; // known good 0 1
-    private byte unk3; // known good 1
-    private byte unk4; // known good 0
+    private byte destId; // known good 1 2
+    private byte srcId; // known good 0 1
+    private byte size; // known good 1
+    
+    /*
+     * 0 -> copy src to dest
+     * 1 -> dest = -src
+     * 2 -> dest = 1.0f / src
+     * 3 -> dest = dest + src
+     * 4 -> dest = dest - src
+     * 5 -> dest = dest * src
+     * 6 -> dest = dest / src
+     * 7 -> dest = src - dest
+     * 8 -> dest = src / dest
+     */
+    private byte mode; // known good 0
     
     public QSTM01Entry(Access source) {
-        unk1 = source.readByte();
-        unk2 = source.readByte();
-        unk3 = source.readByte();
-        unk4 = source.readByte();
+        destId = source.readByte();
+        srcId = source.readByte();
+        size = source.readByte();
+        mode = source.readByte();
     }
     
     @Override
@@ -30,9 +42,9 @@ public class QSTM01Entry implements QSTMEntry {
         dest.writeShort(getType().getId());
         dest.writeShort((short) 4);
         
-        dest.writeByte(unk1);
-        dest.writeByte(unk2);
-        dest.writeByte(unk3);
-        dest.writeByte(unk4);
+        dest.writeByte(destId);
+        dest.writeByte(srcId);
+        dest.writeByte(size);
+        dest.writeByte(mode);
     }
 }
