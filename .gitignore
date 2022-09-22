@@ -6,3 +6,9 @@
 .classpath
 .project
 /Cs_Models_Rigged/
+
+# IntelliJ Workspace
+.idea/*
+
+# Maven
+*.iml

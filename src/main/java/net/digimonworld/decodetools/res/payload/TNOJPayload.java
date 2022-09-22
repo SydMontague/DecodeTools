@@ -41,7 +41,7 @@ public class TNOJPayload extends NameablePayload {
     private float localScaleZ; // ?
     // padding
     
-    public TNOJPayload(AbstractKCAP parent, int parentBone, String name, int unknown1, int unknown2, float[] parentMatrix, 
+    public TNOJPayload(AbstractKCAP parent, int parentBone, String name, int unknown1, int unknown2, float[] inverse_bind_pose_matrix,
                        float[] offsetVector, float[] unknownVector, float[] scaleVector, float[] localScaleVector) {
         super(parent, name);
         
@@ -49,7 +49,7 @@ public class TNOJPayload extends NameablePayload {
         this.unknown1 = unknown1;
         this.unknown2 = unknown2;
         
-        this.matrix = Arrays.copyOf(parentMatrix, 16);
+        this.matrix = Arrays.copyOf(inverse_bind_pose_matrix, 16);
         
         this.xOffset = offsetVector[0];
         this.yOffset = offsetVector[1];
@@ -68,12 +68,6 @@ public class TNOJPayload extends NameablePayload {
         this.localScaleX = localScaleVector[0];
         this.localScaleY = localScaleVector[1];
         this.localScaleZ = localScaleVector[2];
-        
-        matrix[3] -= xOffset;
-        matrix[7] -= yOffset;
-        matrix[11] -= zOffset;
-        
-        // TODO proper modification of the matrix, taking into account scale and rotation
     }
     
     public TNOJPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {

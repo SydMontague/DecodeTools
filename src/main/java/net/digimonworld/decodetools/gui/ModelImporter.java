@@ -39,6 +39,7 @@ import org.lwjgl.assimp.AIMatrix4x4;
 import org.lwjgl.assimp.AIMesh;
 import org.lwjgl.assimp.AINode;
 import org.lwjgl.assimp.AIPropertyStore;
+import org.lwjgl.assimp.AIQuaternion;
 import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.assimp.AIVertexWeight;
@@ -93,6 +94,7 @@ public class ModelImporter extends PayloadPanel {
     
     // persistent, loaded or via GUI
     private List<AINode> jointNodes = new ArrayList<>();
+    private Map<String, float[]> jointBones = new HashMap<>();
     private float[] hsemHeaderArray = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     
     // Swing garbage
@@ -114,7 +116,18 @@ public class ModelImporter extends PayloadPanel {
     private final JButton btnExportDAE = new JButton("Export to DAE");
     
     // generated
-    
+
+    private float dotProduct(float[] vec_1, float[] vec_2) {
+        if (vec_1.length != vec_2.length)
+            throw new ArithmeticException("Vectors do not have the same length");
+
+        float out = 0;
+        for(int i=0; i < vec_1.length; ++i) {
+            out += vec_1[i]*vec_2[i];
+        }
+        return out;
+    }
+
     public ModelImporter(HSMPKCAP rootKCAP) {
         btnNewButton.addActionListener(a -> {
             if (this.rootKCAP == null)
@@ -223,7 +236,6 @@ public class ModelImporter extends PayloadPanel {
                 }
                 
                 jointNodes = nodeList(scene.mRootNode());
-                
                 // automatically sort the joints based on best guess
                 List<ResPayload> rootTNOJ = ModelImporter.this.rootKCAP.getTNOJ().getEntries();
                 
@@ -239,8 +251,42 @@ public class ModelImporter extends PayloadPanel {
                         }
                     }
                 }
-                
-                spinner.setValue(calculateModelScale());
+
+                float scale = calculateModelScale();
+                spinner.setValue(scale);
+                org.lwjgl.PointerBuffer scene_meshes = scene.mMeshes();
+                for (int i=0; i < scene.mNumMeshes(); ++i)
+                {
+                    AIMesh mesh = AIMesh.create(scene_meshes.get(i));
+                    for (int j=0; j < mesh.mNumBones(); ++j)
+                    {
+                        AIBone bone = AIBone.create(mesh.mBones().get(j));
+                        AIMatrix4x4 offsetMatrix = bone.mOffsetMatrix();
+
+                        float[] t = { offsetMatrix.a4(), offsetMatrix.b4(), offsetMatrix.c4() };
+                        float[] u = { offsetMatrix.a1(), offsetMatrix.b1(), offsetMatrix.c1() };
+                        float[] v = { offsetMatrix.a2(), offsetMatrix.b2(), offsetMatrix.c2() };
+                        float[] w = { offsetMatrix.a3(), offsetMatrix.b3(), offsetMatrix.c3() };
+                        float[] x = { offsetMatrix.a1(), offsetMatrix.a2(), offsetMatrix.a3() };
+                        float[] y = { offsetMatrix.b1(), offsetMatrix.b2(), offsetMatrix.b3() };
+                        float[] z = { offsetMatrix.c1(), offsetMatrix.c2(), offsetMatrix.c3() };
+
+                        float[] s = { -dotProduct(u, t) * scale, -dotProduct(v, t) * scale, -dotProduct(w, t)* scale };
+                        float t_x = -dotProduct(x, s);
+                        float t_y = -dotProduct(y, s);
+                        float t_z = -dotProduct(z, s);
+
+                        float[] ibpm = {
+                                offsetMatrix.a1(), offsetMatrix.a2(), offsetMatrix.a3(), t_x,
+                                offsetMatrix.b1(), offsetMatrix.b2(), offsetMatrix.b3(), t_y,
+                                offsetMatrix.c1(), offsetMatrix.c2(), offsetMatrix.c3(), t_z,
+                                offsetMatrix.d1(), offsetMatrix.d2(), offsetMatrix.d3(), offsetMatrix.d4()
+                        };
+
+                        jointBones.put(bone.mName().dataString(), ibpm);
+                    }
+                }
+
                 lblnone.setText(fileDialogue.getSelectedFile().getPath());
                 
                 AbstractListModel<String> model = new AbstractListModel<String>() {
@@ -541,9 +587,14 @@ public class ModelImporter extends PayloadPanel {
         
         AINode currentNode = node;
         do {
-            scales[0] *= currentNode.mTransformation().a1();
-            scales[1] *= currentNode.mTransformation().b2();
-            scales[2] *= currentNode.mTransformation().c3();
+            AIVector3D pos = AIVector3D.create();
+            AIQuaternion quat = AIQuaternion.create();
+            AIVector3D sc = AIVector3D.create();
+            Assimp.aiDecomposeMatrix(currentNode.mTransformation(), sc, quat, pos);
+
+            scales[0] *= sc.x();
+            scales[1] *= sc.y();
+            scales[2] *= sc.z();
             
             currentNode = currentNode.mParent();
         } while(isJointNode(currentNode));
@@ -601,21 +652,29 @@ public class ModelImporter extends PayloadPanel {
             
             int unknown1 = 0;
             int unknown2 = 0;
-            
-            float[] scales = getScales(bla);
-            
-            float[] parentMatrix = parentId != -1 ? tnojList.get(parentId).getOffsetMatrix() : IDENTITY_MATRIX;
-            
-            float[] offsetVector = { trans.a4() * scale * scales[0], trans.b4() * scale * scales[1], trans.c4() * scale * scales[2], 0.0f };
-            float[] rotationQuat = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+            AIVector3D pos = AIVector3D.create();
+            AIQuaternion quat = AIQuaternion.create();
+            AIVector3D sc = AIVector3D.create();
+            Assimp.aiDecomposeMatrix(trans, sc, quat, pos);
+
+            float[] local_matrix = {
+                    trans.a1(), trans.a2(), trans.a3(), trans.a4(),
+                    trans.b1(), trans.b2(), trans.b3(), trans.b4(),
+                    trans.c1(), trans.c2(), trans.c3(), trans.c4(),
+                    trans.d1(), trans.d2(), trans.d3(), trans.d4()
+            };
+            float[] offsetVector = { trans.a4() * scale, trans.b4() * scale, trans.c4() * scale, 0.0f };
+            float[] rotationQuat = { quat.x(), quat.y(), quat.z(), quat.w() }; // Need to extract the scale first
             float[] scaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
-            float[] localScaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
+            float[] localScaleVector = { sc.x(), sc.y(), sc.z(), 0.f };
             
             if (!name.startsWith(JOINT_PREFIX))
                 continue;
             
+            float[] ibpm = jointBones.getOrDefault(name, IDENTITY_MATRIX);
             names.add(name);
-            tnojList.add(new TNOJPayload(null, parentId, name, unknown1, unknown2, parentMatrix, offsetVector, rotationQuat, scaleVector, localScaleVector));
+            tnojList.add(new TNOJPayload(null, parentId, name, unknown1, unknown2, ibpm, offsetVector, rotationQuat, scaleVector, localScaleVector));
         }
         
         return tnojList;
