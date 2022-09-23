@@ -30,6 +30,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import net.digimonworld.decodetools.core.Vector4;
+import net.digimonworld.decodetools.gui.util.LinAlg.*;
 import net.digimonworld.decodetools.res.kcap.HSMPKCAP;
 import net.digimonworld.decodetools.res.payload.GMIOPayload;
 import net.digimonworld.decodetools.res.payload.HSEMPayload;
@@ -51,206 +52,6 @@ public class ColldadaExporter {
     private final Document doc;
     private final HSMPKCAP hsmp;
 
-    ////////////////////////////
-    // BEGIN LINALG FUNCTIONS //
-    ////////////////////////////
-    private float[] quaternionToMatrix3x3(float[] quat) {
-        float[] out = new float[9];
-
-        float xSq = 2*quat[0]*quat[0];
-        float ySq = 2*quat[1]*quat[1];
-        float zSq = 2*quat[2]*quat[2];
-
-        float xy = 2*quat[0]*quat[1];
-        float xz = 2*quat[0]*quat[2];
-        float xw = 2*quat[0]*quat[3];
-
-        float yz = 2*quat[1]*quat[2];
-        float yw = 2*quat[1]*quat[3];
-
-        float zw = 2*quat[2]*quat[3];
-
-        // Create rotation matrix
-        out[0] = 1 - ySq - zSq;
-        out[1] = xy - zw;
-        out[2] = xz + yw;
-
-        out[3] = xy + zw;
-        out[4] = 1 - xSq - zSq;
-        out[5] = yz - xw;
-
-        out[6] = xz - yw;
-        out[7] = yz + xw;
-        out[8] = 1 - xSq - ySq;
-
-
-        return out;
-    }
-
-    private float[] makeTransformMatrix(float[] pos, float[] quat, float[] scale) {
-        // Make quat matrix
-        float[] rot_matrix = quaternionToMatrix3x3(quat);
-
-        float[] out = new float[16];
-        // Inner product of (rotation . scale) - scale is a diagonal matrix
-        out[0] = rot_matrix[0] * scale[0];
-        out[4] = rot_matrix[3] * scale[0];
-        out[8] = rot_matrix[6] * scale[0];
-
-        out[1] = rot_matrix[1] * scale[1];
-        out[5] = rot_matrix[4] * scale[1];
-        out[9] = rot_matrix[7] * scale[1];
-
-        out[2] = rot_matrix[2] * scale[2];
-        out[6] = rot_matrix[5] * scale[2];
-        out[10] = rot_matrix[8] * scale[2];
-
-        // Inner product of (translation . rotscale) - translation is a Frobenius matrix
-        out[3] = pos[0];
-        out[7] = pos[1];
-        out[11] = pos[2];
-
-        // Add affine coordinate
-        out[15] = 1;
-
-        return out;
-    }
-
-    private float[] crossProduct(float[] vec_1, float[] vec_2) {
-        float[] out = new float[3];
-        out[0] = vec_1[1] * vec_2[2] - vec_1[2] * vec_2[1];
-        out[1] = vec_1[2] * vec_2[0] - vec_1[0] * vec_2[2];
-        out[2] = vec_1[0] * vec_2[1] - vec_1[1] * vec_2[0];
-        return out;
-    }
-
-    private float dotProduct(float[] vec_1, float[] vec_2) {
-        if (vec_1.length != vec_2.length)
-            throw new ArithmeticException("Vectors do not have the same length");
-
-        float out = 0;
-        for(int i=0; i < vec_1.length; ++i) {
-            out += vec_1[i]*vec_2[i];
-        }
-        return out;
-    }
-
-    private float vectorMagnitude(float[] vec) {
-        return (float)java.lang.Math.sqrt(dotProduct(vec, vec));
-    }
-
-    private float[] normalizeVector(float[] vec) {
-        float magnitude = vectorMagnitude(vec);
-
-        float[] out = new float[vec.length];
-        for (int i=0; i < vec.length; ++i)
-            out[i] = vec[i] / magnitude;
-        return out;
-    }
-
-    private float angleBetweenVecs(float[] vec_1, float[] vec_2) {
-        float numerator = dotProduct(vec_1, vec_2);
-        float denominator = vectorMagnitude(vec_1) * vectorMagnitude(vec_2);
-        return (float)java.lang.Math.acos(numerator/denominator);
-    }
-
-    private float[] axisAngleToMatrix3x3(float angle, float[] axis)
-    {
-        float c = (float)java.lang.Math.cos(angle);
-        float s = (float)java.lang.Math.sin(angle);
-        float x = axis[0];
-        float y = axis[1];
-        float z = axis[2];
-
-        float[] out = new float[9];
-        out[0] = c + x*x*(1 - c);
-        out[1] = x*y*(1 - c) - z*s;
-        out[2] = x*z*(1 - c) + y*s;
-
-        out[3] = x*y*(1 - c) + z*s;
-        out[4] = c + y*y*(1 - c);
-        out[5] = y*z*(1 - c) - x*s;
-
-        out[6] = x*z*(1 - c) - y*s;
-        out[7] = y*z*(1 - c) + x*s;
-        out[8] = c + z*z*(1 - c);
-
-        return out;
-    }
-
-    private float[] innerProductMatrix3x3(float[] mat_1, float[] mat_2) {
-        float[] out = new float[9];
-
-        float[] row_1 = { mat_1[0], mat_1[1], mat_1[2] };
-        float[] row_2 = { mat_1[3], mat_1[4], mat_1[5] };
-        float[] row_3 = { mat_1[6], mat_1[7], mat_1[8] };
-
-        float[] col_1 = { mat_2[0], mat_2[3], mat_2[6] };
-        float[] col_2 = { mat_2[1], mat_2[4], mat_2[7] };
-        float[] col_3 = { mat_2[2], mat_2[5], mat_2[8] };
-
-        out[0] = dotProduct(row_1, col_1);
-        out[1] = dotProduct(row_1, col_2);
-        out[2] = dotProduct(row_1, col_3);
-
-        out[3] = dotProduct(row_2, col_1);
-        out[4] = dotProduct(row_2, col_2);
-        out[5] = dotProduct(row_2, col_3);
-
-        out[6] = dotProduct(row_3, col_1);
-        out[7] = dotProduct(row_3, col_2);
-        out[8] = dotProduct(row_3, col_3);
-
-        return out;
-    }
-
-    // https://blender.stackexchange.com/a/38337
-    float[] vecRollToMatrix3x3(float[] vec, float roll) {
-        float[] target = { 0, 1, 0 };
-        float[] nor = normalizeVector(vec);
-        float[] axis = crossProduct(target, nor);
-
-        float[] bMatrix;
-        if (dotProduct(axis, axis) > 0.0000001) {
-            axis = normalizeVector(axis);
-            float theta = angleBetweenVecs(target, nor);
-            bMatrix = axisAngleToMatrix3x3(theta, axis);
-        }
-        else {
-            float updown = dotProduct(target, nor) > 0 ? 1 : -1;
-            bMatrix = new float[]{
-                    updown,      0,   0,
-                         0, updown,   0,
-                         0,      0,   1
-            };
-        }
-
-        float[] rMatrix = axisAngleToMatrix3x3(roll, nor);
-        return innerProductMatrix3x3(rMatrix, bMatrix);
-    }
-
-    // https://blender.stackexchange.com/a/38337
-    private float[] matrix3x3ToVecRoll(float[] mat) {
-        float[] vec = {mat[1], mat[4], mat[7]};
-        float[] vecmat = vecRollToMatrix3x3(vec, 0);
-
-        // Should invert the matrix here, but since rotation matrices are (should be) orthogonal, can just transpose it
-        float[] vecmatinv = {
-                vecmat[0], vecmat[3], vecmat[6],
-                vecmat[1], vecmat[4], vecmat[7],
-                vecmat[2], vecmat[5], vecmat[8]
-        };
-
-        float[] rollmat = innerProductMatrix3x3(vecmatinv, mat);
-        float roll = (float) java.lang.Math.atan2(rollmat[2], rollmat[8]);
-
-        float[] out = {vec[0], vec[1], vec[2], roll};
-        return out;
-    }
-
-    ////////////////////////////
-    //  END LINALG FUNCTIONS  //
-    ////////////////////////////
 
     public ColldadaExporter(HSMPKCAP hsmp) throws ParserConfigurationException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -378,21 +179,25 @@ public class ColldadaExporter {
                 elem.setAttribute("sid", j.getName());
                 elem.setAttribute("type", "JOINT");
 
-                float[] pos = {j.getXOffset(), j.getYOffset(), j.getZOffset()};
-                float[] quat = {j.getRotationX(), j.getRotationY(), j.getRotationZ(), j.getRotationW()};
-                float[] scale = {j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ()};
-                float[] transform_matrix = makeTransformMatrix(pos, quat, scale);
+                // Generate the local transform matrix of the bone
+                Vector3 pos     = new Vector3(j.getXOffset(), j.getYOffset(), j.getZOffset());
+                Quaternion quat = new Quaternion(j.getRotationX(), j.getRotationY(), j.getRotationZ(), j.getRotationW());
+                Vector3 scale   = new Vector3(j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ());
+                TransformMatrix transform_matrix = TransformMatrix.fromTransforms(pos, quat, scale);
                 Element matrix = createTextElement(
                         "matrix",
-                        transform_matrix[ 0] + " " + transform_matrix[ 1] + " " +transform_matrix[ 2] + " " +transform_matrix[ 3] + " " +
-                        transform_matrix[ 4] + " " + transform_matrix[ 5] + " " +transform_matrix[ 6] + " " +transform_matrix[ 7] + " " +
-                        transform_matrix[ 8] + " " + transform_matrix[ 9] + " " +transform_matrix[10] + " " +transform_matrix[11] + " " +
-                        transform_matrix[12] + " " + transform_matrix[13] + " " +transform_matrix[14] + " " +transform_matrix[15]
+                        transform_matrix.get(0, 0) + " " + transform_matrix.get(0, 1) + " " + transform_matrix.get(0, 2)+ " " + transform_matrix.get(0, 3) + " " +
+                        transform_matrix.get(1, 0) + " " + transform_matrix.get(1, 1) + " " + transform_matrix.get(1, 2)+ " " + transform_matrix.get(1, 3) + " " +
+                        transform_matrix.get(2, 0) + " " + transform_matrix.get(2, 1) + " " + transform_matrix.get(2, 2)+ " " + transform_matrix.get(2, 3) + " " +
+                        transform_matrix.get(3, 0) + " " + transform_matrix.get(3, 1) + " " + transform_matrix.get(3, 2)+ " " + transform_matrix.get(3, 3)
                 );
                 matrix.setAttribute("sid", "transform");
                 elem.appendChild(matrix);
 
-                float[] vecRoll = matrix3x3ToVecRoll(quaternionToMatrix3x3(quat));
+                // Blender needs a bit of help to import bones correctly:
+                // Here we're going to calculate the direction and roll of the bone, and give Blender some hints to
+                // help it import the file correctly
+                float[] vecRoll = quat.toMatrix().toVecRoll();
                 float[] tail = {vecRoll[0], vecRoll[1], vecRoll[2]};
                 float roll = vecRoll[3];
 
@@ -427,6 +232,7 @@ public class ColldadaExporter {
                 layer.setAttribute("type", "float");
                 extra.appendChild(tip_z);
 
+                // Now we can output
                 jointMap.put(i, elem);
                 if(j.getParentId() != -1) 
                     jointMap.get(j.getParentId()).appendChild(elem);

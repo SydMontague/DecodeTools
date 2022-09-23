@@ -48,6 +48,7 @@ import org.lwjgl.assimp.Assimp;
 import net.digimonworld.decodetools.Main;
 import net.digimonworld.decodetools.core.Utils;
 import net.digimonworld.decodetools.gui.util.FunctionAction;
+import net.digimonworld.decodetools.gui.util.LinAlg.Vector3;
 import net.digimonworld.decodetools.res.ResPayload;
 import net.digimonworld.decodetools.res.kcap.HSEMKCAP;
 import net.digimonworld.decodetools.res.kcap.HSMPKCAP;
@@ -116,17 +117,6 @@ public class ModelImporter extends PayloadPanel {
     private final JButton btnExportDAE = new JButton("Export to DAE");
     
     // generated
-
-    private float dotProduct(float[] vec_1, float[] vec_2) {
-        if (vec_1.length != vec_2.length)
-            throw new ArithmeticException("Vectors do not have the same length");
-
-        float out = 0;
-        for(int i=0; i < vec_1.length; ++i) {
-            out += vec_1[i]*vec_2[i];
-        }
-        return out;
-    }
 
     public ModelImporter(HSMPKCAP rootKCAP) {
         btnNewButton.addActionListener(a -> {
@@ -263,19 +253,33 @@ public class ModelImporter extends PayloadPanel {
                         AIBone bone = AIBone.create(mesh.mBones().get(j));
                         AIMatrix4x4 offsetMatrix = bone.mOffsetMatrix();
 
-                        float[] t = { offsetMatrix.a4(), offsetMatrix.b4(), offsetMatrix.c4() };
-                        float[] u = { offsetMatrix.a1(), offsetMatrix.b1(), offsetMatrix.c1() };
-                        float[] v = { offsetMatrix.a2(), offsetMatrix.b2(), offsetMatrix.c2() };
-                        float[] w = { offsetMatrix.a3(), offsetMatrix.b3(), offsetMatrix.c3() };
-                        float[] x = { offsetMatrix.a1(), offsetMatrix.a2(), offsetMatrix.a3() };
-                        float[] y = { offsetMatrix.b1(), offsetMatrix.b2(), offsetMatrix.b3() };
-                        float[] z = { offsetMatrix.c1(), offsetMatrix.c2(), offsetMatrix.c3() };
+                        // Here we're going to bake a scale into the inverse bind pose
+                        // Since we need to apply the scale the the translations only in the bind pose,
+                        // and the translations are mixed up with the rotations in the inverse bind pose,
+                        // AND because location-rotation matrices have very simple inverses...
+                        // We're going to un-invert the translation part of the inverse bind pose,
+                        // apply the scale,
+                        // and then re-invert
+                        // We'll ignore the rotation to save flops, since our baked-in scale won't affect the rotation
 
-                        float[] s = { -dotProduct(u, t) * scale, -dotProduct(v, t) * scale, -dotProduct(w, t)* scale };
-                        float t_x = -dotProduct(x, s);
-                        float t_y = -dotProduct(y, s);
-                        float t_z = -dotProduct(z, s);
+                        // Set up the variables we're going to need
+                        Vector3 t = new Vector3( offsetMatrix.a4(), offsetMatrix.b4(), offsetMatrix.c4() );
+                        Vector3 u = new Vector3( offsetMatrix.a1(), offsetMatrix.b1(), offsetMatrix.c1() );
+                        Vector3 v = new Vector3( offsetMatrix.a2(), offsetMatrix.b2(), offsetMatrix.c2() );
+                        Vector3 w = new Vector3( offsetMatrix.a3(), offsetMatrix.b3(), offsetMatrix.c3() );
 
+                        // Retrieve the translation from the bind pose, and apply the scale
+                        Vector3 s = new Vector3( -u.dot(t) * scale, -v.dot(t) * scale, -w.dot(t)* scale );
+
+                        // Re-invert
+                        Vector3 x = new Vector3( offsetMatrix.a1(), offsetMatrix.a2(), offsetMatrix.a3() );
+                        Vector3 y = new Vector3( offsetMatrix.b1(), offsetMatrix.b2(), offsetMatrix.b3() );
+                        Vector3 z = new Vector3( offsetMatrix.c1(), offsetMatrix.c2(), offsetMatrix.c3() );
+                        float t_x = -x.dot(s);
+                        float t_y = -y.dot(s);
+                        float t_z = -z.dot(s);
+
+                        // Save the matrix for later
                         float[] ibpm = {
                                 offsetMatrix.a1(), offsetMatrix.a2(), offsetMatrix.a3(), t_x,
                                 offsetMatrix.b1(), offsetMatrix.b2(), offsetMatrix.b3(), t_y,
@@ -667,7 +671,7 @@ public class ModelImporter extends PayloadPanel {
             float[] offsetVector = { trans.a4() * scale, trans.b4() * scale, trans.c4() * scale, 0.0f };
             float[] rotationQuat = { quat.x(), quat.y(), quat.z(), quat.w() }; // Need to extract the scale first
             float[] scaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
-            float[] localScaleVector = { sc.x(), sc.y(), sc.z(), 0.f };
+            float[] localScaleVector = { sc.x(), sc.y(), sc.z(), 0.0f };
             
             if (!name.startsWith(JOINT_PREFIX))
                 continue;
