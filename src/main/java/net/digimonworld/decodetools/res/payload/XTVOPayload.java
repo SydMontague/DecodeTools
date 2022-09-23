@@ -22,8 +22,8 @@ public class XTVOPayload extends ResPayload {
     private final long dataStartOnLoad;
     
     // int magic value
-    private int unknown1; // 5? version?
-    private short unknown2; // 0x3001?
+    // int version // always 5
+    private short unknown2; // always 0x3001?
     private short id; // ?
     // int dataPointer
     
@@ -34,7 +34,7 @@ public class XTVOPayload extends ResPayload {
     
     private int shaderId;
     private int unknown9; // 0x73?
-    private int unknown10; // 1?
+    private int unknown10; // always 1?
     // int shaderVariablesSize
     
     // short attributeCount
@@ -57,7 +57,7 @@ public class XTVOPayload extends ResPayload {
     
     private List<XTVOVertex> data = new ArrayList<>();
     
-    public XTVOPayload(AbstractKCAP parent, List<XTVOAttribute> attributes, List<XTVOVertex> data, int shaderId, int unknown1, short unknown2, short id,
+    public XTVOPayload(AbstractKCAP parent, List<XTVOAttribute> attributes, List<XTVOVertex> data, int shaderId, short unknown2, short id,
             int unknown7, int unknown9, int unknown10) {
         super(parent);
         
@@ -65,7 +65,6 @@ public class XTVOPayload extends ResPayload {
         this.data = new ArrayList<>(data);
         this.shaderId = shaderId;
         this.id = id;
-        this.unknown1 = unknown1;
         this.unknown2 = unknown2;
         this.unknown7 = unknown7;
         this.unknown9 = unknown9;
@@ -82,7 +81,7 @@ public class XTVOPayload extends ResPayload {
         super(parent);
         
         source.readInteger(); // magic value
-        unknown1 = source.readInteger();
+        source.readInteger(); // always 5
         unknown2 = source.readShort();
         id = source.readShort();
         int dataPointer = source.readInteger();
@@ -155,7 +154,7 @@ public class XTVOPayload extends ResPayload {
         int dataAddress = dataStream.add(array, false);
         
         dest.writeInteger(getType().getMagicValue());
-        dest.writeInteger(unknown1);
+        dest.writeInteger(5); // version
         dest.writeShort(unknown2);
         dest.writeShort(id);
         dest.writeInteger(dataAddress);

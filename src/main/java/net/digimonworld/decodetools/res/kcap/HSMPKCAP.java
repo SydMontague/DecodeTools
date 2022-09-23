@@ -22,6 +22,9 @@ import net.digimonworld.decodetools.res.payload.VoidPayload;
  * TNOJ (optional)
  * RTCL (optional)
  * TDTM (optional)
+ * 
+ * MPSM (optional, never seen in the wild)
+ * RTTA (optional, never seen in the wild)
  */
 public class HSMPKCAP extends AbstractKCAP {
     private static final int HSMP_VERSION = 0x100;

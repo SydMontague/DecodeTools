@@ -64,7 +64,7 @@ public class XMLFont {
                 continue;
             
             int id = Integer.parseInt(item.getAttributes().getNamedItem("id").getNodeValue());
-            String imageFile = item.getAttributes().getNamedItem("id").getNodeValue();
+            String imageFile = item.getAttributes().getNamedItem("file").getNodeValue();
             pageMap.put(id, imageFile);
         }
         
@@ -80,6 +80,10 @@ public class XMLFont {
             
             charList.add(new Char(item));
         }
+    }
+    
+    public Map<Integer, String> getPageMap() {
+        return pageMap;
     }
     
     /**

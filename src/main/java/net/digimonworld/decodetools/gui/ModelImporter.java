@@ -533,7 +533,7 @@ public class ModelImporter extends PayloadPanel {
                 faces.add(new XDIOFace(face.mIndices().get(0), face.mIndices().get(1), face.mIndices().get(2)));
             }
             
-            xtvoPayload.add(new XTVOPayload(null, attribList, xtvoVertices, (int) comboBox.getSelectedItem(), 5, (short) 0x3001, (short) 0, 0x00010309, 0x73, 0x01));
+            xtvoPayload.add(new XTVOPayload(null, attribList, xtvoVertices, (int) comboBox.getSelectedItem(), (short) 0x3001, (short) 0, 0x00010309, 0x73, 0x01));
             xdioPayload.add(new XDIOPayload(null, faces, (short) 0x3001, (short) 0, 5));
             
             hsemPayload.add(new HSEM07Entry((short) 0x000F, (short) 0, (short) 0, (short) 0));
