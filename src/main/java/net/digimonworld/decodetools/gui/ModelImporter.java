@@ -80,7 +80,7 @@ import javax.swing.DefaultComboBoxModel;
 
 public class ModelImporter extends PayloadPanel {
     private static final float[] IDENTITY_MATRIX = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-    private static final String JOINT_PREFIX = "J_";
+    private static final String[] JOINT_PREFIXES = {"J_", "AT_",};
     
     private static final int IMPORT_FLAGS = Assimp.aiProcess_SplitByBoneCount | Assimp.aiProcess_LimitBoneWeights;
     private static final AIPropertyStore importProperties = Assimp.aiCreatePropertyStore();
@@ -613,7 +613,7 @@ public class ModelImporter extends PayloadPanel {
         
         String name = node.mName().dataString();
         
-        return name.startsWith("J_") || name.startsWith("loc_");
+        return name.startsWith("J_") || name.startsWith("loc_") || name.startsWith("AT_");
     }
     
     @SuppressWarnings("resource")
@@ -629,7 +629,7 @@ public class ModelImporter extends PayloadPanel {
             for (int i = 0; i < node.mNumChildren(); i++)
                 nodeQueue.add(AINode.create(node.mChildren().get(i)));
             
-            if (!node.mName().dataString().startsWith(JOINT_PREFIX))
+            if (!node.mName().dataString().startsWith(JOINT_PREFIXES[0]) && (!node.mName().dataString().startsWith(JOINT_PREFIXES[1])))
                 continue;
             
             nodeList.add(node);
@@ -651,7 +651,7 @@ public class ModelImporter extends PayloadPanel {
             
             int parentId = parent != null ? names.indexOf(parent.mName().dataString()) : -1;
             
-            if(parentId == -1 && parent != null && parent.mName().dataString().startsWith(JOINT_PREFIX))
+            if(parentId == -1 && parent != null && parent.mName().dataString().startsWith(JOINT_PREFIXES[0])&&!name.startsWith(JOINT_PREFIXES[1]))
                 Main.LOGGER.severe(() -> "AINode " + name + " order is invalid, parent node has not been processed yet.");
             
             int unknown1 = 0;
@@ -673,7 +673,7 @@ public class ModelImporter extends PayloadPanel {
             float[] scaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
             float[] localScaleVector = { sc.x(), sc.y(), sc.z(), 0.0f };
             
-            if (!name.startsWith(JOINT_PREFIX))
+            if (!name.startsWith(JOINT_PREFIXES[0])&&!name.startsWith(JOINT_PREFIXES[1]))
                 continue;
             
             float[] ibpm = jointBones.getOrDefault(name, IDENTITY_MATRIX);
