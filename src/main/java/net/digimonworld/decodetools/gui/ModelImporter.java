@@ -651,7 +651,7 @@ public class ModelImporter extends PayloadPanel {
             
             int parentId = parent != null ? names.indexOf(parent.mName().dataString()) : -1;
             
-            if(parentId == -1 && parent != null && parent.mName().dataString().startsWith(JOINT_PREFIXES[0])&&!name.startsWith(JOINT_PREFIXES[1]))
+            if(parentId == -1 && parent != null && parent.mName().dataString().startsWith(JOINT_PREFIXES[0]) && !name.startsWith(JOINT_PREFIXES[1]))
                 Main.LOGGER.severe(() -> "AINode " + name + " order is invalid, parent node has not been processed yet.");
             
             int unknown1 = 0;
