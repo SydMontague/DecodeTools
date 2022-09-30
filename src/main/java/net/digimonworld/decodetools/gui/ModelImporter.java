@@ -673,7 +673,7 @@ public class ModelImporter extends PayloadPanel {
             float[] scaleVector = { 1.0f, 1.0f, 1.0f, 0.0f };
             float[] localScaleVector = { sc.x(), sc.y(), sc.z(), 0.0f };
             
-            if (!name.startsWith(JOINT_PREFIXES[0])&&!name.startsWith(JOINT_PREFIXES[1]))
+            if (!name.startsWith(JOINT_PREFIXES[0]) && !name.startsWith(JOINT_PREFIXES[1]))
                 continue;
             
             float[] ibpm = jointBones.getOrDefault(name, IDENTITY_MATRIX);
