@@ -1,5 +1,6 @@
 package net.digimonworld.decodetools.res.payload;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -78,7 +79,8 @@ public class BTXPayload extends ResPayload {
         }
         
         for (int i = 0; i < pointers.size(); i++) {
-            entries.add(new Tuple<>(pointers.get(i).getKey(), new BTXEntry(strings.get(i), metas.size() > i ? metas.get(i) : null)));
+            entries.add(new Tuple<>(pointers.get(i).getKey(),
+                    new BTXEntry(strings.get(i), metas.size() > i ? metas.get(i) : null)));
         }
     }
     
@@ -113,7 +115,8 @@ public class BTXPayload extends ResPayload {
     @Override
     public void writeKCAP(Access dest, ResData dataStream) {
         if (entries.stream().anyMatch(a -> a.getValue().getMeta().isPresent()))
-            dest.writeInteger((int) (getSize() - entries.stream().filter(a -> a.getValue().getMeta().isPresent()).count() * 0x30));
+            dest.writeInteger((int) (getSize()
+                    - entries.stream().filter(a -> a.getValue().getMeta().isPresent()).count() * 0x30));
         
         dest.writeInteger(getType().getMagicValue());
         dest.writeInteger(1); // version
@@ -179,81 +182,45 @@ public class BTXPayload extends ResPayload {
     public static class BTXMeta {
         private int id; // TODO shouldn't be stored but instead generated
         private int speaker;
-        private short unknown2_1;
-        private byte unknown2_2;
-        private byte unknown2_3;
-        private int unknown3;
+        private short unknown1;
+        private short unknown2;
+        private short unknown3;
+        private short unknown4;
         
-        // TODO voice line name?
-        private int unknown4;
-        private int unknown5;
-        private int unknown6;
-        private int unknown7;
-        
-        private int unknown8;
-        private int unknown9;
-        private int unknown10;
-        private int unknown11;
-        private int unknown12;
-        private int unknown13;
-        private int unknown14;
+        private String voiceLine;
         
         public BTXMeta(Access source) {
-            id = source.readInteger();
-            speaker = source.readInteger();
+            this.id = source.readInteger();
+            this.speaker = source.readInteger();
             
-            unknown2_1 = source.readShort();
-            unknown2_2 = source.readByte();
-            unknown2_3 = source.readByte();
-            unknown3 = source.readInteger();
+            this.unknown1 = source.readShort();
+            this.unknown2 = source.readShort();
+            this.unknown3 = source.readShort();
+            this.unknown4 = source.readShort();
             
-            unknown4 = source.readInteger();
-            unknown5 = source.readInteger();
-            unknown6 = source.readInteger();
-            unknown7 = source.readInteger();
-            
-            unknown8 = source.readInteger();
-            unknown9 = source.readInteger();
-            unknown10 = source.readInteger();
-            unknown11 = source.readInteger();
+            this.voiceLine = source.readString(0x20, "ASCII").trim();
         }
-                 
-	public BTXMeta(int btxid, int speakerid, short unk1, byte unk2, byte unk3, int unk4, int unk5, int unk6, int unk7,
-				int unk8, int unk9, int unk10, int unk11, int unk12) {
-            id = btxid;
-            speaker = speakerid;
-            unknown2_1 = unk1;
-            unknown2_2 = unk2;
-            unknown2_3 = unk3;
-            unknown3 = unk4;
-            unknown4 = unk5;
-            unknown5 = unk6;
-            unknown6 = unk7;
-            unknown7 = unk8;         
-            unknown8 = unk9;
-            unknown9 = unk10;
-            unknown10 = unk11;
-            unknown11 = unk12;
-	}
-
-
-	public void writeKCAP(Access dest) {
+        
+        public BTXMeta(int btxid, int speakerid, short unk1, short unk2, short unk3, short unk4, String voiceLine) {
+            this.id = btxid;
+            this.speaker = speakerid;
+            this.unknown1 = unk1;
+            this.unknown2 = unk2;
+            this.unknown3 = unk3;
+            this.unknown4 = unk4;
+            
+            this.voiceLine = voiceLine;
+        }
+        
+        public void writeKCAP(Access dest) {
             dest.writeInteger(id);
             dest.writeInteger(speaker);
-            dest.writeShort(unknown2_1);
-            dest.writeByte(unknown2_2);
-            dest.writeByte(unknown2_3);
-            dest.writeInteger(unknown3);
+            dest.writeShort(unknown1);
+            dest.writeShort(unknown2);
+            dest.writeShort(unknown3);
+            dest.writeShort(unknown4);
             
-            dest.writeInteger(unknown4);
-            dest.writeInteger(unknown5);
-            dest.writeInteger(unknown6);
-            dest.writeInteger(unknown7);
-            
-            dest.writeInteger(unknown8);
-            dest.writeInteger(unknown9);
-            dest.writeInteger(unknown10);
-            dest.writeInteger(unknown11);
+            dest.writeByteArray(Arrays.copyOf(voiceLine.getBytes(), 0x20));
         }
         
         /**
@@ -278,56 +245,27 @@ public class BTXPayload extends ResPayload {
         public int getSpeaker() {
             return speaker;
         }
-
+        
         public short getUnk1() {
-            return unknown2_1;
+            return unknown1;
         }
         
-        public byte  getUnk2() {
-            return unknown2_2;
-        }
-
-        public byte  getUnk3() {
-            return unknown2_3;
+        public short getUnk2() {
+            return unknown2;
         }
         
-        public int  getUnk4() {
+        public short getUnk3() {
             return unknown3;
         }
         
-        public int  getUnk5() {
+        public short getUnk4() {
             return unknown4;
         }
         
-        public int  getUnk6() {
-            return unknown5;
+        public String getVoiceLine() {
+            return voiceLine;
         }
-        
-        public int  getUnk7() {
-            return unknown6;
-        }
-        
-        public int  getUnk8() {
-            return unknown7;
-        }  
-        
-        public int  getUnk9() {
-            return unknown8;
-        }
-        
-        public int  getUnk10() {
-            return unknown9;
-        }
-        
-        public int  getUnk11() {
-            return unknown10;
-        }
-        
-        public int  getUnk12() {
-            return unknown11;
-        }
-
-        }
+    }
     
     /**
      * An entry to a BTX, containing a String and an optional {@link BTXMeta}.
@@ -338,7 +276,7 @@ public class BTXPayload extends ResPayload {
         
         public BTXEntry(String string, BTXMeta meta) {
             // remove furigana from the string
-            this.string = string.replaceAll("<r[0-9][^>]*>", ""); 
+            this.string = string.replaceAll("<r[0-9][^>]*>", "");
             this.meta = meta;
         }
         
