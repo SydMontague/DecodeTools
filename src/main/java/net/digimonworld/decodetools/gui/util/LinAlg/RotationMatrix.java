@@ -38,7 +38,7 @@ public class RotationMatrix extends Matrix {
     // https://blender.stackexchange.com/a/38337
     public static RotationMatrix fromVectorRoll(Vector3 vec, float roll) {
         Vector3 target = new Vector3( 0, 1, 0 );
-        Vector3 nor = Vector3.normalise(target);
+        Vector3 nor = Vector3.normalise(vec);
         Vector3 axis = target.cross(nor);
 
         RotationMatrix bMatrix;
@@ -62,17 +62,6 @@ public class RotationMatrix extends Matrix {
         return rMatrix.dot(bMatrix);
     }
 
-    public void invert() {
-        float carrier = 0;
-        for (int r=0; r < rows; ++r) {
-            for (int c=0; c < cols; ++c) {
-                carrier = storage[c][r];
-                storage[c][r] = storage[r][c];
-                storage[r][c] = carrier;
-            }
-        }
-    }
-
     //////////////////
     //      OPS     //
     //////////////////
@@ -83,11 +72,19 @@ public class RotationMatrix extends Matrix {
     public float[] toVecRoll() {
         Vector3 vec = new Vector3(this.col(1)); // Convert to Vec3 to access cross product
         RotationMatrix vecmat = RotationMatrix.fromVectorRoll(vec, 0);
-        vecmat.invert();
+        RotationMatrix vecmatinv = vecmat.inverted();
 
-        RotationMatrix rollmat = vecmat.dot(this);
-        float roll = (float) java.lang.Math.atan2(rollmat.get(0, 2), rollmat.get(2, 2));
+        RotationMatrix rollmat = vecmatinv.dot(this);
+        float roll = (float) Math.atan2(rollmat.get(0, 2), rollmat.get(2, 2));
 
         return new float[]{vec.get(0), vec.get(1), vec.get(2), roll};
+    }
+
+    public RotationMatrix inverted() {
+        float[][] out = new float[cols][rows];
+        for (int r=0; r < rows; ++r)
+            for (int c=0; c < cols; ++c)
+                out[c][r] = storage[r][c];
+        return new RotationMatrix(out);
     }
 }
