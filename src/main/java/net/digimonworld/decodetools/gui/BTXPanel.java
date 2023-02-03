@@ -123,9 +123,12 @@ public class BTXPanel extends PayloadPanel {
                     return;
                 
                 int id = Integer.parseInt(split[0]);
-                String string = split[1].replace("\\n", "\n");
+                String string = split[1];
                 if (string.startsWith("\"") && string.endsWith("\""))
                     string = string.substring(1, string.length() - 1);
+                string = string.replace("\\n", "\n");
+                string = string.replace("\"\"", "\"");
+                string = string.replace("\\1", ";");
                 
                 BTXMeta meta = null;
                 
@@ -163,7 +166,7 @@ public class BTXPanel extends PayloadPanel {
                 List<String> str = new ArrayList<>();
                 
                 str.add(b.getKey().toString());
-                str.add("\"" + b.getValue().getString().replace("\n", "\\n").replace("\"", "\"\"") + "\"");
+                str.add("\"" + b.getValue().getString().replace("\n", "\\n").replace("\"", "\"\"").replace(";", "\\1") + "\"");
                 
                 b.getValue().getMeta().ifPresent(c -> {
                     str.add(Objects.toString(c.getSpeaker()));
