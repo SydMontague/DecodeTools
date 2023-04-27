@@ -24,4 +24,9 @@ module net.digimonworld.decode.decode_tools {
     requires java.xml;
     requires org.lwjgl;
     requires org.lwjgl.assimp;
+    requires jgltf.model;
+   	requires jgltf.impl.v2;
+ 
+
 }
+

@@ -4,6 +4,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -115,6 +116,7 @@ public class ModelImporter extends PayloadPanel {
     private final JLabel lblNewLabel = new JLabel("Shader:");
     private final JButton btnNewButton = new JButton("Joints to OBJ");
     private final JButton btnExportDAE = new JButton("Export to DAE");
+    private final JButton btnExportglTF = new JButton("Export to glTF");
     
     // generated
 
@@ -138,6 +140,18 @@ public class ModelImporter extends PayloadPanel {
             }
         });
         
+        
+        btnExportglTF.addActionListener(a -> {
+            JFileChooser fileDialogue = new JFileChooser("./Output");
+            fileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileDialogue.showSaveDialog(null);          
+
+            if (fileDialogue.getSelectedFile() == null)
+                return;
+                saveGLTF(fileDialogue.getSelectedFile());
+            
+        });
+        		
         btnExportDAE.addActionListener(a -> {
             if (this.rootKCAP == null)
                 return;
@@ -362,8 +376,11 @@ public class ModelImporter extends PayloadPanel {
                             .addContainerGap()
                             .addComponent(btnNewButton)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(btnExportDAE)))
-                    .addContainerGap(26, Short.MAX_VALUE))
+                            .addComponent(btnExportDAE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(btnExportglTF)))
+          
+        					.addContainerGap(26, Short.MAX_VALUE))
         );
         gl_panel_1.setVerticalGroup(
             gl_panel_1.createParallelGroup(Alignment.LEADING)
@@ -376,7 +393,8 @@ public class ModelImporter extends PayloadPanel {
                     .addPreferredGap(ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
                     .addGroup(gl_panel_1.createParallelGroup(Alignment.BASELINE)
                         .addComponent(btnNewButton)
-                        .addComponent(btnExportDAE))
+                        .addComponent(btnExportDAE)
+                        .addComponent(btnExportglTF))
                     .addContainerGap())
         );
         panel_1.setLayout(gl_panel_1);
@@ -392,10 +410,23 @@ public class ModelImporter extends PayloadPanel {
     
     public void saveModel(File output) {
         try {
-            new ColldadaExporter(rootKCAP).export(output);
+            try {
+				new ColldadaExporter(rootKCAP).export(output);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
         catch (TransformerException | ParserConfigurationException e) {
             e.printStackTrace();
+        }
+    }
+    
+    public void saveGLTF(File output) {
+    	try {
+        	new GLTFExporter(rootKCAP).export(output);		
+        } catch (IOException e) {
+         	e.printStackTrace();
         }
     }
     

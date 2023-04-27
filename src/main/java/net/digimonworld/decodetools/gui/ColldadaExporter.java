@@ -1,6 +1,7 @@
 package net.digimonworld.decodetools.gui;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -65,7 +66,7 @@ public class ColldadaExporter {
         this.hsmp = hsmp;
     }
 
-    public void export(File output) throws TransformerException {
+    public void export(File output) throws TransformerException, IOException {
         Element root = doc.createElement("COLLADA");
         root.setAttribute("xmlns", "http://www.collada.org/2008/03/COLLADASchema");
         root.setAttribute("version", "1.5.0");
@@ -286,6 +287,7 @@ public class ColldadaExporter {
                 HSEMDrawEntry draw = (HSEMDrawEntry) entry;
                 XTVOPayload xtvo = hsmp.getXTVP().get(draw.getVertexId());
                 XDIOPayload xdio = hsmp.getXDIP().get(draw.getIndexId());
+              
                 final String meshName = "geom-" + meshId++;
                 
                 // create scene node
@@ -401,7 +403,8 @@ public class ColldadaExporter {
                 
                 List<String> pos = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.POSITION);
                 mesh.appendChild(createMeshSource(meshName + "-pos", ParamType.FLOAT, pos, Arrays.asList("X", "Y", "Z")));
-
+              
+                
                 triangles.appendChild(createSharedInput(0, "VERTEX", "#" + meshName + "-vertices", Optional.empty()));
                 
                 if(xtvo.getAttribute(XTVORegisterType.NORMAL).isPresent()) {
@@ -426,13 +429,16 @@ public class ColldadaExporter {
                 }
                 
                 String indexString = xdio.getFaces().stream().flatMap(a -> List.of(a.getVert1(), a.getVert2(), a.getVert3()).stream()).map(Object::toString).collect(Collectors.joining(" "));
+            
+                
                 Element indices = createTextElement("p", indexString);
                 
                 triangles.appendChild(indices);
 
                 Element vertices = doc.createElement("vertices");
                 vertices.setAttribute("id", meshName + "-vertices");
-                vertices.appendChild(createUnsharedInput("POSITION", "#" + meshName + "-pos"));
+                vertices.appendChild(createUnsharedInput("POSITION", "#" + meshName 
+                		+ "-pos"));
                 
                 mesh.appendChild(vertices);
                 mesh.appendChild(triangles);
