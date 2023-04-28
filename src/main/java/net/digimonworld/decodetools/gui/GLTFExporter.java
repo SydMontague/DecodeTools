@@ -88,9 +88,9 @@ public class GLTFExporter {
 		gltf.setAsset(inputAsset);
 
 		int meshId = 0;
-		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {					
-			for (HSEMEntry entry : hsem.getEntries()) {			
-				
+		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
+			for (HSEMEntry entry : hsem.getEntries()) {
+
 				if (entry.getHSEMType() != HSEMEntryType.DRAW)
 					continue;
 
@@ -102,73 +102,73 @@ public class GLTFExporter {
 
 				// Create positions, normals,faces
 				List<Float> positions = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.POSITION);
-				List<Float> normals = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.NORMAL);	
-			//	List<Float> uvcord= textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);				 
-					    
+				List<Float> normals = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.NORMAL);
+				// List<Float> uvcord= textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);
+
 				List<Integer> indices = new ArrayList<>();
 				xdio.getFaces().forEach(face -> {
 					indices.add(face.getVert1());
 					indices.add(face.getVert2());
 					indices.add(face.getVert3());
 				});
-			
+
 				byte[] posBytes = floatListToByteArray(positions);
 				byte[] normalBytes = floatListToByteArray(normals);
-			//	byte[] uvBytes = floatListToByteArray(uvcord);
-			
+				// byte[] uvBytes = floatListToByteArray(uvcord);
+
 				byte[] faceBytes = intListToByteBuffer(indices);
-				int totalSize = posBytes.length + normalBytes.length + faceBytes.length ;
+				int totalSize = posBytes.length + normalBytes.length + faceBytes.length;
 				ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
 
 				byteBuffer.put(posBytes);
 				byteBuffer.put(normalBytes);
-			//	byteBuffer.put(uvBytes);	
+				// byteBuffer.put(uvBytes);
 				byteBuffer.put(faceBytes);
-			
+
 				byte[] combinedData = byteBuffer.array();
 				Buffer buffer = new Buffer();
 				buffer.setByteLength(combinedData.length);
-			
+
 				buffer.setUri(
 						"data:application/octet-stream;base64," + Base64.getEncoder().encodeToString(combinedData));
 
 				gltf.addBuffers(buffer);
-				int bufferIndex = gltf.getBuffers().size(); // get the current number of buffers
+
 				// Create buffer views
 				BufferView posBufferView = new BufferView();
-				posBufferView.setBuffer(bufferIndex - 1); // use the first buffer
-				posBufferView.setByteOffset(0); // start at the beginning
+				posBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
+				posBufferView.setByteOffset(0);
 				posBufferView.setByteLength(posBytes.length);
-			//	posBufferView.setTarget(34962);
+				// posBufferView.setTarget(34962);
 
 				BufferView normalBufferView = new BufferView();
-				normalBufferView.setBuffer(bufferIndex - 1); // use the first buffer
+				normalBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
 				normalBufferView.setByteOffset(posBufferView.getByteOffset() + posBufferView.getByteLength());
 				normalBufferView.setByteLength(normalBytes.length);
-			//	normalBufferView.setTarget(34962);
-			
-			//	BufferView texBufferView = new BufferView();
-			//	texBufferView.setBuffer(0); // use the first buffer
-			//	texBufferView.setByteOffset(normalBufferView.getByteOffset() + normalBufferView.getByteLength());
-			//	texBufferView.setByteLength(uvBytes.length);
-			//	texBufferView.setTarget(34962);
+				// normalBufferView.setTarget(34962);
+
+				// BufferView texBufferView = new BufferView();
+				// texBufferView.setBuffer(0); // use the first buffer
+				// texBufferView.setByteOffset(normalBufferView.getByteOffset() +
+				// normalBufferView.getByteLength());
+				// texBufferView.setByteLength(uvBytes.length);
+				// texBufferView.setTarget(34962);
 
 				BufferView indexBufferView = new BufferView();
-				indexBufferView.setBuffer(bufferIndex - 1); // use the first buffer
+				indexBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
 				indexBufferView.setByteOffset(normalBufferView.getByteOffset() + normalBufferView.getByteLength());
 				indexBufferView.setByteLength(faceBytes.length);
-			//	indexBufferView.setTarget(34963);
-			
+				// indexBufferView.setTarget(34963);
 
 				// Add buffer views to GLTF
 				gltf.addBufferViews(posBufferView);
 				gltf.addBufferViews(normalBufferView);
 				gltf.addBufferViews(indexBufferView);
-			//	gltf.addBufferViews(texBufferView);
+				// gltf.addBufferViews(texBufferView);
 
 				// Create accessors
 				Accessor posAccessor = new Accessor();
-				posAccessor.setBufferView(gltf.getBufferViews().indexOf(posBufferView)); // use the first buffer view
+				posAccessor.setBufferView(gltf.getBufferViews().indexOf(posBufferView));
 				posAccessor.setComponentType(5126);// FLOAT
 				posAccessor.setCount(positions.size() / 3); // each position has 3 components (x, y, z)
 				posAccessor.setType("VEC3");
@@ -179,11 +179,11 @@ public class GLTFExporter {
 				normalAccessor.setCount(normals.size() / 3); // each normal has 3 components (x, y, z)
 				normalAccessor.setType("VEC3");
 
-		//		Accessor texAccessor = new Accessor();
-		//		texAccessor.setBufferView(2);
-		//		texAccessor.setComponentType(5126); // UINT
-		//		texAccessor.setCount(uvcord.size());
-		//		texAccessor.setType("VEC2");
+				// Accessor texAccessor = new Accessor();
+				// texAccessor.setBufferView(2);
+				// texAccessor.setComponentType(5126); // UINT
+				// texAccessor.setCount(uvcord.size());
+				// texAccessor.setType("VEC2");
 
 				Accessor indexAccessor = new Accessor();
 				indexAccessor.setBufferView(gltf.getBufferViews().indexOf(indexBufferView));
@@ -194,7 +194,7 @@ public class GLTFExporter {
 				// Add Accessors
 				gltf.addAccessors(posAccessor);
 				gltf.addAccessors(normalAccessor);
-			//	gltf.addAccessors(texAccessor);
+				// gltf.addAccessors(texAccessor);
 				gltf.addAccessors(indexAccessor);
 
 				Node node = new Node();
@@ -210,19 +210,19 @@ public class GLTFExporter {
 
 				Mesh mesh = new Mesh();
 				mesh.setName(meshName);
-
+				gltf.addMeshes(mesh);
 				MeshPrimitive primitive = new MeshPrimitive();
 				primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
 				primitive.addAttributes("NORMAL", gltf.getAccessors().indexOf(normalAccessor));
-			//	primitive.addAttributes("TEXCOORD_0", gltf.getAccessors().indexOf(texAccessor));
+				// primitive.addAttributes("TEXCOORD_0",
+				// gltf.getAccessors().indexOf(texAccessor));
 				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
 
 				mesh.addPrimitives(primitive);
 
-				gltf.addMeshes(mesh);
 				meshId++;
 			}
-	}
+		}
 
 		File outputFile = new File(output, hsmp.getName() + ".gltf");
 		try (OutputStream os = new FileOutputStream(outputFile)) {
@@ -233,7 +233,7 @@ public class GLTFExporter {
 		}
 
 	}
-		
+
 	public static byte[] uvCoordinatesToByteArray(XTVOPayload xtvo, XTVORegisterType type) {
 		int numVertices = xtvo.getVertices().size();
 		byte[] byteArray = new byte[numVertices * 8];
@@ -292,7 +292,7 @@ public class GLTFExporter {
 
 		return list;
 	}
-	
+
 	public static byte[] floatListToByteArray(List<Float> floatList) {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(floatList.size() * Float.BYTES);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
