@@ -22,6 +22,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.table.DefaultTableModel;
 
 import net.digimonworld.decodetools.core.Tuple;
+import net.digimonworld.decodetools.core.Utils;
 import net.digimonworld.decodetools.gui.util.FunctionAction;
 import net.digimonworld.decodetools.res.payload.BTXPayload;
 import net.digimonworld.decodetools.res.payload.BTXPayload.BTXEntry;
@@ -162,23 +163,7 @@ public class BTXPanel extends PayloadPanel {
         
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("id;string;speaker;unk1;unk2;unk3;unk4;voiceLine\n");
-            String string = payload.getEntries().stream().map(b -> {
-                List<String> str = new ArrayList<>();
-                
-                str.add(b.getKey().toString());
-                str.add("\"" + b.getValue().getString().replace("\n", "\\n").replace("\"", "\"\"").replace(";", "\\1") + "\"");
-                
-                b.getValue().getMeta().ifPresent(c -> {
-                    str.add(Objects.toString(c.getSpeaker()));
-                    str.add(Objects.toString(c.getUnk1()));
-                    str.add(Objects.toString(c.getUnk2()));
-                    str.add(Objects.toString(c.getUnk3()));
-                    str.add(Objects.toString(c.getUnk4()));
-                    str.add("\"" + c.getVoiceLine().replace("\"", "\"\"") + "\"");
-                });
-                
-                return String.join(";", str);
-            }).collect(Collectors.joining("\n"));
+            String string = payload.getEntries().stream().map(Utils::btxToCSV).collect(Collectors.joining("\n"));
             
             writer.write(string);
         }
@@ -186,4 +171,5 @@ public class BTXPanel extends PayloadPanel {
             e.printStackTrace();
         }
     }
+    
 }
