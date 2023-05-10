@@ -65,7 +65,7 @@ public class Main {
             new MainWindow().setVisible(true);
         }
         
-        Files.walk(Paths.get("./Input/map/tow02.res")).forEach(a -> {
+        Files.walk(Paths.get("./Input/map/tow41.res")).forEach(a -> {
             if (!Files.isRegularFile(a))
                 return;
             

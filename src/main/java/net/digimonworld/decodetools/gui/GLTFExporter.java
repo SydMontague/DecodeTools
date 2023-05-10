@@ -101,10 +101,7 @@ public class GLTFExporter {
 				final String meshName = "geom-" + meshId;
 
 				// Create positions, normals,faces
-				List<Float> positions = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.POSITION);
-				List<Float> normals = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.NORMAL);
-				// List<Float> uvcord= textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);
-
+		
 				List<Integer> indices = new ArrayList<>();
 				xdio.getFaces().forEach(face -> {
 					indices.add(face.getVert1());
@@ -112,78 +109,100 @@ public class GLTFExporter {
 					indices.add(face.getVert3());
 				});
 
-				byte[] posBytes = floatListToByteArray(positions);
-				byte[] normalBytes = floatListToByteArray(normals);
-				// byte[] uvBytes = floatListToByteArray(uvcord);
-
+				
+				byte[]posBytes= getByteArrayListIfPresent(xtvo,XTVORegisterType.POSITION);
+				byte[]normalBytes= getByteArrayListIfPresent(xtvo,XTVORegisterType.NORMAL);
+				
+				
+				
+				
+				
+				byte[] uvBytes = textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);
 				byte[] faceBytes = intListToByteBuffer(indices);
-				int totalSize = posBytes.length + normalBytes.length + faceBytes.length;
-				ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
 
-				byteBuffer.put(posBytes);
-				byteBuffer.put(normalBytes);
-				// byteBuffer.put(uvBytes);
-				byteBuffer.put(faceBytes);
+				List<byte[]> byteArrays = new ArrayList<>();
+								
+				byteArrays.add(posBytes);
+				byteArrays.add(normalBytes);
+				byteArrays.add(uvBytes);
+				byteArrays.add(faceBytes);
+				
+				int totalSize = byteArrays.stream().mapToInt(array -> array.length).sum();
+
+				ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
+				byteArrays.forEach(byteBuffer::put);
 
 				byte[] combinedData = byteBuffer.array();
 				Buffer buffer = new Buffer();
-				buffer.setByteLength(combinedData.length);
+				buffer.setByteLength(posBytes.length);
 
 				buffer.setUri(
 						"data:application/octet-stream;base64," + Base64.getEncoder().encodeToString(combinedData));
 
 				gltf.addBuffers(buffer);
-
+				 
 				// Create buffer views
 				BufferView posBufferView = new BufferView();
 				posBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
 				posBufferView.setByteOffset(0);
 				posBufferView.setByteLength(posBytes.length);
-				// posBufferView.setTarget(34962);
+				posBufferView.setTarget(34962);						
 
-				BufferView normalBufferView = new BufferView();
+				BufferView normalBufferView = null;
+			
+				normalBufferView = new BufferView();
 				normalBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
 				normalBufferView.setByteOffset(posBufferView.getByteOffset() + posBufferView.getByteLength());
 				normalBufferView.setByteLength(normalBytes.length);
-				// normalBufferView.setTarget(34962);
-
-				// BufferView texBufferView = new BufferView();
-				// texBufferView.setBuffer(0); // use the first buffer
-				// texBufferView.setByteOffset(normalBufferView.getByteOffset() +
-				// normalBufferView.getByteLength());
-				// texBufferView.setByteLength(uvBytes.length);
-				// texBufferView.setTarget(34962);
+				normalBufferView.setTarget(34962);
+								
+				BufferView texBufferView = new BufferView();
+				texBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
+				if (normalBytes == null) {
+				    texBufferView.setByteOffset(posBufferView.getByteOffset() + posBufferView.getByteLength());
+				} else {
+				    texBufferView.setByteOffset(normalBufferView.getByteOffset() + normalBufferView.getByteLength());
+				}texBufferView.setByteLength(uvBytes.length);
+				texBufferView.setTarget(34962);
 
 				BufferView indexBufferView = new BufferView();
 				indexBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-				indexBufferView.setByteOffset(normalBufferView.getByteOffset() + normalBufferView.getByteLength());
-				indexBufferView.setByteLength(faceBytes.length);
-				// indexBufferView.setTarget(34963);
+				if (normalBytes == null) {
+				    indexBufferView.setByteOffset(texBufferView.getByteOffset() + texBufferView.getByteLength());
+				} else {
+				    indexBufferView.setByteOffset(normalBufferView.getByteOffset() + normalBufferView.getByteLength() + texBufferView.getByteLength());
+				}indexBufferView.setByteLength(faceBytes.length);
+				indexBufferView.setTarget(34963);
 
 				// Add buffer views to GLTF
 				gltf.addBufferViews(posBufferView);
+				if (normalBufferView != null) {
 				gltf.addBufferViews(normalBufferView);
+				}
+				gltf.addBufferViews(texBufferView);
 				gltf.addBufferViews(indexBufferView);
-				// gltf.addBufferViews(texBufferView);
 
 				// Create accessors
-				Accessor posAccessor = new Accessor();
+				Accessor posAccessor = new Accessor();		
+				
 				posAccessor.setBufferView(gltf.getBufferViews().indexOf(posBufferView));
 				posAccessor.setComponentType(5126);// FLOAT
-				posAccessor.setCount(positions.size() / 3); // each position has 3 components (x, y, z)
+				posAccessor.setCount(posBytes.length / 12); // each position has 3 components (x, y, z,), 4*3 = 12
 				posAccessor.setType("VEC3");
 
-				Accessor normalAccessor = new Accessor();
+				Accessor normalAccessor = null;
+				if (normalBufferView != null) {
+				normalAccessor = new Accessor();
 				normalAccessor.setBufferView(gltf.getBufferViews().indexOf(normalBufferView));
 				normalAccessor.setComponentType(5126);
-				normalAccessor.setCount(normals.size() / 3); // each normal has 3 components (x, y, z)
+				normalAccessor.setCount(normalBytes.length / 12); // each normal has 3 components (x, y, z)
 				normalAccessor.setType("VEC3");
-
-				// Accessor texAccessor = new Accessor();
-				// texAccessor.setBufferView(2);
-				// texAccessor.setComponentType(5126); // UINT
-				// texAccessor.setCount(uvcord.size());
-				// texAccessor.setType("VEC2");
+				}
+				Accessor texAccessor = new Accessor();
+				texAccessor.setBufferView(gltf.getBufferViews().indexOf(texBufferView));
+				texAccessor.setComponentType(5126); // UINT
+				texAccessor.setCount(uvBytes.length / 8);
+				texAccessor.setType("VEC2");
 
 				Accessor indexAccessor = new Accessor();
 				indexAccessor.setBufferView(gltf.getBufferViews().indexOf(indexBufferView));
@@ -193,8 +212,10 @@ public class GLTFExporter {
 
 				// Add Accessors
 				gltf.addAccessors(posAccessor);
+				if (normalAccessor != null) {
 				gltf.addAccessors(normalAccessor);
-				// gltf.addAccessors(texAccessor);
+				}
+				gltf.addAccessors(texAccessor);
 				gltf.addAccessors(indexAccessor);
 
 				Node node = new Node();
@@ -214,8 +235,7 @@ public class GLTFExporter {
 				MeshPrimitive primitive = new MeshPrimitive();
 				primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
 				primitive.addAttributes("NORMAL", gltf.getAccessors().indexOf(normalAccessor));
-				// primitive.addAttributes("TEXCOORD_0",
-				// gltf.getAccessors().indexOf(texAccessor));
+				primitive.addAttributes("TEXCOORD_0", gltf.getAccessors().indexOf(texAccessor));
 				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
 
 				mesh.addPrimitives(primitive);
@@ -234,41 +254,7 @@ public class GLTFExporter {
 
 	}
 
-	public static byte[] uvCoordinatesToByteArray(XTVOPayload xtvo, XTVORegisterType type) {
-		int numVertices = xtvo.getVertices().size();
-		byte[] byteArray = new byte[numVertices * 8];
-		ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-
-		if (type != XTVORegisterType.TEXTURE0 && type != XTVORegisterType.TEXTURE1) {
-			throw new IllegalArgumentException("Can't create texture coord byte array for non-texture register!");
-		}
-
-		float[] mTex = type == XTVORegisterType.TEXTURE0 ? xtvo.getMTex0() : xtvo.getMTex1();
-		Vector4 mTex00 = new Vector4(mTex[2], 0f, 0f, mTex[0]);
-		Vector4 mTex01 = new Vector4(0f, mTex[3], 0f, mTex[1]);
-
-		for (int i = 0; i < numVertices; i++) {
-			XTVOVertex vertex = xtvo.getVertices().get(i);
-			Entry<XTVOAttribute, List<Number>> entry = vertex.getParameter(type);
-
-			if (entry == null) {
-				continue;
-			}
-
-			Vector4 uvs = new Vector4(entry.getKey().getValue(entry.getValue().get(0)),
-					entry.getKey().getValue(entry.getValue().get(1)), 0f, 1f);
-
-			float u = uvs.dot(mTex00);
-			float v = uvs.dot(mTex01);
-
-			buffer.putFloat(u);
-			buffer.putFloat(v);
-		}
-
-		return byteArray;
-	}
-
-	private static List<Float> textureCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
+	private static byte[] textureCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
 		List<Float> list = new ArrayList<>(xtvo.getVertices().size() * 2);
 
 		if (type != XTVORegisterType.TEXTURE0 && type != XTVORegisterType.TEXTURE1)
@@ -286,21 +272,24 @@ public class GLTFExporter {
 			Vector4 uvs = new Vector4(entry.getKey().getValue(entry.getValue().get(0)),
 					entry.getKey().getValue(entry.getValue().get(1)), 0f, 1f);
 
-			list.add(uvs.dot(mTex00));
-			list.add(uvs.dot(mTex01));
+			// Flip the V coordinate
+			float u = uvs.dot(mTex00);
+			float v = 1.0f - uvs.dot(mTex01);
+			list.add(u);
+			list.add(v);
 		}
 
-		return list;
+		// Create byte array from List<Float>
+		ByteBuffer buffer = ByteBuffer.allocate(list.size() * 4);
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+		for (Float uv : list) {
+			buffer.putFloat(uv);
+		}
+
+		return buffer.array();
 	}
 
-	public static byte[] floatListToByteArray(List<Float> floatList) {
-		ByteBuffer byteBuffer = ByteBuffer.allocate(floatList.size() * Float.BYTES);
-		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		for (float f : floatList) {
-			byteBuffer.putFloat(f);
-		}
-		return byteBuffer.array();
-	}
 
 	public static byte[] intListToByteBuffer(List<Integer> data) {
 		ByteBuffer buffer = ByteBuffer.allocate(data.size() * Integer.BYTES);
@@ -310,9 +299,31 @@ public class GLTFExporter {
 		}
 		return buffer.array();
 	}
-
-	private static List<Float> vertexAttribToList(List<XTVOVertex> vertices, XTVORegisterType type) {
-		return vertices.stream().map(a -> a.getParameter(type))
-				.flatMap(a -> a.getValue().stream().map(b -> a.getKey().getValue(b))).collect(Collectors.toList());
+	
+	
+	public static byte[] getByteArrayListIfPresent(XTVOPayload xtvo, XTVORegisterType attributeType) {
+	    byte[] attributeBytes = null;
+	    if (xtvo.getAttribute(attributeType).isPresent()) {
+	        attributeBytes = vertexAttribToByteArray(xtvo.getVertices(), attributeType);
+	    }
+	    return attributeBytes;
 	}
+
+
+	private static byte[] vertexAttribToByteArray(List<XTVOVertex> vertices, XTVORegisterType type) {
+	    // Get the values for the given register type
+	    List<Float> floatList = vertices.stream().map(a -> a.getParameter(type))
+				.flatMap(a -> a.getValue().stream().map(b -> a.getKey().getValue(b))).collect(Collectors.toList());
+	    
+	    // Convert List<Float> to byte[]
+		ByteBuffer byteBuffer = ByteBuffer.allocate(floatList.size() * Float.BYTES);
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+
+	    for (float f : floatList) {
+	    	byteBuffer.putFloat(f);
+	    }
+	    
+	    return byteBuffer.array();
+	}
+	
 }
