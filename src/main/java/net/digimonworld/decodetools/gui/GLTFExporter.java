@@ -90,6 +90,9 @@ public class GLTFExporter {
 		gltf.setAsset(inputAsset);
 
 		int meshId = 0;
+		String meshName = null;
+		List<Node> nodes = new ArrayList<Node>(); // create a list of nodes
+		
 		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
 			for (HSEMEntry entry : hsem.getEntries()) {
 
@@ -100,7 +103,7 @@ public class GLTFExporter {
 				XTVOPayload xtvo = hsmp.getXTVP().get(draw.getVertexId());
 				XDIOPayload xdio = hsmp.getXDIP().get(draw.getIndexId());
 
-				final String meshName = "geom-" + meshId;
+				meshName = "geom-" + meshId;
 
 				// Create positions, normals,faces
 		
@@ -124,10 +127,10 @@ public class GLTFExporter {
 				    baos.write(normalBytes, 0, normalBytes.length);
 				}
 				
-				byte[] colorBytes = getByteArrayListIfPresent(xtvo, XTVORegisterType.COLOR);
-				if (colorBytes != null) {
-				    baos.write(colorBytes, 0, colorBytes.length);
-				}
+			//	byte[] colorBytes = getByteArrayListIfPresent(xtvo, XTVORegisterType.COLOR);
+			//	if (colorBytes != null) {
+			//	    baos.write(colorBytes, 0, colorBytes.length);
+			//	}
 
 				byte[] uvBytes = textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);
 				if (uvBytes != null) {
@@ -149,8 +152,7 @@ public class GLTFExporter {
 
 				gltf.addBuffers(buffer);
 				 
-				// Create buffer views
-				
+				// Create buffer views			
 				
 				BufferView posBufferView = new BufferView();
 				posBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
@@ -201,10 +203,11 @@ public class GLTFExporter {
 				normalAccessor.setComponentType(5126);
 				normalAccessor.setCount(normalBytes.length / 12); // each normal has 3 components (x, y, z)
 				normalAccessor.setType("VEC3");
-		
+				}
+				
 				Accessor texAccessor = new Accessor();
 				texAccessor.setBufferView(gltf.getBufferViews().indexOf(texBufferView));
-				texAccessor.setComponentType(5126); // UINT
+				texAccessor.setComponentType(5126); // FLOAT
 				texAccessor.setCount(uvBytes.length / 8);
 				texAccessor.setType("VEC2");
 
@@ -223,28 +226,31 @@ public class GLTFExporter {
 				node.setMesh(meshId);
 				node.setName(meshName);
 				gltf.addNodes(node); // add the nodes to the glTF model
-
-				// Create a scene with the node
-				Scene scene = new Scene();
-				gltf.addScenes(scene);
-				gltf.setScene(0);
-				scene.addNodes(gltf.getNodes().indexOf(node));
-
+				nodes.add(node);
+				
 				Mesh mesh = new Mesh();
 				mesh.setName(meshName);
 				gltf.addMeshes(mesh);
 				MeshPrimitive primitive = new MeshPrimitive();
 				primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
-				primitive.addAttributes("NORMAL", gltf.getAccessors().indexOf(normalAccessor));
+		//		primitive.addAttributes("NORMAL", gltf.getAccessors().indexOf(normalAccessor));
 				primitive.addAttributes("TEXCOORD_0", gltf.getAccessors().indexOf(texAccessor));
 				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
 
 				mesh.addPrimitives(primitive);
 
 				meshId++;
-			}
+			}			
+			
 		}
-
+			Scene scene = new Scene();				
+			gltf.setScene(0);			
+			for (Node node : nodes) {
+			    // add each node to the scene
+			    scene.addNodes(gltf.getNodes().indexOf(node));
+			}			
+			gltf.addScenes(scene);
+			
 		File outputFile = new File(output, hsmp.getName() + ".gltf");
 		try (OutputStream os = new FileOutputStream(outputFile)) {
 			GltfWriter gltfWriter = new GltfWriter();
@@ -253,7 +259,7 @@ public class GLTFExporter {
 			e.printStackTrace();
 		}
 		}
-	}
+	
 
 	private static byte[] textureCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
 		List<Float> list = new ArrayList<>(xtvo.getVertices().size() * 2);
