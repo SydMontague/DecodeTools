@@ -5,6 +5,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+
+import net.digimonworld.decodetools.res.payload.BTXPayload.BTXEntry;
 
 public class Utils {
     private Utils() {
@@ -372,5 +375,25 @@ public class Utils {
         } catch (NumberFormatException e) {
             return defaultVal;
         }
+    }
+    
+
+    public static String btxToCSV(Tuple<Integer, BTXEntry> input)
+    {
+        List<String> str = new ArrayList<>();
+        
+        str.add(input.getKey().toString());
+        str.add("\"" + input.getValue().getString().replace("\n", "\\n").replace("\"", "\"\"").replace(";", "\\1") + "\"");
+        
+        input.getValue().getMeta().ifPresent(c -> {
+            str.add(Objects.toString(c.getSpeaker()));
+            str.add(Objects.toString(c.getUnk1()));
+            str.add(Objects.toString(c.getUnk2()));
+            str.add(Objects.toString(c.getUnk3()));
+            str.add(Objects.toString(c.getUnk4()));
+            str.add("\"" + c.getVoiceLine().replace("\"", "\"\"") + "\"");
+        });
+        
+        return String.join(";", str);
     }
 }
