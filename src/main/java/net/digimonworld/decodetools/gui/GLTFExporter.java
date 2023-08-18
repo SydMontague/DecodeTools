@@ -127,10 +127,10 @@ public class GLTFExporter {
 				    baos.write(normalBytes, 0, normalBytes.length);
 				}
 				
-			//	byte[] colorBytes = getByteArrayListIfPresent(xtvo, XTVORegisterType.COLOR);
-			//	if (colorBytes != null) {
-			//	    baos.write(colorBytes, 0, colorBytes.length);
-			//	}
+				byte[] colorBytes = getByteArrayListIfPresent(xtvo, XTVORegisterType.COLOR);
+				if (colorBytes != null) {
+				    baos.write(colorBytes, 0, colorBytes.length);
+				}
 
 				byte[] uvBytes = textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);
 				if (uvBytes != null) {
@@ -176,15 +176,25 @@ public class GLTFExporter {
 				texBufferView.setByteLength(uvBytes.length);
 				texBufferView.setTarget(34962);
 								
+				BufferView colorBufferView = null;
+				if (colorBytes != null) {
+				    colorBufferView = new BufferView();
+				    colorBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
+				    int colorByteOffset = texBufferView.getByteOffset() + texBufferView.getByteLength();
+				    colorBufferView.setByteOffset(colorByteOffset);
+				    colorBufferView.setByteLength(colorBytes.length);
+				    colorBufferView.setTarget(34962);
+				}
+
 				BufferView indexBufferView = new BufferView();
 				indexBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-				int indexByteOffset = texBufferView.getByteOffset() + texBufferView.getByteLength();
+				int indexByteOffset = colorBufferView != null ? colorBufferView.getByteOffset() + colorBufferView.getByteLength() : texBufferView.getByteOffset() + texBufferView.getByteLength();
 				indexBufferView.setByteOffset(indexByteOffset);
 				indexBufferView.setByteLength(faceBytes.length);
 				indexBufferView.setTarget(34963);
 				
 				// Add buffer views to GLTF						
-				Stream.of(posBufferView, normalBufferView, texBufferView, indexBufferView)
+				Stream.of(posBufferView, normalBufferView, texBufferView, colorBufferView, indexBufferView)
 		        .filter(Objects::nonNull)
 		        .forEach(gltf::addBufferViews);
 
@@ -195,14 +205,10 @@ public class GLTFExporter {
 				posAccessor.setComponentType(5126);// FLOAT
 				posAccessor.setCount(posBytes.length / 12); // each position has 3 components (x, y, z,), 4*3 = 12
 				posAccessor.setType("VEC3");
-
+							
 				Accessor normalAccessor = null;
 				if (normalBytes != null) {
-				normalAccessor = new Accessor();
-				normalAccessor.setBufferView(gltf.getBufferViews().indexOf(normalBufferView));
-				normalAccessor.setComponentType(5126);
-				normalAccessor.setCount(normalBytes.length / 12); // each normal has 3 components (x, y, z)
-				normalAccessor.setType("VEC3");
+				normalAccessor = createAccessor(gltf, normalBufferView, 5126, normalBytes.length / 12, "VEC3");		
 				}
 				
 				Accessor texAccessor = new Accessor();
@@ -211,6 +217,12 @@ public class GLTFExporter {
 				texAccessor.setCount(uvBytes.length / 8);
 				texAccessor.setType("VEC2");
 
+				Accessor colorAccessor = null;
+				if (colorBytes != null) {
+				    colorAccessor = createAccessor(gltf, colorBufferView, 5126, colorBytes.length / 16, "VEC4"); // Assuming RGBA format for color
+				}
+
+				
 				Accessor indexAccessor = new Accessor();
 				indexAccessor.setBufferView(gltf.getBufferViews().indexOf(indexBufferView));
 				indexAccessor.setComponentType(5125); // UINT
@@ -218,7 +230,7 @@ public class GLTFExporter {
 				indexAccessor.setType("SCALAR");
 
 				// Add Accessors
-				Stream.of(posAccessor, normalAccessor, texAccessor, indexAccessor)
+				Stream.of(posAccessor, normalAccessor, texAccessor, colorAccessor, indexAccessor)
 		        .filter(Objects::nonNull)
 		        .forEach(gltf::addAccessors);
 				
@@ -231,10 +243,17 @@ public class GLTFExporter {
 				Mesh mesh = new Mesh();
 				mesh.setName(meshName);
 				gltf.addMeshes(mesh);
+
 				MeshPrimitive primitive = new MeshPrimitive();
 				primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
-		//		primitive.addAttributes("NORMAL", gltf.getAccessors().indexOf(normalAccessor));
+				if (normalBytes != null) {
+				    primitive.addAttributes("NORMAL", gltf.getAccessors().indexOf(normalAccessor));
+				}
 				primitive.addAttributes("TEXCOORD_0", gltf.getAccessors().indexOf(texAccessor));
+				// Add the color attribute
+				if (colorBytes != null) {
+				    primitive.addAttributes("COLOR_0", gltf.getAccessors().indexOf(colorAccessor));
+				}
 				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
 
 				mesh.addPrimitives(primitive);
@@ -261,6 +280,34 @@ public class GLTFExporter {
 		}
 	
 
+	private static byte[] colorCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
+	    List<Float> list = new ArrayList<>(xtvo.getVertices().size() * 4); // Assuming RGBA format for color
+
+	    if (type != XTVORegisterType.COLOR)
+	        throw new IllegalArgumentException("Can't create color coord list for non-color register!");
+
+	    for (XTVOVertex vertex : xtvo.getVertices()) {
+	        Entry<XTVOAttribute, List<Number>> entry = vertex.getParameter(type);
+	        if (entry == null)
+	            continue;
+
+	        for (Number value : entry.getValue()) {
+	            float floatValue = entry.getKey().getValue(value);
+	            list.add(floatValue);
+	        }
+	    }
+
+	    ByteBuffer buffer = ByteBuffer.allocate(list.size() * Float.BYTES);
+	    buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+	    for (Float colorComponent : list) {
+	        buffer.putFloat(colorComponent);
+	    }
+
+	    return buffer.array();
+	}
+
+	
 	private static byte[] textureCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
 		List<Float> list = new ArrayList<>(xtvo.getVertices().size() * 2);
 
@@ -297,7 +344,20 @@ public class GLTFExporter {
 		return buffer.array();
 	}
 
+	@SuppressWarnings("exports")
+	public Accessor createAccessor(GlTF gltf,BufferView bufferView, int componentType, int count, String type) {
+	    Accessor accessor = null;
+	    if (bufferView != null) {
+	        accessor = new Accessor();
+	        accessor.setBufferView(gltf.getBufferViews().indexOf(bufferView));
+	        accessor.setComponentType(componentType);
+	        accessor.setCount(count);
+	        accessor.setType(type);
+	    }
+	    return accessor;
+	}
 
+	
 	public static byte[] intListToByteBuffer(List<Integer> data) {
 		ByteBuffer buffer = ByteBuffer.allocate(data.size() * Integer.BYTES);
 		buffer.order(ByteOrder.LITTLE_ENDIAN);
