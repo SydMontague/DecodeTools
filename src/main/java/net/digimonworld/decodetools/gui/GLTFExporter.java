@@ -93,7 +93,7 @@ public class GLTFExporter {
 		List<Node> nodes = new ArrayList<Node>(); // create a list of nodes
 
 		int numHSEMPayloads = hsmp.getHSEM().getHSEMEntries().size();
-		System.out.println("Number of HSEM Payloads: " + numHSEMPayloads);
+		System.out.println("Number of HSEM Payloads : " + numHSEMPayloads);
 
 		int meshId = 0;
 		int geomId = 0;
