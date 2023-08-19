@@ -25,11 +25,16 @@ import de.javagl.jgltf.impl.v2.Buffer;
 import de.javagl.jgltf.impl.v2.BufferView;
 import de.javagl.jgltf.impl.v2.GlTF;
 import de.javagl.jgltf.impl.v2.Image;
+import de.javagl.jgltf.impl.v2.Material;
+import de.javagl.jgltf.impl.v2.MaterialNormalTextureInfo;
+import de.javagl.jgltf.impl.v2.MaterialPbrMetallicRoughness;
 import de.javagl.jgltf.impl.v2.Mesh;
 import de.javagl.jgltf.impl.v2.MeshPrimitive;
 import de.javagl.jgltf.impl.v2.Node;
 import de.javagl.jgltf.impl.v2.Scene;
 import de.javagl.jgltf.impl.v2.Skin;
+import de.javagl.jgltf.impl.v2.Texture;
+import de.javagl.jgltf.impl.v2.TextureInfo;
 import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.impl.DefaultGltfModel;
 import de.javagl.jgltf.model.io.*;
@@ -91,6 +96,41 @@ public class GLTFExporter {
 
 		String meshName = null;
 		List<Node> nodes = new ArrayList<Node>(); // create a list of nodes
+		List<Material> materials = new ArrayList<>();
+
+		int imageId = 0;
+		for (GMIOPayload gmio : hsmp.getGMIP().getGMIOEntries()) {
+			String imageName = gmio.hasName() ? escapeName(gmio.getName()) : "image-" + imageId++;
+
+			// Convert Buffered Images to Byte Array
+			ByteArrayOutputStream imagebuffer = new ByteArrayOutputStream();
+			ImageIO.write(gmio.getImage(), "PNG", imagebuffer);
+			byte[] imageData = imagebuffer.toByteArray();
+
+			// Embed Textures into GLTF
+			Image image = new Image();
+			image.setName(imageName);
+			image.setUri("data:image/png;base64," + Base64.getEncoder().encodeToString(imageData));
+			gltf.addImages(image);
+
+			// Create Texture and link it to the Image
+			Texture texture = new Texture();
+			texture.setName(imageName + "_texture");
+			texture.setSource(gltf.getImages().indexOf(image)); // Set the image index
+			gltf.addTextures(texture);
+
+			// Create Material and link it to the Texture
+			Material material = new Material();
+			material.setDoubleSided(true);
+			material.setName(imageName + "_material");
+
+			MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
+			TextureInfo baseColorTextureInfo = new TextureInfo();
+			baseColorTextureInfo.setIndex(gltf.getTextures().indexOf(texture)); // Set the texture index
+			pbrMetallicRoughness.setBaseColorTexture(baseColorTextureInfo);
+			material.setPbrMetallicRoughness(pbrMetallicRoughness);
+			gltf.addMaterials(material);
+		}
 
 		int numHSEMPayloads = hsmp.getHSEM().getHSEMEntries().size();
 		System.out.println("Number of HSEM Payloads : " + numHSEMPayloads);
@@ -98,14 +138,29 @@ public class GLTFExporter {
 		int meshId = 0;
 		int geomId = 0;
 		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
+
 			String containerNodeName = hsmp.getName() + "-mesh." + meshId; // Use the HSEM name and meshId for the
 																			// container
 			Node containerNode = new Node();
 			containerNode.setName(containerNodeName);
 			gltf.addNodes(containerNode);
 			List<Node> childNodes = new ArrayList<>(); // Create a list to hold child nodes for this container
+			Map<Short, Short> currentAssignments = new HashMap<>();
+			short currentTexture = -1;
 
 			for (HSEMEntry entry : hsem.getEntries()) {
+
+				switch (entry.getHSEMType()) {
+				case JOINT:
+					((HSEMJointEntry) entry).getJointAssignment().forEach(currentAssignments::put);
+					break;
+				case TEXTURE:
+					currentTexture = ((HSEMTextureEntry) entry).getTextureAssignment().getOrDefault((short) 0,
+							currentTexture);
+					break;
+				default:
+					break;
+				}
 
 				if (entry.getHSEMType() != HSEMEntryType.DRAW)
 					continue;
@@ -127,21 +182,15 @@ public class GLTFExporter {
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-				byte[] posBytes = getByteArrayListIfPresent(xtvo, XTVORegisterType.POSITION);
+				byte[] posBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.POSITION);
 				if (posBytes != null) {
 					baos.write(posBytes, 0, posBytes.length);
 				}
 
 				byte[] normalBytes = null;
 				if (xtvo.getAttribute(XTVORegisterType.NORMAL).isPresent()) {
-					normalBytes = getByteArrayListIfPresent(xtvo, XTVORegisterType.NORMAL);
+					normalBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.NORMAL);
 					baos.write(normalBytes, 0, normalBytes.length);
-				}
-
-				byte[] colorBytes = null;
-				if (xtvo.getAttribute(XTVORegisterType.COLOR).isPresent()) {
-					colorBytes = getByteArrayListIfPresent(xtvo, XTVORegisterType.COLOR);
-					baos.write(colorBytes, 0, colorBytes.length);
 				}
 
 				byte[] uvBytes = null;
@@ -153,6 +202,12 @@ public class GLTFExporter {
 				if (xtvo.getAttribute(XTVORegisterType.TEXTURE1).isPresent()) {
 					uvBytes = textureCoordToList(xtvo, XTVORegisterType.TEXTURE1);
 					baos.write(uvBytes, 0, uvBytes.length);
+				}
+
+				byte[] colorBytes = null;
+				if (xtvo.getAttribute(XTVORegisterType.COLOR).isPresent()) {
+					colorBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.COLOR);
+					baos.write(colorBytes, 0, colorBytes.length);
 				}
 
 				byte[] faceBytes = intListToByteBuffer(indices);
@@ -203,13 +258,12 @@ public class GLTFExporter {
 					colorBufferView = new BufferView();
 					colorBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
 					int colorByteOffset;
-					if (uvBytes != null && uvBytes.length > 0) {
+					if (uvBytes != null) {
 						colorByteOffset = texBufferView.getByteOffset() + texBufferView.getByteLength();
-					} else if (normalBufferView != null) {
-						colorByteOffset = normalBufferView.getByteOffset() + normalBufferView.getByteLength();
 					} else {
-						// Handle the case when both normalBufferView and uvBytesCombined are null
-						colorByteOffset = posBufferView.getByteOffset() + posBufferView.getByteLength();
+						colorByteOffset = normalBufferView != null
+								? normalBufferView.getByteOffset() + normalBufferView.getByteLength()
+								: posBufferView.getByteOffset() + posBufferView.getByteLength();
 					}
 					colorBufferView.setByteOffset(colorByteOffset);
 					colorBufferView.setByteLength(colorBytes.length);
@@ -237,13 +291,11 @@ public class GLTFExporter {
 				Stream.of(posBufferView, normalBufferView, texBufferView, colorBufferView, indexBufferView)
 						.filter(Objects::nonNull).forEach(gltf::addBufferViews);
 
-				// Create accessors
-				Accessor posAccessor = new Accessor();
-
-				posAccessor.setBufferView(gltf.getBufferViews().indexOf(posBufferView));
-				posAccessor.setComponentType(5126);// FLOAT
-				posAccessor.setCount(posBytes.length / 12); // each position has 3 components (x, y, z,), 4*3 = 12
-				posAccessor.setType("VEC3");
+				// Create Accessors
+				Accessor posAccessor = null;
+				if (posBytes != null) {
+					posAccessor = createAccessor(gltf, posBufferView, 5126, posBytes.length / 12, "VEC3");
+				}
 
 				Accessor normalAccessor = null;
 				if (normalBytes != null) {
@@ -252,12 +304,7 @@ public class GLTFExporter {
 
 				Accessor texAccessor = null;
 				if (uvBytes != null) {
-					System.out.println(uvBytes.length);
-					texAccessor = new Accessor();
-					texAccessor.setBufferView(gltf.getBufferViews().indexOf(texBufferView));
-					texAccessor.setComponentType(5126); // FLOAT
-					texAccessor.setCount(uvBytes.length / 8);
-					texAccessor.setType("VEC2");
+					texAccessor = createAccessor(gltf, texBufferView, 5126, uvBytes.length / 8, "VEC2");
 				}
 
 				Accessor colorAccessor = null;
@@ -266,10 +313,7 @@ public class GLTFExporter {
 				}
 
 				Accessor indexAccessor = new Accessor();
-				indexAccessor.setBufferView(gltf.getBufferViews().indexOf(indexBufferView));
-				indexAccessor.setComponentType(5125); // UINT
-				indexAccessor.setCount(indices.size());
-				indexAccessor.setType("SCALAR");
+				indexAccessor = createAccessor(gltf, indexBufferView, 5125, indices.size(), "SCALAR");
 
 				// Add Accessors
 				Stream.of(posAccessor, normalAccessor, texAccessor, colorAccessor, indexAccessor)
@@ -286,8 +330,7 @@ public class GLTFExporter {
 				mesh.setName(meshName);
 				gltf.addMeshes(mesh);
 
-				containerNode.addChildren(gltf.getNodes().indexOf(node)); // Associate the child node with the container
-																			// node
+				containerNode.addChildren(gltf.getNodes().indexOf(node));
 
 				MeshPrimitive primitive = new MeshPrimitive();
 				primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
@@ -300,8 +343,9 @@ public class GLTFExporter {
 				if (colorBytes != null) {
 					primitive.addAttributes("COLOR_0", gltf.getAccessors().indexOf(colorAccessor));
 				}
-				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
 
+				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
+				primitive.setMaterial((int) currentTexture);
 				mesh.addPrimitives(primitive);
 
 				geomId++;
@@ -326,33 +370,6 @@ public class GLTFExporter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static byte[] colorCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
-		List<Float> list = new ArrayList<>(xtvo.getVertices().size() * 4); // Assuming RGBA format for color
-
-		if (type != XTVORegisterType.COLOR)
-			throw new IllegalArgumentException("Can't create color coord list for non-color register!");
-
-		for (XTVOVertex vertex : xtvo.getVertices()) {
-			Entry<XTVOAttribute, List<Number>> entry = vertex.getParameter(type);
-			if (entry == null)
-				continue;
-
-			for (Number value : entry.getValue()) {
-				float floatValue = entry.getKey().getValue(value);
-				list.add(floatValue);
-			}
-		}
-
-		ByteBuffer buffer = ByteBuffer.allocate(list.size() * Float.BYTES);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
-
-		for (Float colorComponent : list) {
-			buffer.putFloat(colorComponent);
-		}
-
-		return buffer.array();
 	}
 
 	private static byte[] textureCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
@@ -413,14 +430,6 @@ public class GLTFExporter {
 		return buffer.array();
 	}
 
-	public static byte[] getByteArrayListIfPresent(XTVOPayload xtvo, XTVORegisterType attributeType) {
-		byte[] attributeBytes = null;
-		if (xtvo.getAttribute(attributeType).isPresent()) {
-			attributeBytes = vertexAttribToByteArray(xtvo.getVertices(), attributeType);
-		}
-		return attributeBytes;
-	}
-
 	private static byte[] vertexAttribToByteArray(List<XTVOVertex> vertices, XTVORegisterType type) {
 		// Get the values for the given register type
 		List<Float> floatList = vertices.stream().map(a -> a.getParameter(type))
@@ -435,6 +444,10 @@ public class GLTFExporter {
 		}
 
 		return byteBuffer.array();
+	}
+
+	private static String escapeName(String string) {
+		return string.replace("$", "_");
 	}
 
 }

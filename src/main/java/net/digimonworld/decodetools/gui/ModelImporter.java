@@ -241,6 +241,8 @@ public class ModelImporter extends PayloadPanel {
                 
                 jointNodes = nodeList(scene.mRootNode());
                 // automatically sort the joints based on best guess
+                if (!jointNodes.isEmpty())
+               		{		
                 List<ResPayload> rootTNOJ = ModelImporter.this.rootKCAP.getTNOJ().getEntries();
                 
                 for(int i = rootTNOJ.size() - 1; i >= 0; i--) {
@@ -255,7 +257,7 @@ public class ModelImporter extends PayloadPanel {
                         }
                     }
                 }
-
+               		}
                 float scale = calculateModelScale();
                 spinner.setValue(scale);
                 org.lwjgl.PointerBuffer scene_meshes = scene.mMeshes();
@@ -430,13 +432,16 @@ public class ModelImporter extends PayloadPanel {
         }
     }
     
+
+    
     @SuppressWarnings("resource")
     public void loadModel() {
         List<XDIOPayload> xdioPayload = new ArrayList<>();
         List<XTVOPayload> xtvoPayload = new ArrayList<>();
         List<HSEMEntry> hsemPayload = new ArrayList<>();
-        List<TNOJPayload> tnoj = loadJoints((float) spinner.getValue());
+        List<TNOJPayload> tnoj = loadJoints((float) spinner.getValue());         
         
+         
         int materialId = -1;
         // TODO add option to add new GMIO
         for (short i = 0; i < scene.mNumMeshes(); i++) {
