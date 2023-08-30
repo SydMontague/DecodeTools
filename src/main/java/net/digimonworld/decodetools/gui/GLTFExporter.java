@@ -95,7 +95,8 @@ public class GLTFExporter {
 		gltf.setAsset(inputAsset);
 
 		String meshName = null;
-		List<Node> nodes = new ArrayList<Node>(); // create a list of nodes
+		List<Node> meshList = new ArrayList<Node>();
+
 		List<Material> materials = new ArrayList<>();
 
 		int imageId = 0;
@@ -137,6 +138,41 @@ public class GLTFExporter {
 
 		int meshId = 0;
 		int geomId = 0;
+		
+		// Process joints and create joint nodes
+		List<Node> jointNodes = new ArrayList<>();
+		Map<Integer, Node> jointMap = new HashMap<>();
+		
+		if (hsmp.getTNOJ() != null) {
+			for (int i = 0; i < hsmp.getTNOJ().getEntryCount(); i++) {
+
+				TNOJPayload j = hsmp.getTNOJ().get(i);
+				Node joints = new Node();
+				joints.setName(j.getName());
+				joints.setTranslation(new float[] { j.getXOffset(), j.getYOffset(), j.getZOffset() });
+				joints.setRotation(
+						new float[] { j.getRotationX(), j.getRotationY(), j.getRotationZ(), j.getRotationW() });
+				joints.setScale(new float[] { j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ() });
+				jointNodes.add(joints);
+				jointMap.put(i, joints);
+
+				if (j.getParentId() != -1) {
+					Node parent = jointMap.get(j.getParentId());
+					parent.addChildren(jointNodes.indexOf(joints));
+				}
+				gltf.addNodes(joints);
+			}
+		}
+
+		Skin jointsSkin = new Skin();
+		jointsSkin.setName(hsmp.getName() + "-joint");
+		List<Integer> joints = new ArrayList<>();
+		for (Node node2 : jointNodes) {
+			joints.add(jointNodes.indexOf(node2));
+		}
+		jointsSkin.setJoints(joints);
+		gltf.addSkins(jointsSkin);
+
 		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
 
 			String containerNodeName = hsmp.getName() + "-mesh." + meshId; // Use the HSEM name and meshId for the
@@ -146,7 +182,7 @@ public class GLTFExporter {
 			gltf.addNodes(containerNode);
 			List<Node> childNodes = new ArrayList<>(); // Create a list to hold child nodes for this container
 			Map<Short, Short> currentAssignments = new HashMap<>();
-			short currentTexture = -1;
+			short currentTexture = 0;
 
 			for (HSEMEntry entry : hsem.getEntries()) {
 
@@ -170,8 +206,6 @@ public class GLTFExporter {
 				XDIOPayload xdio = hsmp.getXDIP().get(draw.getIndexId());
 
 				meshName = "geom-" + geomId;
-
-				// Create positions, normals,faces
 
 				List<Integer> indices = new ArrayList<>();
 				xdio.getFaces().forEach(face -> {
@@ -323,14 +357,13 @@ public class GLTFExporter {
 				node.setMesh(geomId);
 				node.setName(meshName);
 				gltf.addNodes(node); // add the nodes to the glTF model
-				nodes.add(node);
+				meshList.add(node);
 				childNodes.add(node); // Add the node to the child nodes list for this container
+				containerNode.addChildren(gltf.getNodes().indexOf(node));
 
 				Mesh mesh = new Mesh();
 				mesh.setName(meshName);
 				gltf.addMeshes(mesh);
-
-				containerNode.addChildren(gltf.getNodes().indexOf(node));
 
 				MeshPrimitive primitive = new MeshPrimitive();
 				primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
@@ -350,17 +383,16 @@ public class GLTFExporter {
 
 				geomId++;
 			}
-
 			meshId++; // Increment the meshId after processing each HSEM Payload
-
 		}
 
 		Scene scene = new Scene();
 		gltf.setScene(0);
 
-		for (Node node : nodes) {
+		for (Node node : meshList) {
 			scene.addNodes(gltf.getNodes().indexOf(node)); // Add each node to the scene
 		}
+
 		gltf.addScenes(scene);
 
 		File outputFile = new File(output, hsmp.getName() + ".gltf");
