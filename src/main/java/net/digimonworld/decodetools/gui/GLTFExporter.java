@@ -80,6 +80,8 @@ import java.awt.image.*;
 
 public class GLTFExporter {
 	private final HSMPKCAP hsmp;
+	private int currentOffset = 0;
+	private Buffer currentBuffer; // Track the current buffer
 
 	public GLTFExporter(HSMPKCAP hsmp) {
 		this.hsmp = hsmp;
@@ -97,7 +99,6 @@ public class GLTFExporter {
 		String meshName = null;
 		List<Node> meshList = new ArrayList<Node>();
 
-		List<Material> materials = new ArrayList<>();
 
 		int imageId = 0;
 		for (GMIOPayload gmio : hsmp.getGMIP().getGMIOEntries()) {
@@ -138,11 +139,12 @@ public class GLTFExporter {
 
 		int meshId = 0;
 		int geomId = 0;
-		
+
 		// Process joints and create joint nodes
 		List<Node> jointNodes = new ArrayList<>();
-		Map<Integer, Node> jointMap = new HashMap<>();
 		
+		Map<Integer, Node> jointMap = new HashMap<>();
+
 		if (hsmp.getTNOJ() != null) {
 			for (int i = 0; i < hsmp.getTNOJ().getEntryCount(); i++) {
 
@@ -150,28 +152,29 @@ public class GLTFExporter {
 				Node joints = new Node();
 				joints.setName(j.getName());
 				joints.setTranslation(new float[] { j.getXOffset(), j.getYOffset(), j.getZOffset() });
-				joints.setRotation(
-						new float[] { j.getRotationX(), j.getRotationY(), j.getRotationZ(), j.getRotationW() });
-				joints.setScale(new float[] { j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ() });
+				joints.setRotation(new float[] { j.getRotationX(), j.getRotationY(), j.getRotationZ(), j.getRotationW() });
+				joints.setScale(new float[] { j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ() });			
 				jointNodes.add(joints);
 				jointMap.put(i, joints);
-
+				
 				if (j.getParentId() != -1) {
 					Node parent = jointMap.get(j.getParentId());
 					parent.addChildren(jointNodes.indexOf(joints));
 				}
 				gltf.addNodes(joints);
+			
 			}
-		}
 
-		Skin jointsSkin = new Skin();
-		jointsSkin.setName(hsmp.getName() + "-joint");
-		List<Integer> joints = new ArrayList<>();
-		for (Node node2 : jointNodes) {
-			joints.add(jointNodes.indexOf(node2));
+			Skin jointsSkin = new Skin();
+			jointsSkin.setName(hsmp.getName() + "-joint");
+			List<Integer> joints = new ArrayList<>();
+			for (Node node2 : jointNodes) {
+				joints.add(jointNodes.indexOf(node2));
+			}
+			jointsSkin.setJoints(joints);		
+			gltf.addSkins(jointsSkin);
+			
 		}
-		jointsSkin.setJoints(joints);
-		gltf.addSkins(jointsSkin);
 
 		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
 
@@ -249,110 +252,64 @@ public class GLTFExporter {
 					baos.write(faceBytes, 0, faceBytes.length);
 				}
 
+				byte[] weightBytes = null;
+				if (xtvo.getAttribute(XTVORegisterType.WEIGHT).isPresent()) {
+					weightBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.WEIGHT);
+					baos.write(weightBytes, 0, weightBytes.length);				
+				}		
+			
+//				List<Integer> jointindices = new ArrayList<>();				
+//				List<TNOJPayload> joints = currentAssignments.values().stream().map(a -> hsmp.getTNOJ().get(a)).collect(Collectors.toList());
+//	                
+//                 for (TNOJPayload joint : joints) {
+//                	 jointindices.add(joint.getParentId());                	
+//                 } 
+//                 
+//                 byte[] jointBytes=null;
+//			     if(xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
+//			     jointBytes = intListToByteBuffer(jointindices);
+//			     }
+					
 				byte[] combinedData = baos.toByteArray();
 
 				Buffer buffer = new Buffer();
 				buffer.setByteLength(combinedData.length);
-				buffer.setUri(
-						"data:application/octet-stream;base64," + Base64.getEncoder().encodeToString(combinedData));
+				buffer.setUri("data:application/octet-stream;base64," + Base64.getEncoder().encodeToString(combinedData));
 
 				gltf.addBuffers(buffer);
 
 				// Create buffer views
-
-				BufferView posBufferView = new BufferView();
-				posBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-				posBufferView.setByteOffset(0);
-				posBufferView.setByteLength(posBytes.length);
-				posBufferView.setTarget(34962);
-
-				BufferView normalBufferView = null;
-				if (normalBytes != null) {
-					normalBufferView = new BufferView();
-					normalBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-					normalBufferView.setByteOffset(posBufferView.getByteOffset() + posBufferView.getByteLength());
-					normalBufferView.setByteLength(normalBytes.length);
-					normalBufferView.setTarget(34962);
-				}
-
-				BufferView texBufferView = null;
-				if (uvBytes != null) {
-					texBufferView = new BufferView();
-					texBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-					int texByteOffsetCombined = normalBufferView != null
-							? normalBufferView.getByteOffset() + normalBufferView.getByteLength()
-							: posBufferView.getByteOffset() + posBufferView.getByteLength();
-					texBufferView.setByteOffset(texByteOffsetCombined);
-					texBufferView.setByteLength(uvBytes.length);
-					texBufferView.setTarget(34962);
-				}
-
-				BufferView colorBufferView = null;
-				if (colorBytes != null) {
-					colorBufferView = new BufferView();
-					colorBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-					int colorByteOffset;
-					if (uvBytes != null) {
-						colorByteOffset = texBufferView.getByteOffset() + texBufferView.getByteLength();
-					} else {
-						colorByteOffset = normalBufferView != null
-								? normalBufferView.getByteOffset() + normalBufferView.getByteLength()
-								: posBufferView.getByteOffset() + posBufferView.getByteLength();
-					}
-					colorBufferView.setByteOffset(colorByteOffset);
-					colorBufferView.setByteLength(colorBytes.length);
-					colorBufferView.setTarget(34962);
-				}
-
-				BufferView indexBufferView = new BufferView();
-				indexBufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-				int indexByteOffset;
-				if (colorBytes != null) {
-					indexByteOffset = colorBufferView.getByteOffset() + colorBufferView.getByteLength();
-				} else if (uvBytes != null) {
-					indexByteOffset = texBufferView.getByteOffset() + texBufferView.getByteLength();
-				} else if (normalBytes != null) {
-					// Handle the case when both colorBufferView and uvBytesCombined are null
-					indexByteOffset = normalBufferView.getByteOffset() + normalBufferView.getByteLength();
-				} else {
-					indexByteOffset = posBufferView.getByteOffset() + posBufferView.getByteLength();
-				}
-				indexBufferView.setByteOffset(indexByteOffset);
-				indexBufferView.setByteLength(faceBytes.length);
-				indexBufferView.setTarget(34963);
+				BufferView posBufferView = createBufferView(gltf, buffer, posBytes);
+				BufferView normalBufferView = createBufferView(gltf, buffer, normalBytes);
+				BufferView texBufferView = createBufferView(gltf, buffer, uvBytes);
+				BufferView colorBufferView = createBufferView(gltf, buffer, colorBytes);
+				BufferView indexBufferView = createBufferView(gltf, buffer, faceBytes);
+		//		BufferView jointsBufferView = createBufferView(gltf, buffer, jointBytes);
+				BufferView weightBufferView = createBufferView(gltf, buffer, weightBytes);
 
 				// Add buffer views to GLTF
-				Stream.of(posBufferView, normalBufferView, texBufferView, colorBufferView, indexBufferView)
+				Stream.of(posBufferView, normalBufferView, texBufferView, colorBufferView, indexBufferView, weightBufferView)
 						.filter(Objects::nonNull).forEach(gltf::addBufferViews);
 
 				// Create Accessors
-				Accessor posAccessor = null;
-				if (posBytes != null) {
-					posAccessor = createAccessor(gltf, posBufferView, 5126, posBytes.length / 12, "VEC3");
-				}
 
-				Accessor normalAccessor = null;
-				if (normalBytes != null) {
-					normalAccessor = createAccessor(gltf, normalBufferView, 5126, normalBytes.length / 12, "VEC3");
-				}
+				Accessor posAccessor = createAccessor(gltf, posBufferView, 5126, posBytes.length / 12, "VEC3", "POS");
+				Accessor normalAccessor = createAccessor(gltf, normalBufferView, 5126,
+						normalBytes != null ? normalBytes.length / 12 : 0, "VEC3","NORMALS");
+				Accessor texAccessor = createAccessor(gltf, texBufferView, 5126, uvBytes.length / 8, "VEC2","TEXTURES");
+				Accessor colorAccessor = createAccessor(gltf, colorBufferView, 5126,
+						colorBytes != null ? colorBytes.length / 16 : 0, "VEC4","COLOR");
+				Accessor indexAccessor = createAccessor(gltf, indexBufferView, 5125, indices.size(), "SCALAR","INDICES");
+			//	Accessor jointsAccessor = createAccessor(gltf, jointsBufferView, 5126, jointindices.size()*4, "VEC4","JOINTINDICES");
 
-				Accessor texAccessor = null;
-				if (uvBytes != null) {
-					texAccessor = createAccessor(gltf, texBufferView, 5126, uvBytes.length / 8, "VEC2");
-				}
-
-				Accessor colorAccessor = null;
-				if (colorBytes != null) {
-					colorAccessor = createAccessor(gltf, colorBufferView, 5126, colorBytes.length / 16, "VEC4");
-				}
-
-				Accessor indexAccessor = new Accessor();
-				indexAccessor = createAccessor(gltf, indexBufferView, 5125, indices.size(), "SCALAR");
+				Accessor weightAccessor = createAccessor(gltf, weightBufferView, 5126, weightBytes.length/16, "VEC4","WEIGHTS");
 
 				// Add Accessors
-				Stream.of(posAccessor, normalAccessor, texAccessor, colorAccessor, indexAccessor)
+				Stream.of(posAccessor, normalAccessor, texAccessor, colorAccessor, indexAccessor,weightAccessor)
 						.filter(Objects::nonNull).forEach(gltf::addAccessors);
+				
 
+				
 				Node node = new Node();
 				node.setMesh(geomId);
 				node.setName(meshName);
@@ -375,6 +332,13 @@ public class GLTFExporter {
 				}
 				if (colorBytes != null) {
 					primitive.addAttributes("COLOR_0", gltf.getAccessors().indexOf(colorAccessor));
+				}
+		//		if (jointBytes != null) {
+			//		primitive.addAttributes("JOINTS_0", gltf.getAccessors().indexOf(jointsAccessor));
+			//	}
+				
+				if (weightBytes != null) {
+					primitive.addAttributes("WEIGHTS_0", gltf.getAccessors().indexOf(weightAccessor));
 				}
 
 				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
@@ -440,8 +404,7 @@ public class GLTFExporter {
 		return buffer.array();
 	}
 
-	@SuppressWarnings("exports")
-	public Accessor createAccessor(GlTF gltf, BufferView bufferView, int componentType, int count, String type) {
+	private Accessor createAccessor(GlTF gltf, BufferView bufferView, int componentType, int count, String type,String name) {
 		Accessor accessor = null;
 		if (bufferView != null) {
 			accessor = new Accessor();
@@ -449,8 +412,36 @@ public class GLTFExporter {
 			accessor.setComponentType(componentType);
 			accessor.setCount(count);
 			accessor.setType(type);
+			accessor.setName(name);
 		}
 		return accessor;
+	}
+
+	private BufferView createBufferView(GlTF gltf, Buffer buffer, byte[] data) {
+		if (currentBuffer != buffer) {
+			currentBuffer = buffer;
+			currentOffset = 0; // Reset currentOffset to 0 for new buffer
+		}
+
+		BufferView bufferView = null;
+		if (data != null) {
+			bufferView = new BufferView();
+			bufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
+			bufferView.setByteOffset(currentOffset);
+			bufferView.setByteLength(data.length);
+			gltf.addBufferViews(bufferView);
+
+			updateCurrentOffset(bufferView); // Update the currentOffset
+		}
+		return bufferView;
+	}
+
+	private void updateCurrentOffset(BufferView bufferView) {
+		if (bufferView == null) {
+			currentOffset = 0;
+		} else {
+			currentOffset = bufferView.getByteOffset() + bufferView.getByteLength();
+		}
 	}
 
 	public static byte[] intListToByteBuffer(List<Integer> data) {
@@ -477,7 +468,7 @@ public class GLTFExporter {
 
 		return byteBuffer.array();
 	}
-
+	
 	private static String escapeName(String string) {
 		return string.replace("$", "_");
 	}
