@@ -263,7 +263,18 @@ public class GLTFExporter {
 
 				byte[] jointBytes = null;
 				if (xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
-					jointBytes = vertexAttribToShort(xtvo.getVertices(), XTVORegisterType.IDX);
+					ByteBuffer buffer = ByteBuffer.allocate(xtvo.getVertices().size() * 4);
+					buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+					for (XTVOVertex vertex : xtvo.getVertices()) {
+						Entry<XTVOAttribute, List<Number>> entry2 = vertex.getParameter(XTVORegisterType.IDX);
+
+						for (int j = 0; j < 4; j++) {
+							int joint = entry2.getValue().get(j).intValue() / 3;
+							buffer.put((byte) joint);
+						}
+					}
+					jointBytes = buffer.array();
 					baos.write(jointBytes, 0, jointBytes.length);
 				}
 
@@ -282,7 +293,7 @@ public class GLTFExporter {
 				BufferView texBufferView = createBufferView(gltf, buffer, uvBytes, 34962);
 				BufferView colorBufferView = createBufferView(gltf, buffer, colorBytes, 34962);
 				BufferView indexBufferView = createBufferView(gltf, buffer, faceBytes, 34963);
-				BufferView jointsBufferView = createBufferView(gltf, buffer, jointBytes, 34962);
+				BufferView jointsBufferView = createBufferView(gltf, buffer, jointBytes, 34963);
 				BufferView weightBufferView = createBufferView(gltf, buffer, weightBytes, 34962);
 
 				// Add buffer views to GLTF
@@ -300,8 +311,8 @@ public class GLTFExporter {
 						colorBytes != null ? colorBytes.length / 16 : 0, "VEC4", "COLOR");
 				Accessor indexAccessor = createAccessor(gltf, indexBufferView, GLTFComponent.UNSIGNED_INT.get(),
 						indices.size(), "SCALAR", "INDICES");
-				Accessor jointsAccessor = createAccessor(gltf, jointsBufferView, GLTFComponent.UNSIGNED_SHORT.get(),
-						jointBytes.length/8, "VEC4", "JOINTS");
+				Accessor jointsAccessor = createAccessor(gltf, jointsBufferView, GLTFComponent.UNSIGNED_BYTE.get(),
+						jointBytes.length / 4, "VEC4", "JOINTS");
 				Accessor weightAccessor = createAccessor(gltf, weightBufferView, GLTFComponent.FLOAT.get(),
 						weightBytes.length / 16, "VEC4", "WEIGHTS");
 
@@ -457,25 +468,12 @@ public class GLTFExporter {
 	}
 
 	private static byte[] vertexAttribToShort(List<XTVOVertex> vertices, XTVORegisterType type) {
-		// Faking uint16
-		List<Integer> byteList = vertices.stream().map(a -> a.getParameter(type))
-				.flatMap(a -> a.getValue().stream().map(b -> (int) a.getKey().getValue(b)& 0xFFFF))
-				.collect(Collectors.toList());
-
-		ByteBuffer byteBuffer = ByteBuffer.allocate(byteList.size() * 2);
+		// Get the values for the given register type
+		// Convert List<Float> to byte[]
+		ByteBuffer byteBuffer = ByteBuffer.allocate(2 * Float.BYTES);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-		   for (Integer value : byteList) {
-		   byteBuffer.putShort(value.shortValue());
-		    }
-
 		return byteBuffer.array();
-	}
-
-	private static List<String> vertexAttribToList(List<XTVOVertex> vertices, XTVORegisterType type) {
-		return vertices.stream().map(a -> a.getParameter(type))
-				.flatMap(a -> a.getValue().stream().map(b -> a.getKey().getValue(b))).map(Object::toString)
-				.collect(Collectors.toList());
 	}
 
 	private static byte[] vertexAttribToByteArray(List<XTVOVertex> vertices, XTVORegisterType type) {
