@@ -281,7 +281,6 @@ public class GLTFExporter {
 				byte[] jointBytes = null;
 				if (xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
 					jointBytes = vList.getBytes();
-					;
 					baos.write(jointBytes, 0, jointBytes.length);
 				}
 
