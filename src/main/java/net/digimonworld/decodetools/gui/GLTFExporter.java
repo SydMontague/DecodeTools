@@ -457,18 +457,17 @@ public class GLTFExporter {
 	}
 
 	private static byte[] vertexAttribToShort(List<XTVOVertex> vertices, XTVORegisterType type) {
-		// Get the values for the given register type
-		List<Short> byteList = vertices.stream().map(a -> a.getParameter(type))
-				.flatMap(a -> a.getValue().stream().map(b -> (short) a.getKey().getValue(b)))
+		// Faking uint16
+		List<Integer> byteList = vertices.stream().map(a -> a.getParameter(type))
+				.flatMap(a -> a.getValue().stream().map(b -> (int) a.getKey().getValue(b)& 0xFFFF))
 				.collect(Collectors.toList());
 
-		// Convert List<Short> to byte[]
-		ByteBuffer byteBuffer = ByteBuffer.allocate(byteList.size() * Short.BYTES);
+		ByteBuffer byteBuffer = ByteBuffer.allocate(byteList.size() * 2);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-		for (Number s : byteList) {
-			byteBuffer.putShort((short) s);
-		}
+		   for (Integer value : byteList) {
+		   byteBuffer.putShort(value.shortValue());
+		    }
 
 		return byteBuffer.array();
 	}
