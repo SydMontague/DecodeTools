@@ -71,6 +71,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -80,6 +86,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 
 import java.awt.image.*;
+
+
 
 public class GLTFExporter {
 	private final HSMPKCAP hsmp;
@@ -101,40 +109,8 @@ public class GLTFExporter {
 
 		String meshName = null;
 		List<Node> meshList = new ArrayList<Node>();
-
-		int imageId = 0;
-		for (GMIOPayload gmio : hsmp.getGMIP().getGMIOEntries()) {
-			String imageName = gmio.hasName() ? escapeName(gmio.getName()) : "image-" + imageId++;
-
-			// Convert Buffered Images to Byte Array
-			ByteArrayOutputStream imagebuffer = new ByteArrayOutputStream();
-			ImageIO.write(gmio.getImage(), "PNG", imagebuffer);
-			byte[] imageData = imagebuffer.toByteArray();
-
-			// Embed Textures into GLTF
-			Image image = new Image();
-			image.setName(imageName);
-			image.setUri("data:image/png;base64," + Base64.getEncoder().encodeToString(imageData));
-			gltf.addImages(image);
-
-			// Create Texture and link it to the Image
-			Texture texture = new Texture();
-			texture.setName(imageName + "_texture");
-			texture.setSource(gltf.getImages().indexOf(image)); // Set the image index
-			gltf.addTextures(texture);
-
-			// Create Material and link it to the Texture
-			Material material = new Material();
-			material.setDoubleSided(true);
-			material.setName(imageName + "_material");
-
-			MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
-			TextureInfo baseColorTextureInfo = new TextureInfo();
-			baseColorTextureInfo.setIndex(gltf.getTextures().indexOf(texture)); // Set the texture index
-			pbrMetallicRoughness.setBaseColorTexture(baseColorTextureInfo);
-			material.setPbrMetallicRoughness(pbrMetallicRoughness);
-			gltf.addMaterials(material);
-		}
+		List<Skin> jointSkinList = new ArrayList<Skin>();
+		getTextures(hsmp,gltf);
 
 		int numHSEMPayloads = hsmp.getHSEM().getHSEMEntries().size();
 		System.out.println("Number of HSEM Payloads : " + numHSEMPayloads);
@@ -144,39 +120,48 @@ public class GLTFExporter {
 
 		// Process joints and create joint nodes
 		List<Node> jointNodes = new ArrayList<>();
-
+		List<float[]> matrixList = new ArrayList<>();
 		Map<Integer, Node> jointMap = new HashMap<>();
 
 		if (hsmp.getTNOJ() != null) {
+		
 			for (int i = 0; i < hsmp.getTNOJ().getEntryCount(); i++) {
 
 				TNOJPayload j = hsmp.getTNOJ().get(i);
+			
+				float[] rotation= new float[]{ j.getRotationX(), j.getRotationY(), j.getRotationZ(), j.getRotationW()};
+				float[] scale= new float[] { j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ() };
+				float[] translation = new float[] { j.getXOffset(), j.getYOffset(), j.getZOffset() };
 				Node joints = new Node();
 				joints.setName(j.getName());
-				joints.setTranslation(new float[] { j.getXOffset(), j.getYOffset(), j.getZOffset() });
-				joints.setRotation(
-						new float[] { j.getRotationX(), j.getRotationY(), j.getRotationZ(), j.getRotationW() });
-				joints.setScale(new float[] { j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ() });
+				joints.setScale(scale);
+				
+				joints.setRotation(rotation);
+				joints.setTranslation(translation);
 				jointNodes.add(joints);
 				jointMap.put(i, joints);
+				matrixList.add(j.getOffsetMatrix());
 
+				
 				if (j.getParentId() != -1) {
-					Node parent = jointMap.get(j.getParentId());
-					parent.addChildren(jointNodes.indexOf(joints));
-				}
-				gltf.addNodes(joints);
-
+					Node parent = jointMap.get(j.getParentId());				
+				if (parent != null) {
+			        // Add the current node as a child of the parent
+			        parent.addChildren(i);
+			    }}
+				
+				gltf.setNodes(jointNodes);
 			}
 
-			Skin jointsSkin = new Skin();
+	
+			Skin jointsSkin = new Skin();			
 			jointsSkin.setName(hsmp.getName() + "-joint");
-			List<Integer> joints = new ArrayList<>();
 			for (Node node2 : jointNodes) {
-				joints.add(jointNodes.indexOf(node2));
+			jointsSkin.addJoints(jointNodes.indexOf(node2));
 			}
-			jointsSkin.setJoints(joints);
-			gltf.addSkins(jointsSkin);
+			jointsSkin.setInverseBindMatrices(6);
 
+			gltf.addSkins(jointsSkin);
 		}
 
 		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
@@ -222,8 +207,9 @@ public class GLTFExporter {
 
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-				byte[] posBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.POSITION);
-				if (posBytes != null) {
+				byte[] posBytes = null;
+				if (xtvo.getAttribute(XTVORegisterType.POSITION).isPresent()) {
+					posBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.POSITION);					
 					baos.write(posBytes, 0, posBytes.length);
 				}
 
@@ -254,55 +240,81 @@ public class GLTFExporter {
 				if (faceBytes != null) {
 					baos.write(faceBytes, 0, faceBytes.length);
 				}
+				
+			    List<String> weights = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.WEIGHT);
+	              
+				byte[] jointBytes = null;
+				if (xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
+				    ByteBuffer jointsbuffer = ByteBuffer.allocate(xtvo.getVertices().size() * 4);
+				    for (int i = 0; i < xtvo.getVertices().size(); i++) {
+				      
+				    	XTVOVertex vertex = xtvo.getVertices().get(i);
+				        Entry<XTVOAttribute, List<Number>> entry2 = vertex.getParameter(XTVORegisterType.IDX);
+
+				        for (int j = 0; j < 4; j++) {
+				        	 int joint = currentAssignments.get((short)(entry2.getValue().get(j).intValue() / 3));
+				             double weight = Double.parseDouble(weights.get(i * 4 + j));		                       
+				        	 if(joint != 0 || weight > 0) {
+				        	 jointsbuffer.put((byte) joint);				            
+				          	}}
+				        }
+				    
+				    jointBytes = jointsbuffer.array();		
+			
+				    baos.write(jointBytes, 0, jointBytes.length);
+				}
 
 				byte[] weightBytes = null;
 				if (xtvo.getAttribute(XTVORegisterType.WEIGHT).isPresent()) {
 					weightBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.WEIGHT);
 					baos.write(weightBytes, 0, weightBytes.length);
 				}
-
-				byte[] jointBytes = null;
-				if (xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
-					ByteBuffer buffer = ByteBuffer.allocate(xtvo.getVertices().size() * 4);
-					buffer.order(ByteOrder.LITTLE_ENDIAN);
-
-					for (XTVOVertex vertex : xtvo.getVertices()) {
-						Entry<XTVOAttribute, List<Number>> entry2 = vertex.getParameter(XTVORegisterType.IDX);
-
-						for (int j = 0; j < 4; j++) {
-							int joint = entry2.getValue().get(j).intValue() / 3;
-							buffer.put((byte) joint);
-						}
-					}
-					jointBytes = buffer.array();
-					baos.write(jointBytes, 0, jointBytes.length);
+				
+	
+				ByteBuffer mbuffer = ByteBuffer.allocate(matrixList.size() * 16 * 4);
+				mbuffer.order(ByteOrder.LITTLE_ENDIAN); 
+				
+				List<float[]> rotatedMatrixList = rotateMatricesCounterclockwise(matrixList);
+				 
+				for (float[] matrix : rotatedMatrixList) {
+				    for (float value : matrix) {
+				    	mbuffer.putFloat(value);
+				    }
 				}
+				byte[] matrixBytes = mbuffer.array(); 
+				baos.write(matrixBytes, 0, matrixBytes.length);
 
+				
 				byte[] combinedData = baos.toByteArray();
-
 				Buffer buffer = new Buffer();
 				buffer.setByteLength(combinedData.length);
-				buffer.setUri(
-						"data:application/octet-stream;base64," + Base64.getEncoder().encodeToString(combinedData));
+				buffer.setUri("data:application/octet-stream;base64," + Base64.getEncoder().encodeToString(combinedData));
 
 				gltf.addBuffers(buffer);
 
 				// Create buffer views
-				BufferView posBufferView = createBufferView(gltf, buffer, posBytes, 34962);
-				BufferView normalBufferView = createBufferView(gltf, buffer, normalBytes, 34962);
-				BufferView texBufferView = createBufferView(gltf, buffer, uvBytes, 34962);
-				BufferView colorBufferView = createBufferView(gltf, buffer, colorBytes, 34962);
-				BufferView indexBufferView = createBufferView(gltf, buffer, faceBytes, 34963);
-				BufferView jointsBufferView = createBufferView(gltf, buffer, jointBytes, 34963);
-				BufferView weightBufferView = createBufferView(gltf, buffer, weightBytes, 34962);
+				BufferView posBufferView = createBufferView(gltf, buffer, posBytes, 34962,"posBufferView");
+				BufferView normalBufferView = createBufferView(gltf, buffer, normalBytes, 34962,"normalBufferView");
+				BufferView texBufferView = createBufferView(gltf, buffer, uvBytes, 34962,"texBufferView");
+				BufferView colorBufferView = createBufferView(gltf, buffer, colorBytes, 34962,"colorBufferView");
+				BufferView indexBufferView = createBufferView(gltf, buffer, faceBytes, 34963,"facesBufferView");
+				BufferView jointsBufferView = createBufferView(gltf, buffer, jointBytes, 34962,"jointsBufferView");
+				BufferView weightBufferView = createBufferView(gltf, buffer, weightBytes, 34962,"weightsbufferView");
+				BufferView bindPoseBufferView = createBufferView(gltf, buffer, matrixBytes, 34962,"bindPoseBufferView");
 
 				// Add buffer views to GLTF
 				Stream.of(posBufferView, normalBufferView, texBufferView, colorBufferView, indexBufferView,
-						jointsBufferView, weightBufferView).filter(Objects::nonNull).forEach(gltf::addBufferViews);
+						jointsBufferView, weightBufferView,bindPoseBufferView).filter(Objects::nonNull).forEach(gltf::addBufferViews);
 
 				// Create Accessors
 
+				Number[] minValues = new Number[3];
+				Number[] maxValues = new Number[3];
+				calcMinMax(posBytes, minValues, maxValues);
 				Accessor posAccessor = createAccessor(gltf, posBufferView, 5126, posBytes.length / 12, "VEC3", "POS");
+				posAccessor.setMin(minValues);
+				posAccessor.setMax(maxValues);
+
 				Accessor normalAccessor = createAccessor(gltf, normalBufferView, GLTFComponent.FLOAT.get(),
 						normalBytes != null ? normalBytes.length / 12 : 0, "VEC3", "NORMALS");
 				Accessor texAccessor = createAccessor(gltf, texBufferView, GLTFComponent.FLOAT.get(),
@@ -314,23 +326,28 @@ public class GLTFExporter {
 				Accessor jointsAccessor = createAccessor(gltf, jointsBufferView, GLTFComponent.UNSIGNED_BYTE.get(),
 						jointBytes.length / 4, "VEC4", "JOINTS");
 				Accessor weightAccessor = createAccessor(gltf, weightBufferView, GLTFComponent.FLOAT.get(),
-						weightBytes.length / 16, "VEC4", "WEIGHTS");
+						weightBytes.length / 16, "VEC4", "WEIGHTS");				
+				Accessor bindAccessor = createAccessor(gltf, bindPoseBufferView, GLTFComponent.FLOAT.get(),
+						matrixBytes.length / 64, "MAT4", "BINDS");
 
+				
 				// Add Accessors
 				Stream.of(posAccessor, normalAccessor, texAccessor, colorAccessor, indexAccessor, jointsAccessor,
-						weightAccessor).filter(Objects::nonNull).forEach(gltf::addAccessors);
+						weightAccessor,bindAccessor).filter(Objects::nonNull).forEach(gltf::addAccessors);
 
-				Node node = new Node();
-				node.setMesh(geomId);
-				node.setName(meshName);
-				gltf.addNodes(node); // add the nodes to the glTF model
-				meshList.add(node);
-				childNodes.add(node); // Add the node to the child nodes list for this container
-				containerNode.addChildren(gltf.getNodes().indexOf(node));
+				Node meshNode = new Node();
+				meshNode.setMesh(geomId);
+				meshNode.setName(meshName);
+				meshNode.setSkin(0);
+				
+				gltf.addNodes(meshNode); // add the nodes to the glTF model
+				meshList.add(meshNode);
+				childNodes.add(meshNode); // Add the node to the child nodes list for this container
+				containerNode.addChildren(gltf.getNodes().indexOf(meshNode));
 
 				Mesh mesh = new Mesh();
 				mesh.setName(meshName);
-
+				
 				gltf.addMeshes(mesh);
 
 				MeshPrimitive primitive = new MeshPrimitive();
@@ -347,7 +364,6 @@ public class GLTFExporter {
 				if (jointBytes != null) {
 					primitive.addAttributes("JOINTS_0", gltf.getAccessors().indexOf(jointsAccessor));
 				}
-
 				if (weightBytes != null) {
 					primitive.addAttributes("WEIGHTS_0", gltf.getAccessors().indexOf(weightAccessor));
 				}
@@ -360,15 +376,19 @@ public class GLTFExporter {
 			}
 			meshId++; // Increment the meshId after processing each HSEM Payload
 
-		}
+		} 
 
 		Scene scene = new Scene();
-		gltf.setScene(0);
-
+		gltf.setScene(0);			
+		// Create a root node
+		
 		for (Node node : meshList) {
 			scene.addNodes(gltf.getNodes().indexOf(node)); // Add each node to the scene
 		}
-
+		for (Node node : jointNodes) {
+			scene.addNodes(gltf.getNodes().indexOf(node)); // Add each node to the scene
+		}
+	
 		gltf.addScenes(scene);
 
 		File outputFile = new File(output, hsmp.getName() + ".gltf");
@@ -420,7 +440,7 @@ public class GLTFExporter {
 			String name) {
 		Accessor accessor = null;
 		if (bufferView != null) {
-			accessor = new Accessor();
+			accessor = new Accessor();	
 			accessor.setBufferView(gltf.getBufferViews().indexOf(bufferView));
 			accessor.setComponentType(componentType);
 			accessor.setCount(count);
@@ -430,7 +450,7 @@ public class GLTFExporter {
 		return accessor;
 	}
 
-	private BufferView createBufferView(GlTF gltf, Buffer buffer, byte[] data, int target) {
+	private BufferView createBufferView(GlTF gltf, Buffer buffer, byte[] data, int target, String name) {
 		if (currentBuffer != buffer) {
 			currentBuffer = buffer;
 			currentOffset = 0; // Reset currentOffset to 0 for new buffer
@@ -442,9 +462,8 @@ public class GLTFExporter {
 			bufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
 			bufferView.setByteOffset(currentOffset);
 			bufferView.setByteLength(data.length);
-			bufferView.setTarget(target);
-			gltf.addBufferViews(bufferView);
-
+			bufferView.setTarget(target);	
+			bufferView.setName(name);
 			updateCurrentOffset(bufferView); // Update the currentOffset
 		}
 		return bufferView;
@@ -467,14 +486,7 @@ public class GLTFExporter {
 		return buffer.array();
 	}
 
-	private static byte[] vertexAttribToShort(List<XTVOVertex> vertices, XTVORegisterType type) {
-		// Get the values for the given register type
-		// Convert List<Float> to byte[]
-		ByteBuffer byteBuffer = ByteBuffer.allocate(2 * Float.BYTES);
-		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-		return byteBuffer.array();
-	}
 
 	private static byte[] vertexAttribToByteArray(List<XTVOVertex> vertices, XTVORegisterType type) {
 		// Get the values for the given register type
@@ -509,7 +521,96 @@ public class GLTFExporter {
 		}
 	}
 
-	private static String escapeName(String string) {
+	public static void calcMinMax(byte[] posBytes, Number[] minValues, Number[] maxValues) {
+		float minX = Float.MAX_VALUE;
+		float minY = Float.MAX_VALUE;
+		float minZ = Float.MAX_VALUE;
+
+		float maxX = Float.MIN_VALUE;
+		float maxY = Float.MIN_VALUE;
+		float maxZ = Float.MIN_VALUE;
+
+		for (int i = 0; i < posBytes.length; i += 12) { // 12 bytes for a VEC3 (3 floats)
+			float x = ByteBuffer.wrap(posBytes, i, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+			float y = ByteBuffer.wrap(posBytes, i + 4, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+			float z = ByteBuffer.wrap(posBytes, i + 8, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+
+			minX = Math.min(minX, x);
+			minY = Math.min(minY, y);
+			minZ = Math.min(minZ, z);
+
+			maxX = Math.max(maxX, x);
+			maxY = Math.max(maxY, y);
+			maxZ = Math.max(maxZ, z);
+		}
+
+		minValues[0] = minX;
+		minValues[1] = minY;
+		minValues[2] = minZ;
+
+		maxValues[0] = maxX;
+		maxValues[1] = maxY;
+		maxValues[2] = maxZ;
+	}
+
+
+	private void getTextures(HSMPKCAP hsmp, GlTF gltf) throws IOException {
+		int imageId = 0;
+	    for (GMIOPayload gmio : hsmp.getGMIP().getGMIOEntries()) {
+	        String imageName = gmio.hasName() ? escapeName(gmio.getName()) : "image-" + imageId++;
+
+	        // Convert Buffered Images to Byte Array
+	        ByteArrayOutputStream imagebuffer = new ByteArrayOutputStream();
+	        ImageIO.write(gmio.getImage(), "PNG", imagebuffer);
+	        byte[] imageData = imagebuffer.toByteArray();
+
+	        // Embed Textures into GLTF
+	        Image image = new Image();
+	        image.setName(imageName);
+	        image.setUri("data:image/png;base64," + Base64.getEncoder().encodeToString(imageData));
+	        gltf.addImages(image);
+
+	        // Create Texture and link it to the Image
+	        Texture texture = new Texture();
+	        texture.setName(imageName + "_texture");
+	        texture.setSource(gltf.getImages().indexOf(image)); // Set the image index
+	        gltf.addTextures(texture);
+
+	        // Create Material and link it to the Texture
+	        Material material = new Material();
+	        material.setDoubleSided(true);
+	        material.setName(imageName + "_material");
+
+	        MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
+	        TextureInfo baseColorTextureInfo = new TextureInfo();
+	        baseColorTextureInfo.setIndex(gltf.getTextures().indexOf(texture)); // Set the texture index
+	        pbrMetallicRoughness.setBaseColorTexture(baseColorTextureInfo);
+	        material.setPbrMetallicRoughness(pbrMetallicRoughness);
+	        gltf.addMaterials(material);
+	    }
+	}
+
+    public static List<float[]> rotateMatricesCounterclockwise(List<float[]> matrices) {
+        List<float[]> rotatedMatrices = new ArrayList<>();
+
+        for (float[] matrix : matrices) {
+            float[] rotatedMatrix = new float[16];
+
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    rotatedMatrix[i * 4 + j] = matrix[j * 4 + i];
+                }
+            }
+            rotatedMatrices.add(rotatedMatrix);
+        }
+        return rotatedMatrices;
+    }
+	
+    private static List<String> vertexAttribToList(List<XTVOVertex> vertices, XTVORegisterType type) {
+        return vertices.stream().map(a -> a.getParameter(type)).flatMap(a -> a.getValue().stream().map(b -> a.getKey().getValue(b))).map(Object::toString).collect(Collectors.toList());
+    }
+    
+private static String escapeName(String string) {
 		return string.replace("$", "_");
 	}
 
