@@ -99,7 +99,8 @@ public class GLTFExporter {
 	}
 
 	public void export(File output) throws IOException {
-
+	
+	
 		GlTF gltf = new GlTF();
 
 		Asset inputAsset = new Asset();
@@ -108,10 +109,10 @@ public class GLTFExporter {
 		gltf.setAsset(inputAsset);
 
 		String meshName = null;
-		List<Node> meshList = new ArrayList<Node>();
-		List<Skin> jointSkinList = new ArrayList<Skin>();
+			
 		getTextures(hsmp,gltf);
-
+		String containerNodeName=null;
+		
 		int numHSEMPayloads = hsmp.getHSEM().getHSEMEntries().size();
 		System.out.println("Number of HSEM Payloads : " + numHSEMPayloads);
 
@@ -120,6 +121,8 @@ public class GLTFExporter {
 
 		// Process joints and create joint nodes
 		List<Node> jointNodes = new ArrayList<>();
+		List<Node> containerNodesList = new ArrayList<>();
+
 		List<float[]> matrixList = new ArrayList<>();
 		Map<Integer, Node> jointMap = new HashMap<>();
 
@@ -153,7 +156,6 @@ public class GLTFExporter {
 				gltf.setNodes(jointNodes);
 			}
 
-	
 			Skin jointsSkin = new Skin();			
 			jointsSkin.setName(hsmp.getName() + "-joint");
 			for (Node node2 : jointNodes) {
@@ -165,13 +167,12 @@ public class GLTFExporter {
 		}
 
 		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
-
-			String containerNodeName = hsmp.getName() + "-mesh." + meshId; // Use the HSEM name and meshId for the
-																			// container
-			Node containerNode = new Node();
-			containerNode.setName(containerNodeName);
-			gltf.addNodes(containerNode);
-			List<Node> childNodes = new ArrayList<>(); // Create a list to hold child nodes for this container
+			
+			Node containerNode = new Node();												// container
+			containerNodeName = hsmp.getName() + "-mesh." + meshId; // Use the HSEM name and meshId for the
+			containerNode.setName(containerNodeName);			
+		    gltf.addNodes(containerNode);
+		    containerNodesList.add(containerNode);
 			Map<Short, Short> currentAssignments = new HashMap<>();
 			short currentTexture = 0;
 
@@ -196,7 +197,7 @@ public class GLTFExporter {
 				XTVOPayload xtvo = hsmp.getXTVP().get(draw.getVertexId());
 				XDIOPayload xdio = hsmp.getXDIP().get(draw.getIndexId());
 
-				meshName = "geom-" + geomId;
+				
 
 				List<Integer> indices = new ArrayList<>();
 				xdio.getFaces().forEach(face -> {
@@ -240,9 +241,7 @@ public class GLTFExporter {
 				if (faceBytes != null) {
 					baos.write(faceBytes, 0, faceBytes.length);
 				}
-				
-			    List<String> weights = vertexAttribToList(xtvo.getVertices(), XTVORegisterType.WEIGHT);
-	              
+		
 				byte[] jointBytes = null;
 				if (xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
 				    ByteBuffer jointsbuffer = ByteBuffer.allocate(xtvo.getVertices().size() * 4);
@@ -253,10 +252,14 @@ public class GLTFExporter {
 
 				        for (int j = 0; j < 4; j++) {
 				        	 int joint = currentAssignments.get((short)(entry2.getValue().get(j).intValue() / 3));
-				             double weight = Double.parseDouble(weights.get(i * 4 + j));		                       
-				        	 if(joint != 0 || weight > 0) {
+				        	 if(joint != 0) {
 				        	 jointsbuffer.put((byte) joint);				            
-				          	}}
+				          	 }
+				        	 else
+				        	 {
+				        	 jointsbuffer.put((byte) 0);				     
+				        	 }
+				        	 }
 				        }
 				    
 				    jointBytes = jointsbuffer.array();		
@@ -318,38 +321,39 @@ public class GLTFExporter {
 				Accessor normalAccessor = createAccessor(gltf, normalBufferView, GLTFComponent.FLOAT.get(),
 						normalBytes != null ? normalBytes.length / 12 : 0, "VEC3", "NORMALS");
 				Accessor texAccessor = createAccessor(gltf, texBufferView, GLTFComponent.FLOAT.get(),
-						uvBytes.length / 8, "VEC2", "TEXTURES");
+						uvBytes!=null?uvBytes.length / 8:0, "VEC2", "TEXTURES");
 				Accessor colorAccessor = createAccessor(gltf, colorBufferView, GLTFComponent.FLOAT.get(),
 						colorBytes != null ? colorBytes.length / 16 : 0, "VEC4", "COLOR");
 				Accessor indexAccessor = createAccessor(gltf, indexBufferView, GLTFComponent.UNSIGNED_INT.get(),
 						indices.size(), "SCALAR", "INDICES");
 				Accessor jointsAccessor = createAccessor(gltf, jointsBufferView, GLTFComponent.UNSIGNED_BYTE.get(),
-						jointBytes.length / 4, "VEC4", "JOINTS");
+						jointBytes!=null?jointBytes.length / 4:0, "VEC4", "JOINTS");
 				Accessor weightAccessor = createAccessor(gltf, weightBufferView, GLTFComponent.FLOAT.get(),
-						weightBytes.length / 16, "VEC4", "WEIGHTS");				
+						weightBytes!=null?weightBytes.length / 16:0, "VEC4", "WEIGHTS");				
 				Accessor bindAccessor = createAccessor(gltf, bindPoseBufferView, GLTFComponent.FLOAT.get(),
-						matrixBytes.length / 64, "MAT4", "BINDS");
+						matrixBytes!=null?matrixBytes.length / 64:0, "MAT4", "BINDS");
 
 				
 				// Add Accessors
 				Stream.of(posAccessor, normalAccessor, texAccessor, colorAccessor, indexAccessor, jointsAccessor,
 						weightAccessor,bindAccessor).filter(Objects::nonNull).forEach(gltf::addAccessors);
 
+				meshName = "geom-" + geomId;
+				
 				Node meshNode = new Node();
 				meshNode.setMesh(geomId);
-				meshNode.setName(meshName);
+				meshNode.setName(meshName);				
+				if (jointBytes!=null)
+				{
 				meshNode.setSkin(0);
-				
+				}
 				gltf.addNodes(meshNode); // add the nodes to the glTF model
-				meshList.add(meshNode);
-				childNodes.add(meshNode); // Add the node to the child nodes list for this container
-				containerNode.addChildren(gltf.getNodes().indexOf(meshNode));
-
+					
 				Mesh mesh = new Mesh();
-				mesh.setName(meshName);
-				
+				mesh.setName(meshName);				
 				gltf.addMeshes(mesh);
-
+				containerNode.addChildren(gltf.getNodes().indexOf(meshNode));
+				
 				MeshPrimitive primitive = new MeshPrimitive();
 				primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
 				if (normalBytes != null) {
@@ -371,24 +375,25 @@ public class GLTFExporter {
 				primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
 				primitive.setMaterial((int) currentTexture);
 				mesh.addPrimitives(primitive);
-
+			 	
 				geomId++;
 			}
 			meshId++; // Increment the meshId after processing each HSEM Payload
-
 		} 
+	
 
 		Scene scene = new Scene();
 		gltf.setScene(0);			
-		// Create a root node
+	  
+		Node root = new Node();
+		gltf.addNodes(root);
+		root.setName(hsmp.getName());
+			   
+		for (Node node : containerNodesList) {
+			root.addChildren(gltf.getNodes().indexOf(node));
+			}
+		scene.addNodes(gltf.getNodes().indexOf(root)); // Add each node to the scene
 		
-		for (Node node : meshList) {
-			scene.addNodes(gltf.getNodes().indexOf(node)); // Add each node to the scene
-		}
-		for (Node node : jointNodes) {
-			scene.addNodes(gltf.getNodes().indexOf(node)); // Add each node to the scene
-		}
-	
 		gltf.addScenes(scene);
 
 		File outputFile = new File(output, hsmp.getName() + ".gltf");
@@ -457,7 +462,7 @@ public class GLTFExporter {
 		}
 
 		BufferView bufferView = null;
-		if (data != null) {
+		if (data != null && data.length>0) {
 			bufferView = new BufferView();
 			bufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
 			bufferView.setByteOffset(currentOffset);
