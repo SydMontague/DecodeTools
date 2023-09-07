@@ -51,7 +51,6 @@ import javax.imageio.ImageIO;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-
 public class GLTFExporter {
 	private final HSMPKCAP hsmp;
 	private int currentOffset = 0;
@@ -125,7 +124,8 @@ public class GLTFExporter {
 				for (Node node2 : jointNodes) {
 					jointsSkin.addJoints(jointNodes.indexOf(node2));
 				}
-				jointsSkin.setInverseBindMatrices(6); //Accessor is always the same so for now it's fine to hardcode thisd value here...
+				jointsSkin.setInverseBindMatrices(6); // Accessor is always the same so for now it's fine to hardcode
+														// thisd value here...
 
 				gltf.addSkins(jointsSkin);
 			}
@@ -133,7 +133,7 @@ public class GLTFExporter {
 
 		for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
 
-			Node containerNode = new Node(); 
+			Node containerNode = new Node();
 			containerNodeName = hsmp.getName() + "-mesh." + meshId;
 			containerNode.setName(containerNodeName);
 			gltf.addNodes(containerNode);
@@ -262,7 +262,8 @@ public class GLTFExporter {
 				BufferView indexBufferView = createBufferView(gltf, buffer, faceBytes, 34963, "facesBufferView");
 				BufferView jointsBufferView = createBufferView(gltf, buffer, jointBytes, 34962, "jointsBufferView");
 				BufferView weightBufferView = createBufferView(gltf, buffer, weightBytes, 34962, "weightsbufferView");
-				BufferView bindPoseBufferView = createBufferView(gltf, buffer, matrixBytes, 34962,"bindPoseBufferView");
+				BufferView bindPoseBufferView = createBufferView(gltf, buffer, matrixBytes, 34962,
+						"bindPoseBufferView");
 
 				// Add buffer views to GLTF
 				Stream.of(posBufferView, normalBufferView, texBufferView, colorBufferView, indexBufferView,
@@ -273,7 +274,7 @@ public class GLTFExporter {
 
 				Number[] minValues = new Number[3];
 				Number[] maxValues = new Number[3];
-				calcMinMax(posBytes, minValues, maxValues); //Issues with some maps atm
+				calcMinMax(posBytes, minValues, maxValues);
 				Accessor posAccessor = createAccessor(gltf, posBufferView, 5126, posBytes.length / 12, "VEC3", "POS");
 				posAccessor.setMin(minValues);
 				posAccessor.setMax(maxValues);
@@ -301,7 +302,7 @@ public class GLTFExporter {
 				Node meshNode = new Node();
 				meshNode.setMesh(geomId);
 				meshNode.setName(meshName);
-				if (jointNodes.size() > 1) { //Maps have a Joint but Skinning destroys the hierarchy
+				if (jointNodes.size() > 1) { // Maps have a Joint but Skinning destroys the hierarchy
 					meshNode.setSkin(0);
 				}
 				gltf.addNodes(meshNode); // add the nodes to the glTF model
@@ -337,13 +338,13 @@ public class GLTFExporter {
 
 				geomId++;
 			}
-			meshId++; 
+			meshId++;
 		}
 
 		Scene scene = new Scene();
 		gltf.setScene(0);
-		
-		//Set up root node
+
+		// Set up root node
 		Node root = new Node();
 		gltf.addNodes(root);
 		root.setName(hsmp.getName());
@@ -466,37 +467,42 @@ public class GLTFExporter {
 		return byteBuffer.array();
 	}
 
-	public static void calcMinMax(byte[] posBytes, Number[] minValues, Number[] maxValues) {
-		float minX = Float.MAX_VALUE;
-		float minY = Float.MAX_VALUE;
-		float minZ = Float.MAX_VALUE;
+	public static void calcMinMax(byte[] posBytes, Number[] minValues, Number[] maxValues) {   
+		if (posBytes == null || posBytes.length % 12 != 0) {
+	        throw new IllegalArgumentException("Input data is invalid. It should be a non-null array with a length that is a multiple of 12.");
+	    }
 
-		float maxX = Float.MIN_VALUE;
-		float maxY = Float.MIN_VALUE;
-		float maxZ = Float.MIN_VALUE;
+	    float minX = Float.POSITIVE_INFINITY;
+	    float minY = Float.POSITIVE_INFINITY;
+	    float minZ = Float.POSITIVE_INFINITY;
 
-		for (int i = 0; i < posBytes.length; i += 12) { // 12 bytes for a VEC3 (3 floats)
-			float x = ByteBuffer.wrap(posBytes, i, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-			float y = ByteBuffer.wrap(posBytes, i + 4, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-			float z = ByteBuffer.wrap(posBytes, i + 8, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+	    float maxX = Float.NEGATIVE_INFINITY;
+	    float maxY = Float.NEGATIVE_INFINITY;
+	    float maxZ = Float.NEGATIVE_INFINITY;
 
-			minX = Math.min(minX, x);
-			minY = Math.min(minY, y);
-			minZ = Math.min(minZ, z);
+	    for (int i = 0; i < posBytes.length; i += 12) { // 12 bytes for a VEC3 (3 floats)
+	        float x = ByteBuffer.wrap(posBytes, i, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+	        float y = ByteBuffer.wrap(posBytes, i + 4, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+	        float z = ByteBuffer.wrap(posBytes, i + 8, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
 
-			maxX = Math.max(maxX, x);
-			maxY = Math.max(maxY, y);
-			maxZ = Math.max(maxZ, z);
-		}
+	        minX = Math.min(minX, x);
+	        minY = Math.min(minY, y);
+	        minZ = Math.min(minZ, z);
 
-		minValues[0] = minX;
-		minValues[1] = minY;
-		minValues[2] = minZ;
+	        maxX = Math.max(maxX, x);
+	        maxY = Math.max(maxY, y);
+	        maxZ = Math.max(maxZ, z);
+	    }
 
-		maxValues[0] = maxX;
-		maxValues[1] = maxY;
-		maxValues[2] = maxZ;
+	    minValues[0] = (minX == Float.POSITIVE_INFINITY) ? 0 : minX;
+	    minValues[1] = (minY == Float.POSITIVE_INFINITY) ? 0 : minY;
+	    minValues[2] = (minZ == Float.POSITIVE_INFINITY) ? 0 : minZ;
+
+	    maxValues[0] = (maxX == Float.NEGATIVE_INFINITY) ? 0 : maxX;
+	    maxValues[1] = (maxY == Float.NEGATIVE_INFINITY) ? 0 : maxY;
+	    maxValues[2] = (maxZ == Float.NEGATIVE_INFINITY) ? 0 : maxZ;
 	}
+
 
 	private void getTextures(HSMPKCAP hsmp, GlTF gltf) throws IOException {
 		int imageId = 0;
