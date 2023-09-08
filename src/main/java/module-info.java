@@ -18,15 +18,13 @@ module net.digimonworld.decode.decode_tools {
     exports net.digimonworld.decodetools.data.keepdata.enums;
     exports net.digimonworld.decodetools.data.map;
     exports net.digimonworld.decodetools.data.digimon;
-    
+
     requires transitive java.desktop;
     requires transitive java.logging;
     requires java.xml;
     requires org.lwjgl;
     requires org.lwjgl.assimp;
     requires jgltf.model;
-   	requires jgltf.impl.v2;
- 
+    requires jgltf.impl.v2;
 
 }
-
