@@ -419,11 +419,14 @@ public class ColldadaExporter {
                 }
                 if(xtvo.getAttribute(XTVORegisterType.TEXTURE0).isPresent()) {
                     List<String> normal = textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);
+            		System.out.println("TEX0 exists");	
                     mesh.appendChild(createMeshSource(meshName + "-texcoord0", ParamType.FLOAT, normal, Arrays.asList("S", "T")));
                     triangles.appendChild(createSharedInput(0, "TEXCOORD", "#" + meshName + "-texcoord0", Optional.of(0)));
                 }
                 if(xtvo.getAttribute(XTVORegisterType.TEXTURE1).isPresent()) {
-                    List<String> normal = textureCoordToList(xtvo, XTVORegisterType.TEXTURE1);
+			      List<String> normal = textureCoordToList(xtvo, XTVORegisterType.TEXTURE1);
+					System.out.println("TEX1 exists");	
+		              
                     mesh.appendChild(createMeshSource(meshName + "-texcoord1", ParamType.FLOAT, normal, Arrays.asList("S", "T")));
                     triangles.appendChild(createSharedInput(0, "TEXCOORD", "#" + meshName + "-texcoord1", Optional.of(1)));
                 }

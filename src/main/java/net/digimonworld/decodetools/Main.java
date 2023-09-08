@@ -63,22 +63,6 @@ public class Main {
         else {
             new JLogWindow(LOGGER, Logger.getLogger(Access.class.getName())).setVisible(true);
             new MainWindow().setVisible(true);
-        }
-        
-        Files.walk(Paths.get("./Input/map/tow41.res")).forEach(a -> {
-            if (!Files.isRegularFile(a))
-                return;
-            
-            try (FileAccess access = new FileAccess(a.toFile(), true)) {
-                if (!ResPayload.craft(access).getElementsWithType(Payload.PADH).isEmpty())
-                    System.out.println(a + " has PADH");
-            }
-            catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        });
-        
-        System.out.println("done");
+        }       
     }
 }
