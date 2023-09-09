@@ -61,54 +61,6 @@ public class XTVOVertex {
         return buff;
     }
     
-    public Float getX() {
-        Entry<XTVOAttribute, List<Number>> positionEntry = getParameter(XTVORegisterType.POSITION);
-        if (positionEntry == null || positionEntry.getValue().size() < 1) {
-            return null;
-        }
-        return positionEntry.getValue().get(0).floatValue();
-    }
-    
-    public Float getY() {
-        Entry<XTVOAttribute, List<Number>> positionEntry = getParameter(XTVORegisterType.POSITION);
-        if (positionEntry == null || positionEntry.getValue().size() < 2) {
-            return null;
-        }
-        return positionEntry.getValue().get(1).floatValue();
-    }
-
-    public Float getZ() {
-        Entry<XTVOAttribute, List<Number>> positionEntry = getParameter(XTVORegisterType.POSITION);
-        if (positionEntry == null || positionEntry.getValue().size() < 3) {
-            return null;
-        }
-        return positionEntry.getValue().get(2).floatValue();
-    }
-    
-    public Float getNormalX() {
-        Entry<XTVOAttribute, List<Number>> normalEntry = getParameter(XTVORegisterType.NORMAL);
-        if (normalEntry == null || normalEntry.getValue().size() < 3) {
-            return null;
-        }
-        return normalEntry.getValue().get(0).floatValue();
-    }
-    
-    public Float getNormalY() {
-        Entry<XTVOAttribute, List<Number>> normalEntry = getParameter(XTVORegisterType.NORMAL);
-        if (normalEntry == null || normalEntry.getValue().size() < 3) {
-            return null;
-        }
-        return normalEntry.getValue().get(1).floatValue();
-    }
-    
-    public Float getNormalZ() {
-        Entry<XTVOAttribute, List<Number>> normalEntry = getParameter(XTVORegisterType.NORMAL);
-        if (normalEntry == null || normalEntry.getValue().size() < 3) {
-            return null;
-        }
-        return normalEntry.getValue().get(2).floatValue();
-    }
-    
     public Entry<XTVOAttribute, List<Number>> getParameter(XTVORegisterType position) {
         return vertexParams.entrySet().stream().filter(a -> a.getKey().getRegisterId() == position).findFirst().orElse(null);
     }

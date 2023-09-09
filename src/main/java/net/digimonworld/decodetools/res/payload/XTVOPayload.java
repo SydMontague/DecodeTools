@@ -203,7 +203,6 @@ public class XTVOPayload extends ResPayload {
         return data;
     }
     
-     
     public Optional<XTVOAttribute> getAttribute(XTVORegisterType type) {
         return Optional.ofNullable(attributes.get(type));
     }
