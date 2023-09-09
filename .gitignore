@@ -5,10 +5,14 @@
 /.settings/
 .classpath
 .project
-/Cs_Models_Rigged/
 
 # IntelliJ Workspace
 .idea/*
-
-# Maven
 *.iml
+
+# binary files stuff
+*.exe
+*.bin
+*.3ds
+*.cia
+*.jar

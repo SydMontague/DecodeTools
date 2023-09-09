@@ -441,12 +441,7 @@ public class ModelImporter extends PayloadPanel {
     }
 
     public void saveGLTF(File output) {
-        try {
-            new GLTFExporter(rootKCAP).export(output);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        new GLTFExporter(rootKCAP).export(output);
     }
 
     @SuppressWarnings("resource")
@@ -604,7 +599,7 @@ public class ModelImporter extends PayloadPanel {
         }
 
         float[] headerArray = rootKCAP.getHSEM().get(0).getHeaderData();
-        HSEMPayload hsemEntry = new HSEMPayload(null, hsemPayload, -1, 0, hsemHeaderArray, 1, 0);
+        HSEMPayload hsemEntry = new HSEMPayload(null, hsemPayload, -1, (short) 0, (short) 0, hsemHeaderArray, 1, 0);
 
         Main.LOGGER.info(String.format("XDIO: %d | XTVO: %d", xdioPayload.size(), xtvoPayload.size()));
 

@@ -12,7 +12,7 @@ import net.digimonworld.decodetools.res.ResPayload;
 import net.digimonworld.decodetools.res.kcap.AbstractKCAP;
 import net.digimonworld.decodetools.res.payload.hsem.HSEMEntry;
 
-/*
+/*-
  * HSEM "head" (0x40 byte)
  *  ID (4 byte)
  *  size (4 byte)
@@ -37,7 +37,8 @@ public class HSEMPayload extends ResPayload {
     private int id;
     // int size
     // int numEntries;
-    private int unknown2;
+    private short unknown2_1;
+    private short unknown2_2;
     
     /*
      * visible distance X?
@@ -51,11 +52,12 @@ public class HSEMPayload extends ResPayload {
     
     private List<HSEMEntry> entries = new ArrayList<>();
     
-    public HSEMPayload(AbstractKCAP parent, List<HSEMEntry> entries, int id, int unknown2, float[] headerData, int unknown3, int unknown4) {
+    public HSEMPayload(AbstractKCAP parent, List<HSEMEntry> entries, int id, short unknown2_1, short unknown2_2, float[] headerData, int unknown3, int unknown4) {
         super(parent);
         
         this.id = id;
-        this.unknown2 = unknown2;
+        this.unknown2_1 = unknown2_1;
+        this.unknown2_2 = unknown2_2;
         this.headerData = Arrays.copyOf(headerData, 10);
         this.unknown3 = unknown3;
         this.unknown4 = unknown4;
@@ -70,7 +72,8 @@ public class HSEMPayload extends ResPayload {
         this.id = source.readInteger();
         source.readInteger();
         int numEntries = source.readInteger();
-        this.unknown2 = source.readInteger();
+        this.unknown2_1 = source.readShort();
+        this.unknown2_2 = source.readShort();
         
         for (int i = 0; i < 10; i++) {
             this.headerData[i] = source.readFloat();
@@ -102,7 +105,8 @@ public class HSEMPayload extends ResPayload {
         dest.writeInteger(getSize());
         
         dest.writeInteger(entries.size());
-        dest.writeInteger(unknown2);
+        dest.writeShort(unknown2_1);
+        dest.writeShort(unknown2_2);
         
         for (float f : headerData)
             dest.writeFloat(f);
@@ -119,5 +123,25 @@ public class HSEMPayload extends ResPayload {
     
     public float[] getHeaderData() {
         return headerData;
+    }
+    
+    public int getId() {
+        return id;
+    }
+    
+    public int getUnknown2_1() {
+        return unknown2_1;
+    }
+    
+    public short getUnknown2_2() {
+        return unknown2_2;
+    }
+    
+    public int getUnknown3() {
+        return unknown3;
+    }
+
+    public int getUnknown4() {
+        return unknown4;
     }
 }
