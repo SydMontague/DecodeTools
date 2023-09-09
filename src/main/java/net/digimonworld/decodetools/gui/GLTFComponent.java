@@ -11,7 +11,7 @@ public enum GLTFComponent {
 
     private final int code;
 
-    GLTFComponent(int code) {
+    private GLTFComponent(int code) {
         this.code = code;
     }
 

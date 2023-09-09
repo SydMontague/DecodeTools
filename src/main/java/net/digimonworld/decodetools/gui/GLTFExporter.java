@@ -97,14 +97,14 @@ public class GLTFExporter {
                                                  j.getRotationW() };
                 float[] scale = new float[] { j.getLocalScaleX(), j.getLocalScaleY(), j.getLocalScaleZ() };
                 float[] translation = new float[] { j.getXOffset(), j.getYOffset(), j.getZOffset() };
-                Node joints = new Node();
-                joints.setName(j.getName());
-                joints.setScale(scale);
+                Node joint = new Node();
+                joint.setName(j.getName());
+                joint.setScale(scale);
 
-                joints.setRotation(rotation);
-                joints.setTranslation(translation);
-                jointNodes.add(joints);
-                jointMap.put(i, joints);
+                joint.setRotation(rotation);
+                joint.setTranslation(translation);
+                jointNodes.add(joint);
+                jointMap.put(i, joint);
                 matrixList.add(j.getOffsetMatrix());
 
                 if (j.getParentId() != -1) {
@@ -114,9 +114,8 @@ public class GLTFExporter {
                         parent.addChildren(i);
                     }
                 }
-
-                gltf.setNodes(jointNodes);
             }
+            gltf.setNodes(jointNodes);
 
             if (jointNodes.size() > 1) {
                 Skin jointsSkin = new Skin();
@@ -125,7 +124,7 @@ public class GLTFExporter {
                     jointsSkin.addJoints(jointNodes.indexOf(node2));
                 }
                 jointsSkin.setInverseBindMatrices(6); // Accessor is always the same so for now it's fine to hardcode
-                // thisd value here...
+                // this value here...
 
                 gltf.addSkins(jointsSkin);
             }
@@ -169,142 +168,79 @@ public class GLTFExporter {
                     indices.add(face.getVert3());
                 });
 
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                Buffer posBuffer = vertexAttribToBuffer(xtvo, xtvo.getVertices(), XTVORegisterType.POSITION);
+                Buffer normalBuffer = vertexAttribToBuffer(xtvo, xtvo.getVertices(), XTVORegisterType.NORMAL);
+                Buffer tex0Buffer = textureCoordToBuffer(xtvo, XTVORegisterType.TEXTURE0);
+                Buffer tex1Buffer = textureCoordToBuffer(xtvo, XTVORegisterType.TEXTURE1);
+                Buffer colorsBuffer = vertexAttribToBuffer(xtvo, xtvo.getVertices(), XTVORegisterType.COLOR);
+                Buffer facesBuffer = intListToBuffer(indices);
+                Buffer jointsBuffer = jointDataToBuffer(xtvo, xtvo.getVertices(), currentAssignments);
+                Buffer weightsBuffer = vertexAttribToBuffer(xtvo, xtvo.getVertices(), XTVORegisterType.WEIGHT);
+                Buffer bindPoseBuffer = matrixListToBuffer(matrixList, jointNodes);
 
-                byte[] posBytes = null;
-                if (xtvo.getAttribute(XTVORegisterType.POSITION).isPresent()) {
-                    posBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.POSITION);
-                    baos.write(posBytes, 0, posBytes.length);
-                }
+                Stream.of(posBuffer, normalBuffer, tex0Buffer, tex1Buffer, colorsBuffer, facesBuffer, jointsBuffer,
+                          weightsBuffer, bindPoseBuffer)
+                      .filter(Objects::nonNull).forEach(gltf::addBuffers);
 
-                byte[] normalBytes = null;
-                if (xtvo.getAttribute(XTVORegisterType.NORMAL).isPresent()) {
-                    normalBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.NORMAL);
-                    baos.write(normalBytes, 0, normalBytes.length);
-                }
+                // Create BufferViews
+                BufferView posBufferView = createBufferView(gltf, posBuffer, 34962, "posBufferView");
+                BufferView normalBufferView = createBufferView(gltf, normalBuffer, 34962, "normalBufferView");
+                BufferView tex0BufferView = createBufferView(gltf, tex0Buffer, 34962, "tex0BufferView");
+                BufferView tex1BufferView = createBufferView(gltf, tex1Buffer, 34962, "tex1BufferView");
+                BufferView colorBufferView = createBufferView(gltf, colorsBuffer, 34962, "colorBufferView");
+                BufferView indexBufferView = createBufferView(gltf, facesBuffer, 34963, "facesBufferView");
+                BufferView jointsBufferView = createBufferView(gltf, jointsBuffer, 34962, "jointsBufferView");
+                BufferView weightsBufferView = createBufferView(gltf, weightsBuffer, 34962, "weightsBufferView");
+                BufferView bindPoseBufferView = createBufferView(gltf, bindPoseBuffer, 34962, "bindPoseBufferView"); // Technically
+                                                                                                                     // IBM
+                                                                                                                     // has
+                                                                                                                     // no
+                                                                                                                     // target,
+                                                                                                                     // this
+                                                                                                                     // is
+                                                                                                                     // a
+                                                                                                                     // bug
+                                                                                                                     // in
+                                                                                                                     // jgltf
 
-                byte[] uvBytes = null;
-                if (xtvo.getAttribute(XTVORegisterType.TEXTURE0).isPresent()) {
-                    uvBytes = textureCoordToList(xtvo, XTVORegisterType.TEXTURE0);
-                    baos.write(uvBytes, 0, uvBytes.length);
-                }
-
-                if (xtvo.getAttribute(XTVORegisterType.TEXTURE1).isPresent()) {
-                    uvBytes = textureCoordToList(xtvo, XTVORegisterType.TEXTURE1);
-                    baos.write(uvBytes, 0, uvBytes.length);
-                }
-
-                byte[] colorBytes = null;
-                if (xtvo.getAttribute(XTVORegisterType.COLOR).isPresent()) {
-                    colorBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.COLOR);
-                    baos.write(colorBytes, 0, colorBytes.length);
-                }
-
-                byte[] faceBytes = intListToByteBuffer(indices);
-                if (faceBytes != null) {
-                    baos.write(faceBytes, 0, faceBytes.length);
-                }
-
-                byte[] jointBytes = null;
-                if (xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
-                    ByteBuffer jointsbuffer = ByteBuffer.allocate(xtvo.getVertices().size() * 4);
-                    for (int i = 0; i < xtvo.getVertices().size(); i++) {
-
-                        XTVOVertex vertex = xtvo.getVertices().get(i);
-                        Entry<XTVOAttribute, List<Number>> entry2 = vertex.getParameter(XTVORegisterType.IDX);
-
-                        for (int j = 0; j < 4; j++) {
-                            int joint = currentAssignments.get((short) (entry2.getValue().get(j).intValue() / 3));
-                            if (joint != 0) {
-                                jointsbuffer.put((byte) joint);
-                            }
-
-                        }
-                    }
-                    // Ensure the buffer is ready for reading
-                    jointsbuffer.flip();
-                    // Convert ByteBuffer to byte array
-                    jointBytes = new byte[jointsbuffer.remaining()];
-                    jointsbuffer.get(jointBytes);
-                    baos.write(jointBytes, 0, jointBytes.length);
-                }
-
-                byte[] weightBytes = null;
-                if (xtvo.getAttribute(XTVORegisterType.WEIGHT).isPresent()) {
-                    weightBytes = vertexAttribToByteArray(xtvo.getVertices(), XTVORegisterType.WEIGHT);
-                    baos.write(weightBytes, 0, weightBytes.length);
-                }
-
-                byte[] matrixBytes = null;
-                ByteBuffer mbuffer = ByteBuffer.allocate(matrixList.size() * 16 * 4);
-                mbuffer.order(ByteOrder.LITTLE_ENDIAN);
-                List<float[]> rotatedMatrixList = rotateMatricesCounterclockwise(matrixList);
-                for (float[] matrix : rotatedMatrixList) {
-                    for (float value : matrix) {
-                        mbuffer.putFloat(value);
-                    }
-                }
-                if (jointNodes.size() > 1) {
-                    matrixBytes = mbuffer.array();
-                    baos.write(matrixBytes, 0, matrixBytes.length);
-                }
-
-                byte[] combinedData = baos.toByteArray();
-                Buffer buffer = new Buffer();
-                buffer.setByteLength(combinedData.length);
-                buffer.setUri("data:application/octet-stream;base64,"
-                              + Base64.getEncoder().encodeToString(combinedData));
-
-                gltf.addBuffers(buffer);
-
-                // Create buffer views
-                BufferView posBufferView = createBufferView(gltf, buffer, posBytes, 34962, "posBufferView");
-                BufferView normalBufferView = createBufferView(gltf, buffer, normalBytes, 34962, "normalBufferView");
-                BufferView texBufferView = createBufferView(gltf, buffer, uvBytes, 34962, "texBufferView");
-                BufferView colorBufferView = createBufferView(gltf, buffer, colorBytes, 34962, "colorBufferView");
-                BufferView indexBufferView = createBufferView(gltf, buffer, faceBytes, 34963, "facesBufferView");
-                BufferView jointsBufferView = createBufferView(gltf, buffer, jointBytes, 34962, "jointsBufferView");
-                BufferView weightBufferView = createBufferView(gltf, buffer, weightBytes, 34962, "weightsbufferView");
-                BufferView bindPoseBufferView = createBufferView(gltf, buffer, matrixBytes, 34962,
-                                                                 "bindPoseBufferView");
-
-                // Add buffer views to GLTF
-                Stream.of(posBufferView, normalBufferView, texBufferView, colorBufferView, indexBufferView,
-                          jointsBufferView, weightBufferView, bindPoseBufferView)
+                Stream.of(posBufferView, normalBufferView, tex0BufferView, tex1BufferView, colorBufferView,
+                          indexBufferView, jointsBufferView, weightsBufferView, bindPoseBufferView)
                       .filter(Objects::nonNull).forEach(gltf::addBufferViews);
 
                 // Create Accessors
 
-                Number[] minValues = new Number[3];
-                Number[] maxValues = new Number[3];
-                calcMinMax(posBytes, minValues, maxValues);
-                Accessor posAccessor = createAccessor(gltf, posBufferView, 5126, posBytes.length / 12, "VEC3", "POS");
-                posAccessor.setMin(minValues);
-                posAccessor.setMax(maxValues);
-
+                Accessor posAccessor = createPosAccessor(gltf, posBuffer, posBufferView, 5126,
+                                                         posBuffer.getByteLength() / 12, "VEC3", "POS");
                 Accessor normalAccessor = createAccessor(gltf, normalBufferView, GLTFComponent.FLOAT.get(),
-                                                         normalBytes != null ? normalBytes.length / 12 : 0, "VEC3",
-                                                         "NORMALS");
-                Accessor texAccessor = createAccessor(gltf, texBufferView, GLTFComponent.FLOAT.get(),
-                                                      uvBytes != null ? uvBytes.length / 8 : 0, "VEC2", "TEXTURES");
+                                                         normalBuffer != null ? normalBuffer.getByteLength() / 12 : 0,
+                                                         "VEC3", "NORMALS");
+                Accessor tex0Accessor = createAccessor(gltf, tex0BufferView, GLTFComponent.FLOAT.get(),
+                                                       tex0Buffer != null ? tex0Buffer.getByteLength() / 8 : 0, "VEC2",
+                                                       "TEXTURES");
+                Accessor tex1Accessor = createAccessor(gltf, tex1BufferView, GLTFComponent.FLOAT.get(),
+                                                       tex1Buffer != null ? tex1Buffer.getByteLength() / 8 : 0, "VEC2",
+                                                       "TEXTURES");
                 Accessor colorAccessor = createAccessor(gltf, colorBufferView, GLTFComponent.FLOAT.get(),
-                                                        colorBytes != null ? colorBytes.length / 16 : 0, "VEC4",
-                                                        "COLOR");
+                                                        colorsBuffer != null ? colorsBuffer.getByteLength() / 16 : 0,
+                                                        "VEC4", "COLOR");
                 Accessor indexAccessor = createAccessor(gltf, indexBufferView, GLTFComponent.UNSIGNED_INT.get(),
                                                         indices.size(), "SCALAR", "INDICES");
-                Accessor jointsAccessor = createAccessor(gltf, jointsBufferView, GLTFComponent.UNSIGNED_BYTE.get(),
-                                                         jointBytes != null ? jointBytes.length / 4 : 0, "VEC4",
-                                                         "JOINTS");
-                Accessor weightAccessor = createAccessor(gltf, weightBufferView, GLTFComponent.FLOAT.get(),
-                                                         weightBytes != null ? weightBytes.length / 16 : 0, "VEC4",
-                                                         "WEIGHTS");
-                Accessor bindAccessor = createAccessor(gltf, bindPoseBufferView, GLTFComponent.FLOAT.get(),
-                                                       matrixBytes != null ? matrixBytes.length / 64 : 0, "MAT4",
-                                                       "BINDS");
 
+                Accessor jointsAccessor = createAccessor(gltf, jointsBufferView, GLTFComponent.UNSIGNED_BYTE.get(),
+                                                         jointsBuffer != null ? jointsBuffer.getByteLength() / 4 : 0,
+                                                         "VEC4", "JOINTS");
+
+                Accessor weightsAccessor = createAccessor(gltf, weightsBufferView, GLTFComponent.FLOAT.get(),
+                                                          weightsBuffer != null ? weightsBuffer.getByteLength() / 16
+                                                                                : 0,
+                                                          "VEC4", "WEIGHTS");
+
+                Accessor bindAccessor = createAccessor(gltf, bindPoseBufferView, GLTFComponent.FLOAT.get(),
+                                                       bindPoseBuffer != null ? bindPoseBuffer.getByteLength() / 64 : 0,
+                                                       "MAT4", "BINDS");
                 // Add Accessors
-                Stream.of(posAccessor, normalAccessor, texAccessor, colorAccessor, indexAccessor, jointsAccessor,
-                          weightAccessor, bindAccessor)
+                Stream.of(posAccessor, normalAccessor, tex0Accessor, tex1Accessor, colorAccessor, indexAccessor,
+                          jointsAccessor, weightsAccessor, bindAccessor)
                       .filter(Objects::nonNull).forEach(gltf::addAccessors);
 
                 meshName = "geom-" + geomId;
@@ -323,20 +259,26 @@ public class GLTFExporter {
 
                 MeshPrimitive primitive = new MeshPrimitive();
                 primitive.addAttributes("POSITION", gltf.getAccessors().indexOf(posAccessor));
-                if (normalBytes != null) {
+
+                if (normalBuffer != null) {
                     primitive.addAttributes("NORMAL", gltf.getAccessors().indexOf(normalAccessor));
                 }
-                if (uvBytes != null) {
-                    primitive.addAttributes("TEXCOORD_0", gltf.getAccessors().indexOf(texAccessor));
+                if (tex0Buffer != null) {
+                    primitive.addAttributes("TEXCOORD_0", gltf.getAccessors().indexOf(tex0Accessor));
                 }
-                if (colorBytes != null) {
+                if (tex1Buffer != null) {
+                    primitive.addAttributes("TEXCOORD_0", gltf.getAccessors().indexOf(tex1Accessor));
+                }
+                if (colorsBuffer != null) {
                     primitive.addAttributes("COLOR_0", gltf.getAccessors().indexOf(colorAccessor));
                 }
-                if (jointBytes != null) {
+
+                if (jointsBuffer != null) {
                     primitive.addAttributes("JOINTS_0", gltf.getAccessors().indexOf(jointsAccessor));
                 }
-                if (weightBytes != null) {
-                    primitive.addAttributes("WEIGHTS_0", gltf.getAccessors().indexOf(weightAccessor));
+
+                if (weightsBuffer != null) {
+                    primitive.addAttributes("WEIGHTS_0", gltf.getAccessors().indexOf(weightsAccessor));
                 }
 
                 primitive.setIndices(gltf.getAccessors().indexOf(indexAccessor));
@@ -375,40 +317,108 @@ public class GLTFExporter {
         }
     }
 
-    private static byte[] textureCoordToList(XTVOPayload xtvo, XTVORegisterType type) {
+    private static Buffer textureCoordToBuffer(XTVOPayload xtvo, XTVORegisterType type) {
+        if (type != XTVORegisterType.TEXTURE0 && type != XTVORegisterType.TEXTURE1) {
+            throw new IllegalArgumentException("Can't create texture coord list for non-texture register!");
+        }
+
         List<Float> list = new ArrayList<>(xtvo.getVertices().size() * 2);
 
-        if (type != XTVORegisterType.TEXTURE0 && type != XTVORegisterType.TEXTURE1)
-            throw new IllegalArgumentException("Can't create texture coord list for non-texture register!");
+        if (xtvo.getAttribute(type).isPresent()) {
+            float[] mTex = type == XTVORegisterType.TEXTURE0 ? xtvo.getMTex0() : xtvo.getMTex1();
+            Vector4 mTex00 = new Vector4(mTex[2], 0f, 0f, mTex[0]);
+            Vector4 mTex01 = new Vector4(0f, mTex[3], 0f, mTex[1]);
 
-        float[] mTex = type == XTVORegisterType.TEXTURE0 ? xtvo.getMTex0() : xtvo.getMTex1();
-        Vector4 mTex00 = new Vector4(mTex[2], 0f, 0f, mTex[0]);
-        Vector4 mTex01 = new Vector4(0f, mTex[3], 0f, mTex[1]);
+            for (XTVOVertex vertex : xtvo.getVertices()) {
+                Entry<XTVOAttribute, List<Number>> entry = vertex.getParameter(XTVORegisterType.TEXTURE0);
+                if (entry == null)
+                    continue;
 
-        for (XTVOVertex vertex : xtvo.getVertices()) {
-            Entry<XTVOAttribute, List<Number>> entry = vertex.getParameter(XTVORegisterType.TEXTURE0);
-            if (entry == null)
-                continue;
+                Vector4 uvs = new Vector4(entry.getKey().getValue(entry.getValue().get(0)),
+                                          entry.getKey().getValue(entry.getValue().get(1)), 0f, 1f);
 
-            Vector4 uvs = new Vector4(entry.getKey().getValue(entry.getValue().get(0)),
-                                      entry.getKey().getValue(entry.getValue().get(1)), 0f, 1f);
+                // Flip the V coordinate
+                float u = uvs.dot(mTex00);
+                float v = 1.0f - uvs.dot(mTex01);
+                list.add(u);
+                list.add(v);
+            }
 
-            // Flip the V coordinate
-            float u = uvs.dot(mTex00);
-            float v = 1.0f - uvs.dot(mTex01);
-            list.add(u);
-            list.add(v);
+            // Convert List<Float> to ByteBuffer
+            ByteBuffer buffer = ByteBuffer.allocate(list.size() * Float.BYTES);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+            for (Float uv : list) {
+                buffer.putFloat(uv);
+            }
+
+            buffer.flip(); // Prepare the buffer for reading
+
+            Buffer gltfBuffer = new Buffer();
+            gltfBuffer.setByteLength(buffer.remaining());
+            gltfBuffer.setUri("data:application/octet-stream;base64,"
+                              + Base64.getEncoder().encodeToString(buffer.array()));
+            return gltfBuffer;
         }
 
-        // Create byte array from List<Float>
-        ByteBuffer buffer = ByteBuffer.allocate(list.size() * 4);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return null; // Return null if the attribute is not present
+    }
 
-        for (Float uv : list) {
-            buffer.putFloat(uv);
+    private Accessor createPosAccessor(GlTF gltf, Buffer posBuffer, BufferView bufferView, int componentType, int count,
+                                       String type, String name) {
+        Accessor accessor = null;
+        Number[] minValues = new Number[3];
+        Number[] maxValues = new Number[3];
+
+        if (bufferView != null) {
+
+            String uri = posBuffer.getUri();
+            String base64Data = uri.substring("data:application/octet-stream;base64,".length());
+            ByteBuffer buffer = ByteBuffer.wrap(Base64.getDecoder().decode(base64Data));
+            if (buffer == null || buffer.remaining() % 12 != 0) {
+                throw new IllegalArgumentException("Input data is invalid. It should be a non-null buffer with a length that is a multiple of 12.");
+            }
+
+            float minX = Float.POSITIVE_INFINITY;
+            float minY = Float.POSITIVE_INFINITY;
+            float minZ = Float.POSITIVE_INFINITY;
+
+            float maxX = Float.NEGATIVE_INFINITY;
+            float maxY = Float.NEGATIVE_INFINITY;
+            float maxZ = Float.NEGATIVE_INFINITY;
+
+            while (buffer.hasRemaining()) {
+                float x = buffer.order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                float y = buffer.order(ByteOrder.LITTLE_ENDIAN).getFloat();
+                float z = buffer.order(ByteOrder.LITTLE_ENDIAN).getFloat();
+
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                minZ = Math.min(minZ, z);
+
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+                maxZ = Math.max(maxZ, z);
+            }
+
+            minValues[0] = (minX == Float.POSITIVE_INFINITY) ? 0 : minX;
+            minValues[1] = (minY == Float.POSITIVE_INFINITY) ? 0 : minY;
+            minValues[2] = (minZ == Float.POSITIVE_INFINITY) ? 0 : minZ;
+
+            maxValues[0] = (maxX == Float.NEGATIVE_INFINITY) ? 0 : maxX;
+            maxValues[1] = (maxY == Float.NEGATIVE_INFINITY) ? 0 : maxY;
+            maxValues[2] = (maxZ == Float.NEGATIVE_INFINITY) ? 0 : maxZ;
+
+            accessor = new Accessor();
+            accessor.setBufferView(gltf.getBufferViews().indexOf(bufferView));
+            accessor.setComponentType(componentType);
+            accessor.setCount(count);
+            accessor.setType(type);
+            accessor.setMin(minValues);
+            accessor.setMax(maxValues);
+            accessor.setName(name);
         }
-
-        return buffer.array();
+        return accessor;
     }
 
     private Accessor createAccessor(GlTF gltf, BufferView bufferView, int componentType, int count, String type,
@@ -425,95 +435,121 @@ public class GLTFExporter {
         return accessor;
     }
 
-    private BufferView createBufferView(GlTF gltf, Buffer buffer, byte[] data, int target, String name) {
-        if (currentBuffer != buffer) {
-            currentBuffer = buffer;
-            currentOffset = 0; // Reset currentOffset to 0 for new buffer
-        }
-
+    private BufferView createBufferView(GlTF gltf, Buffer buffer, int target, String name) {
         BufferView bufferView = null;
-        if (data != null && data.length > 0) {
+        if (buffer != null && buffer.getByteLength() > 0) {
             bufferView = new BufferView();
             bufferView.setBuffer(gltf.getBuffers().indexOf(buffer));
-            bufferView.setByteOffset(currentOffset);
-            bufferView.setByteLength(data.length);
+            bufferView.setByteOffset(0);
+            bufferView.setByteLength(buffer.getByteLength());
             bufferView.setTarget(target);
             bufferView.setName(name);
-            updateCurrentOffset(bufferView); // Update the currentOffset
         }
         return bufferView;
     }
 
-    private void updateCurrentOffset(BufferView bufferView) {
-        if (bufferView == null) {
-            currentOffset = 0;
-        }
-        else {
-            currentOffset = bufferView.getByteOffset() + bufferView.getByteLength();
-        }
-    }
-
-    public static byte[] intListToByteBuffer(List<Integer> data) {
+    private static Buffer intListToBuffer(List<Integer> data) {
         ByteBuffer buffer = ByteBuffer.allocate(data.size() * Integer.BYTES);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         for (int i : data) {
             buffer.putInt(i);
         }
-        return buffer.array();
+        buffer.flip(); // Prepare the buffer for reading
+
+        Buffer gltfBuffer = new Buffer();
+        gltfBuffer.setByteLength(buffer.remaining());
+        gltfBuffer.setUri("data:application/octet-stream;base64," + Base64.getEncoder().encodeToString(buffer.array()));
+        return gltfBuffer;
     }
 
-    private static byte[] vertexAttribToByteArray(List<XTVOVertex> vertices, XTVORegisterType type) {
+    private static Buffer vertexAttribToBuffer(XTVOPayload xtvo, List<XTVOVertex> vertices, XTVORegisterType type) {
+        Buffer gltfBuffer = null; // Initialize gltfBuffer to null
+
         // Get the values for the given register type
-        List<Float> floatList = vertices.stream().map(a -> a.getParameter(type))
-                                        .flatMap(a -> a.getValue().stream().map(b -> a.getKey().getValue(b)))
-                                        .collect(Collectors.toList());
+        if (xtvo.getAttribute(type).isPresent()) {
+            List<Float> floatList = vertices.stream().map(a -> a.getParameter(type))
+                                            .flatMap(a -> a.getValue().stream().map(b -> a.getKey().getValue(b)))
+                                            .collect(Collectors.toList());
 
-        // Convert List<Float> to byte[]
-        ByteBuffer byteBuffer = ByteBuffer.allocate(floatList.size() * Float.BYTES);
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            // Convert List<Float> to ByteBuffer
+            ByteBuffer byteBuffer = ByteBuffer.allocate(floatList.size() * Float.BYTES);
+            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        for (float f : floatList) {
-            byteBuffer.putFloat(f);
+            for (float f : floatList) {
+                byteBuffer.putFloat(f);
+            }
+
+            byteBuffer.flip(); // Prepare the buffer for reading
+
+            gltfBuffer = new Buffer();
+            gltfBuffer.setByteLength(byteBuffer.remaining());
+            gltfBuffer.setUri("data:application/octet-stream;base64,"
+                              + Base64.getEncoder().encodeToString(byteBuffer.array()));
         }
 
-        return byteBuffer.array();
+        return gltfBuffer; // Return gltfBuffer (might be null if the condition is not met)
     }
 
-    public static void calcMinMax(byte[] posBytes, Number[] minValues, Number[] maxValues) {
-        if (posBytes == null || posBytes.length % 12 != 0) {
-            throw new IllegalArgumentException("Input data is invalid. It should be a non-null array with a length that is a multiple of 12.");
+    private static Buffer jointDataToBuffer(XTVOPayload xtvo, List<XTVOVertex> vertices,
+                                            Map<Short, Short> currentAssignments) {
+        Buffer gltfBuffer = null;
+
+        if (xtvo.getAttribute(XTVORegisterType.IDX).isPresent()) {
+            ByteBuffer jointsBuffer = ByteBuffer.allocate(vertices.size() * 4);
+            jointsBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            
+            for (int i = 0; i < xtvo.getVertices().size(); i++) {
+
+                XTVOVertex vertex = xtvo.getVertices().get(i);
+                Entry<XTVOAttribute, List<Number>> entry = vertex.getParameter(XTVORegisterType.IDX);
+
+                for (int j = 0; j < 4; j++) {
+                    int joint = currentAssignments.get((short) (entry.getValue().get(j).intValue() / 3));
+                    if (joint != 0) {
+                        jointsBuffer.put((byte) joint);
+                    }
+                }
+            }
+            jointsBuffer.flip();
+
+            if (jointsBuffer.remaining()!=0)
+            {
+            gltfBuffer = new Buffer();
+            gltfBuffer.setUri("data:application/octet-stream;base64,"
+                              + Base64.getEncoder().encodeToString(jointsBuffer.array()));     
+            gltfBuffer.setByteLength(jointsBuffer.remaining());
+            }
+           
         }
 
-        float minX = Float.POSITIVE_INFINITY;
-        float minY = Float.POSITIVE_INFINITY;
-        float minZ = Float.POSITIVE_INFINITY;
-
-        float maxX = Float.NEGATIVE_INFINITY;
-        float maxY = Float.NEGATIVE_INFINITY;
-        float maxZ = Float.NEGATIVE_INFINITY;
-
-        for (int i = 0; i < posBytes.length; i += 12) { // 12 bytes for a VEC3 (3 floats)
-            float x = ByteBuffer.wrap(posBytes, i, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-            float y = ByteBuffer.wrap(posBytes, i + 4, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-            float z = ByteBuffer.wrap(posBytes, i + 8, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            minZ = Math.min(minZ, z);
-
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-            maxZ = Math.max(maxZ, z);
-        }
-
-        minValues[0] = (minX == Float.POSITIVE_INFINITY) ? 0 : minX;
-        minValues[1] = (minY == Float.POSITIVE_INFINITY) ? 0 : minY;
-        minValues[2] = (minZ == Float.POSITIVE_INFINITY) ? 0 : minZ;
-
-        maxValues[0] = (maxX == Float.NEGATIVE_INFINITY) ? 0 : maxX;
-        maxValues[1] = (maxY == Float.NEGATIVE_INFINITY) ? 0 : maxY;
-        maxValues[2] = (maxZ == Float.NEGATIVE_INFINITY) ? 0 : maxZ;
+        return gltfBuffer;
     }
+
+    private static Buffer matrixListToBuffer(List<float[]> matrixList, List<Node> jointNodes) {
+        if (jointNodes.size() <= 1) {
+            return null; // Return null if there are not enough joint nodes
+        }
+
+        ByteBuffer mBuffer = ByteBuffer.allocate(matrixList.size() * 16 * 4);
+        mBuffer.order(ByteOrder.LITTLE_ENDIAN);
+
+        List<float[]> rotatedMatrixList = rotateMatricesCounterclockwise(matrixList);
+
+        for (float[] matrix : rotatedMatrixList) {
+            for (float value : matrix) {
+                mBuffer.putFloat(value);
+            }
+        }
+        mBuffer.flip();
+
+        Buffer gltfBuffer = new Buffer();
+        gltfBuffer.setUri("data:application/octet-stream;base64,"
+                + Base64.getEncoder().encodeToString(mBuffer.array()));
+        gltfBuffer.setByteLength(mBuffer.remaining());
+
+        return gltfBuffer;
+    }
+
 
     private void getTextures(HSMPKCAP hsmp, GlTF gltf) throws IOException {
         int imageId = 0;
