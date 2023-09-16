@@ -5,6 +5,13 @@ import static de.javagl.jgltf.model.GltfConstants.GL_ELEMENT_ARRAY_BUFFER;
 import static de.javagl.jgltf.model.GltfConstants.GL_FLOAT;
 import static de.javagl.jgltf.model.GltfConstants.GL_UNSIGNED_BYTE;
 import static de.javagl.jgltf.model.GltfConstants.GL_UNSIGNED_INT;
+import static de.javagl.jgltf.model.GltfConstants.GL_NEAREST;
+import static de.javagl.jgltf.model.GltfConstants.GL_LINEAR;
+
+import static de.javagl.jgltf.model.GltfConstants.GL_CLAMP_TO_BORDER;
+import static de.javagl.jgltf.model.GltfConstants.GL_CLAMP_TO_EDGE;
+import static de.javagl.jgltf.model.GltfConstants.GL_REPEAT;
+import static de.javagl.jgltf.model.GltfConstants.GL_MIRRORED_REPEAT;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,6 +42,7 @@ import de.javagl.jgltf.impl.v2.MaterialPbrMetallicRoughness;
 import de.javagl.jgltf.impl.v2.Mesh;
 import de.javagl.jgltf.impl.v2.MeshPrimitive;
 import de.javagl.jgltf.impl.v2.Node;
+import de.javagl.jgltf.impl.v2.Sampler;
 import de.javagl.jgltf.impl.v2.Scene;
 import de.javagl.jgltf.impl.v2.Skin;
 import de.javagl.jgltf.impl.v2.Texture;
@@ -43,6 +51,8 @@ import de.javagl.jgltf.model.io.GltfWriter;
 import net.digimonworld.decodetools.core.Vector4;
 import net.digimonworld.decodetools.res.kcap.HSMPKCAP;
 import net.digimonworld.decodetools.res.payload.GMIOPayload;
+import net.digimonworld.decodetools.res.payload.GMIOPayload.TextureFiltering;
+import net.digimonworld.decodetools.res.payload.GMIOPayload.TextureWrap;
 import net.digimonworld.decodetools.res.payload.HSEMPayload;
 import net.digimonworld.decodetools.res.payload.RTCLPayload;
 import net.digimonworld.decodetools.res.payload.TNOJPayload;
@@ -116,7 +126,7 @@ public class GLTFExporter {
     private void createTextures() {
         int imageId = 0;
         for (GMIOPayload gmio : hsmp.getGMIP().getGMIOEntries()) {
-            String imageName = gmio.hasName() ? escapeName(gmio.getName()) : "image-" + imageId++;
+            String imageName = gmio.hasName() ? gmio.getName() : ("image-" + imageId++);
 
             // Convert Buffered Images to Byte Array
             ByteArrayOutputStream imagebuffer = new ByteArrayOutputStream();
@@ -129,15 +139,27 @@ public class GLTFExporter {
             }
 
             // Embed Textures into GLTF
+            Map<String, String> extra = new HashMap<>();
+            extra.put("format", gmio.getFormat().name());
             Image image = new Image();
             image.setName(imageName);
             image.setUri("data:image/png;base64," + Base64.getEncoder().encodeToString(imagebuffer.toByteArray()));
+            image.setExtras(extra);
             instance.addImages(image);
+
+            // create sampler
+            Sampler sampler = new Sampler();
+            sampler.setMagFilter(convertFilterToGL(gmio.getMagFilter()));
+            sampler.setMinFilter(convertFilterToGL(gmio.getMinFilter()));
+            sampler.setWrapS(convertWrapToGL(gmio.getWrapS()));
+            sampler.setWrapT(convertWrapToGL(gmio.getWrapT()));
+            instance.addSamplers(sampler);
 
             // Create Texture and link it to the Image
             Texture texture = new Texture();
+            texture.setSampler(instance.getSamplers().size() - 1);
             texture.setName(imageName + "_texture");
-            texture.setSource(instance.getImages().indexOf(image)); // Set the image index
+            texture.setSource(instance.getImages().size() - 1); // Set the image index
             instance.addTextures(texture);
 
             // Create Material and link it to the Texture
@@ -161,6 +183,8 @@ public class GLTFExporter {
             return;
 
         List<float[]> matrixList = new ArrayList<>();
+        Skin jointsSkin = new Skin();
+        jointsSkin.setName(hsmp.getName() + "-joint");
 
         for (int i = 0; i < hsmp.getTNOJ().getEntryCount(); i++) {
             TNOJPayload j = hsmp.getTNOJ().get(i);
@@ -175,6 +199,7 @@ public class GLTFExporter {
             node.setRotation(rotation);
             node.setTranslation(translation);
             instance.addNodes(node);
+            jointsSkin.addJoints(instance.getNodes().size() - 1);
 
             matrixList.add(j.getOffsetMatrix());
 
@@ -190,14 +215,7 @@ public class GLTFExporter {
         int bindPoseBuffer = matrixListToBuffer(matrixList);
         int bindPoseBufferView = createBufferView(bindPoseBuffer, 0, "bindPoseBufferView");
         int bindAccessor = createAccessor(bindPoseBufferView, GL_FLOAT, matrixList.size(), "MAT4", "BINDS");
-
-        Skin jointsSkin = new Skin();
-        jointsSkin.setName(hsmp.getName() + "-joint");
-        for (Node node2 : instance.getNodes())
-            jointsSkin.addJoints(instance.getNodes().indexOf(node2));
-
         jointsSkin.setInverseBindMatrices(bindAccessor);
-
         instance.addSkins(jointsSkin);
     }
 
@@ -311,7 +329,7 @@ public class GLTFExporter {
             primitive.setMaterial(textureAssignment.get((short) 0).intValue());
 
         // TODO add extras
-        
+
         Mesh mesh = new Mesh();
         mesh.addPrimitives(primitive);
         instance.addMeshes(mesh);
@@ -357,19 +375,23 @@ public class GLTFExporter {
     // =========================
 
     private int createPosAccessor(int bufferView, List<XTVOVertex> vertices) {
-        Number[] minValues = new Number[3];
-        Number[] maxValues = new Number[3];
+        Number[] minValues = new Number[] { Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY };
+        Number[] maxValues = new Number[] { Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY };
 
         for (XTVOVertex vertex : vertices) {
-            List<Number> entry = vertex.getParameter(XTVORegisterType.POSITION).getValue();
+            Entry<XTVOAttribute, List<Number>> entry = vertex.getParameter(XTVORegisterType.POSITION);
 
-            minValues[0] = Math.min(minValues[0].floatValue(), entry.get(0).floatValue());
-            minValues[1] = Math.min(minValues[1].floatValue(), entry.get(1).floatValue());
-            minValues[2] = Math.min(minValues[2].floatValue(), entry.get(2).floatValue());
+            float x = entry.getKey().getValue(entry.getValue().get(0));
+            float y = entry.getKey().getValue(entry.getValue().get(1));
+            float z = entry.getKey().getValue(entry.getValue().get(2));
 
-            maxValues[0] = Math.max(maxValues[0].floatValue(), entry.get(0).floatValue());
-            maxValues[1] = Math.max(maxValues[1].floatValue(), entry.get(1).floatValue());
-            maxValues[2] = Math.max(maxValues[2].floatValue(), entry.get(2).floatValue());
+            minValues[0] = Math.min(minValues[0].floatValue(), x);
+            minValues[1] = Math.min(minValues[1].floatValue(), y);
+            minValues[2] = Math.min(minValues[2].floatValue(), z);
+
+            maxValues[0] = Math.max(maxValues[0].floatValue(), x);
+            maxValues[1] = Math.max(maxValues[1].floatValue(), y);
+            maxValues[2] = Math.max(maxValues[2].floatValue(), z);
         }
 
         Accessor accessor = new Accessor();
@@ -560,7 +582,27 @@ public class GLTFExporter {
         return mirroredMatrix;
     }
 
-    private static String escapeName(String string) {
-        return string.replace("$", "_");
+    private static int convertFilterToGL(TextureFiltering filter) {
+        switch (filter) {
+            case LINEAR:
+                return GL_LINEAR;
+            default:
+            case NEAREST:
+                return GL_NEAREST;
+        }
+    }
+
+    private static int convertWrapToGL(TextureWrap wrap) {
+        switch (wrap) {
+            default:
+            case REPEAT:
+                return GL_REPEAT;
+            case MIRRORED_REPEAT:
+                return GL_MIRRORED_REPEAT;
+            case CLAMP_TO_EDGE:
+                return GL_CLAMP_TO_EDGE;
+            case CLAMP_TO_BORDER:
+                return GL_CLAMP_TO_BORDER;
+        }
     }
 }
