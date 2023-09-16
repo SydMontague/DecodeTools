@@ -165,8 +165,11 @@ public class GLTFExporter {
             // Create Material and link it to the Texture
             // TODO use actual material data from LRTM section
             Material material = new Material();
-            material.setDoubleSided(true);
+            material.setDoubleSided(false);
             material.setName(imageName + "_material");
+            if(gmio.getFormat().hasAlpha())
+                material.setAlphaMode("BLEND");
+            
 
             MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
             TextureInfo baseColorTextureInfo = new TextureInfo();
