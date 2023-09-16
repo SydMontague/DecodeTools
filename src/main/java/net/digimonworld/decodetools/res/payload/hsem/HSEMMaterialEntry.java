@@ -16,6 +16,14 @@ public class HSEMMaterialEntry implements HSEMEntry {
         materialId = source.readShort();
     }
     
+    public short getMaterialId() {
+        return materialId;
+    }
+    
+    public short getUnkn1() {
+        return unkn1;
+    }
+    
     @Override
     public void writeKCAP(Access dest) {
         dest.writeShort((short) getHSEMType().getId());

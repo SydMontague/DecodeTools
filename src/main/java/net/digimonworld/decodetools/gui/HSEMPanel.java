@@ -32,6 +32,7 @@ public class HSEMPanel extends PayloadPanel {
     private final JLabel unk4label = new JLabel("<unk4Label>");
     private final JTextPane textPane = new JTextPane();
     private final JLabel unk2_2label = new JLabel("<unk2_2>");
+    private final JLabel unk2_3label = new JLabel("0");
 
     public HSEMPanel(Object obj) {
         setSelectedFile(obj);
@@ -51,14 +52,12 @@ public class HSEMPanel extends PayloadPanel {
                             .addComponent(idLabel))
                         .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(lblUnk)
-                            .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                                .addGroup(groupLayout.createSequentialGroup()
-                                    .addPreferredGap(ComponentPlacement.RELATED)
-                                    .addComponent(unk2label))
-                                .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-                                    .addPreferredGap(ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
-                                    .addComponent(unk2_2label)
-                                    .addPreferredGap(ComponentPlacement.RELATED))))
+                            .addPreferredGap(ComponentPlacement.UNRELATED)
+                            .addComponent(unk2_2label)
+                            .addGap(18)
+                            .addComponent(unk2label, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(unk2_3label, GroupLayout.PREFERRED_SIZE, 18, GroupLayout.PREFERRED_SIZE))
                         .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(lblUnk_2, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
@@ -83,8 +82,9 @@ public class HSEMPanel extends PayloadPanel {
                             .addGap(4)
                             .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
                                 .addComponent(lblUnk)
+                                .addComponent(unk2_2label)
                                 .addComponent(unk2label)
-                                .addComponent(unk2_2label))
+                                .addComponent(unk2_3label))
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
                                 .addComponent(lblUnk_2)
@@ -119,6 +119,7 @@ public class HSEMPanel extends PayloadPanel {
         idLabel.setText(Integer.toString(selected.getId()));
         unk2label.setText(Integer.toString(selected.getUnknown2_1()));
         unk2_2label.setText(Integer.toString(selected.getUnknown2_2()));
+        unk2_3label.setText(Integer.toString(selected.getUnknown2_3()));
         unk3label.setText(Integer.toString(selected.getUnknown3()));
         unk4label.setText(Integer.toString(selected.getUnknown4()));
 

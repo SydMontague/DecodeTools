@@ -16,7 +16,7 @@ import net.digimonworld.decodetools.res.payload.hsem.HSEMEntry;
  * HSEM "head" (0x40 byte)
  *  ID (4 byte)
  *  size (4 byte)
- *  unk1 (4 byte)
+ *  entry count (4 byte)
  *  unk2 (4 byte)
  *  10x unk3 (float)
  *  unk3 (4 byte)
@@ -38,8 +38,9 @@ public class HSEMPayload extends ResPayload {
     // int size
     // int numEntries;
     private short unknown2_1;
-    private short unknown2_2;
-    
+    private byte unknown2_2;
+    private byte unknown2_3;
+
     /*
      * visible distance X?
      * visible rotation? 0?
@@ -49,94 +50,102 @@ public class HSEMPayload extends ResPayload {
     private float[] headerData = new float[10];
     private int unknown3;
     private int unknown4;
-    
+
     private List<HSEMEntry> entries = new ArrayList<>();
-    
-    public HSEMPayload(AbstractKCAP parent, List<HSEMEntry> entries, int id, short unknown2_1, short unknown2_2, float[] headerData, int unknown3, int unknown4) {
+
+    public HSEMPayload(AbstractKCAP parent, List<HSEMEntry> entries, int id, short unknown2_1, byte unknown2_2,
+                       byte unknown2_3, float[] headerData, int unknown3, int unknown4) {
         super(parent);
-        
+
         this.id = id;
         this.unknown2_1 = unknown2_1;
         this.unknown2_2 = unknown2_2;
+        this.unknown2_2 = unknown2_3;
         this.headerData = Arrays.copyOf(headerData, 10);
         this.unknown3 = unknown3;
         this.unknown4 = unknown4;
         this.entries.addAll(entries);
     }
-    
+
     public HSEMPayload(Access source, int dataStart, AbstractKCAP parent, int size, String name) {
         super(parent);
-        
+
         long start = source.getPosition();
-        
+
         this.id = source.readInteger();
         source.readInteger();
         int numEntries = source.readInteger();
         this.unknown2_1 = source.readShort();
-        this.unknown2_2 = source.readShort();
-        
+        this.unknown2_2 = source.readByte();
+        this.unknown2_3 = source.readByte();
+
         for (int i = 0; i < 10; i++) {
             this.headerData[i] = source.readFloat();
         }
-        
+
         this.unknown3 = source.readInteger();
         this.unknown4 = source.readInteger();
-        
-        for(int i = 0; i < numEntries; i++)
+
+        for (int i = 0; i < numEntries; i++)
             entries.add(HSEMEntry.loadEntry(source));
-        
-        if(source.getPosition() - start != size)
+
+        if (source.getPosition() - start != size)
             Main.LOGGER.warning("HSEM Payload was smaller than advertised.");
     }
-    
+
     @Override
     public int getSize() {
         return 0x40 + entries.stream().collect(Collectors.summingInt(HSEMEntry::getSize));
     }
-    
+
     @Override
     public Payload getType() {
         return Payload.HSEM;
     }
-    
+
     @Override
     public void writeKCAP(Access dest, ResData dataStream) {
         dest.writeInteger(id);
         dest.writeInteger(getSize());
-        
+
         dest.writeInteger(entries.size());
         dest.writeShort(unknown2_1);
-        dest.writeShort(unknown2_2);
-        
+        dest.writeByte(unknown2_2);
+        dest.writeByte(unknown2_3);
+
         for (float f : headerData)
             dest.writeFloat(f);
-        
+
         dest.writeInteger(unknown3);
         dest.writeInteger(unknown4);
-        
+
         entries.forEach(a -> a.writeKCAP(dest));
     }
-    
+
     public List<HSEMEntry> getEntries() {
         return entries;
     }
-    
+
     public float[] getHeaderData() {
         return headerData;
     }
-    
+
     public int getId() {
         return id;
     }
-    
+
     public int getUnknown2_1() {
         return unknown2_1;
     }
-    
+
     public short getUnknown2_2() {
         return unknown2_2;
     }
-    
+
+    public byte getUnknown2_3() {
+        return unknown2_3;
+    }
+
     public int getUnknown3() {
         return unknown3;
     }
