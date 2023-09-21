@@ -127,6 +127,10 @@ public class XTVOPayload extends ResPayload {
         dataStartOnLoad = (long) dataStart + dataPointer;
     }
     
+    public int getShaderId() {
+        return shaderId;
+    }
+    
     @Override
     public int getSize() {
         return 0x74 + attributes.size() * 0xC;
@@ -246,7 +250,7 @@ public class XTVOPayload extends ResPayload {
     public void setMTex3(float[] mTex3) {
         this.mTex3 = mTex3;
     }
-    
+
     @Override
     public String toString() {
         return super.toString() + " 0x" + Long.toHexString(dataStartOnLoad).toUpperCase();

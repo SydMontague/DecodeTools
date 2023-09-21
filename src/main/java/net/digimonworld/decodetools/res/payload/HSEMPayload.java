@@ -37,9 +37,9 @@ public class HSEMPayload extends ResPayload {
     private int id;
     // int size
     // int numEntries;
-    private short unknown2_1;
-    private byte unknown2_2;
-    private byte unknown2_3;
+    private short unknown1;
+    private byte unknown2;
+    private byte unknown3;
 
     /*
      * visible distance X?
@@ -48,8 +48,8 @@ public class HSEMPayload extends ResPayload {
      * rotation something?
      */
     private float[] headerData = new float[10];
-    private int unknown3;
     private int unknown4;
+    private int unknown5;
 
     private List<HSEMEntry> entries = new ArrayList<>();
 
@@ -58,12 +58,12 @@ public class HSEMPayload extends ResPayload {
         super(parent);
 
         this.id = id;
-        this.unknown2_1 = unknown2_1;
-        this.unknown2_2 = unknown2_2;
-        this.unknown2_2 = unknown2_3;
+        this.unknown1 = unknown2_1;
+        this.unknown2 = unknown2_2;
+        this.unknown2 = unknown2_3;
         this.headerData = Arrays.copyOf(headerData, 10);
-        this.unknown3 = unknown3;
-        this.unknown4 = unknown4;
+        this.unknown4 = unknown3;
+        this.unknown5 = unknown4;
         this.entries.addAll(entries);
     }
 
@@ -75,16 +75,16 @@ public class HSEMPayload extends ResPayload {
         this.id = source.readInteger();
         source.readInteger();
         int numEntries = source.readInteger();
-        this.unknown2_1 = source.readShort();
-        this.unknown2_2 = source.readByte();
-        this.unknown2_3 = source.readByte();
+        this.unknown1 = source.readShort();
+        this.unknown2 = source.readByte();
+        this.unknown3 = source.readByte();
 
         for (int i = 0; i < 10; i++) {
             this.headerData[i] = source.readFloat();
         }
 
-        this.unknown3 = source.readInteger();
         this.unknown4 = source.readInteger();
+        this.unknown5 = source.readInteger();
 
         for (int i = 0; i < numEntries; i++)
             entries.add(HSEMEntry.loadEntry(source));
@@ -109,15 +109,15 @@ public class HSEMPayload extends ResPayload {
         dest.writeInteger(getSize());
 
         dest.writeInteger(entries.size());
-        dest.writeShort(unknown2_1);
-        dest.writeByte(unknown2_2);
-        dest.writeByte(unknown2_3);
+        dest.writeShort(unknown1);
+        dest.writeByte(unknown2);
+        dest.writeByte(unknown3);
 
         for (float f : headerData)
             dest.writeFloat(f);
 
-        dest.writeInteger(unknown3);
         dest.writeInteger(unknown4);
+        dest.writeInteger(unknown5);
 
         entries.forEach(a -> a.writeKCAP(dest));
     }
@@ -134,23 +134,23 @@ public class HSEMPayload extends ResPayload {
         return id;
     }
 
-    public int getUnknown2_1() {
-        return unknown2_1;
+    public int getUnknown1() {
+        return unknown1;
     }
 
-    public short getUnknown2_2() {
-        return unknown2_2;
+    public short getUnknown2() {
+        return unknown2;
     }
 
-    public byte getUnknown2_3() {
-        return unknown2_3;
-    }
-
-    public int getUnknown3() {
+    public byte getUnknown3() {
         return unknown3;
     }
 
     public int getUnknown4() {
         return unknown4;
+    }
+
+    public int getUnknown5() {
+        return unknown5;
     }
 }

@@ -117,11 +117,11 @@ public class HSEMPanel extends PayloadPanel {
         list.setListData(selected.getEntries().toArray(new HSEMEntry[0]));
 
         idLabel.setText(Integer.toString(selected.getId()));
-        unk2label.setText(Integer.toString(selected.getUnknown2_1()));
-        unk2_2label.setText(Integer.toString(selected.getUnknown2_2()));
-        unk2_3label.setText(Integer.toString(selected.getUnknown2_3()));
-        unk3label.setText(Integer.toString(selected.getUnknown3()));
-        unk4label.setText(Integer.toString(selected.getUnknown4()));
+        unk2label.setText(Integer.toString(selected.getUnknown1()));
+        unk2_2label.setText(Integer.toString(selected.getUnknown2()));
+        unk2_3label.setText(Integer.toString(selected.getUnknown3()));
+        unk3label.setText(Integer.toString(selected.getUnknown4()));
+        unk4label.setText(Integer.toString(selected.getUnknown5()));
 
         float[] arr = selected.getHeaderData();
         String s = String.format("%10.4f %10.4f\n%10.4f %10.4f\n%10.4f %10.4f\n%10.4f %10.4f\n%10.4f %10.4f\n", arr[0],

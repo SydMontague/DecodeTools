@@ -167,9 +167,8 @@ public class GLTFExporter {
             Material material = new Material();
             material.setDoubleSided(false);
             material.setName(imageName + "_material");
-            if(gmio.getFormat().hasAlpha())
+            if (gmio.getFormat().hasAlpha())
                 material.setAlphaMode("BLEND");
-            
 
             MaterialPbrMetallicRoughness pbrMetallicRoughness = new MaterialPbrMetallicRoughness();
             TextureInfo baseColorTextureInfo = new TextureInfo();
@@ -251,15 +250,34 @@ public class GLTFExporter {
     }
 
     private void createGeometry() {
-        for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries())
+        for (HSEMPayload hsem : hsmp.getHSEM().getHSEMEntries()) {
+            Map<String, String> extra = new HashMap<>();
+            extra.put("id", Integer.toString(hsem.getId()));
+            extra.put("unk1", Integer.toString(hsem.getUnknown1()));
+            extra.put("unk2", Integer.toString(hsem.getUnknown2()));
+            extra.put("unk3", Integer.toString(hsem.getUnknown3()));
+            extra.put("unk4", Integer.toString(hsem.getUnknown4()));
+            extra.put("unk5", Integer.toString(hsem.getUnknown5()));
+            extra.put("headerData", floatArrayToString(hsem.getHeaderData()));
+
             for (HSEMEntry entry : hsem.getEntries())
-                processHSEM(entry);
+                processHSEM(entry, extra);
+
+        }
     }
 
-    private void processHSEMDraw(HSEMDrawEntry draw) {
+    private void processHSEMDraw(HSEMDrawEntry draw, Map<String, String> hsemExtra) {
         final XTVOPayload xtvo = hsmp.getXTVP().get(draw.getVertexId());
         final XDIOPayload xdio = hsmp.getXDIP().get(draw.getIndexId());
         final int vertexCount = xtvo.getVertices().size();
+        Map<String, String> extra = new HashMap<>();
+        extra.put("shader", Integer.toString(xtvo.getShaderId()));
+        extra.put("mTex0", floatArrayToString(xtvo.getMTex0()));
+        extra.put("mTex1", floatArrayToString(xtvo.getMTex1()));
+        extra.put("mTex2", floatArrayToString(xtvo.getMTex2()));
+        extra.put("mTex3", floatArrayToString(xtvo.getMTex3()));
+        extra.putAll(hsemExtra);
+
         MeshPrimitive primitive = new MeshPrimitive();
 
         // build indices
@@ -331,9 +349,8 @@ public class GLTFExporter {
         if (textureAssignment.getOrDefault((short) 0, (short) -1) != -1)
             primitive.setMaterial(textureAssignment.get((short) 0).intValue());
 
-        // TODO add extras
-
         Mesh mesh = new Mesh();
+        mesh.setExtras(extra);
         mesh.addPrimitives(primitive);
         instance.addMeshes(mesh);
 
@@ -346,7 +363,7 @@ public class GLTFExporter {
         rootNode.addChildren(instance.getNodes().size() - 1);
     }
 
-    private void processHSEM(HSEMEntry entry) {
+    private void processHSEM(HSEMEntry entry, Map<String, String> extra) {
 
         switch (entry.getHSEMType()) {
             // unknown/unhandled
@@ -367,7 +384,7 @@ public class GLTFExporter {
                 break;
 
             case DRAW:
-                processHSEMDraw((HSEMDrawEntry) entry);
+                processHSEMDraw((HSEMDrawEntry) entry, extra);
                 break;
         }
 
@@ -607,5 +624,17 @@ public class GLTFExporter {
             case CLAMP_TO_BORDER:
                 return GL_CLAMP_TO_BORDER;
         }
+    }
+
+    private static String floatArrayToString(float[] arr) {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < arr.length; i++) {
+            if (i != 0)
+                builder.append(" ");
+            builder.append(arr[i]);
+        }
+
+        return builder.toString();
     }
 }
