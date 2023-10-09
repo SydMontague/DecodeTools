@@ -3,21 +3,32 @@ package net.digimonworld.decodetools.res.payload.hsem;
 import net.digimonworld.decodetools.core.Access;
 
 public class HSEMDrawEntry implements HSEMEntry {
-    private short unkn1; // some mode?
+ // probably BeginMode mapping? Valid values 0-8
+    /*
+     * Probably BeginMode mapping, i.e. GL_TRIANGLES, GL_TRIANGLE_STRIP, etc.
+     * 0 -> LINES? GPU melts
+     * 1 -> LINE_LOOP? Model disappears
+     * 2 -> nothing?
+     * 3 -> LINE_STRIP? Does nothing
+     * 4 -> TRIANGLES
+     * 5 -> TRIANGLE_STRIP
+     * 6 -> TRIANGLE_FAN
+     * 7 -> nothing?
+     * 8 -> QUADS? Does nothing
+     */
+    private short unkn1; 
     private short vertexId;
     private short indexId;
     private short unkn2;
-    private short vertexOffset; // where to start reading the vertices from
-    private short unkn4;
+    private int vertexOffset; // where to start reading the vertices from
     private int vertexCount;
     
-    public HSEMDrawEntry(short unkn1, short vertexId, short indexId, short unk2, short vertexOffset, short unk4, int vertexCount) {
+    public HSEMDrawEntry(short unkn1, short vertexId, short indexId, short unk2, int vertexOffset, int vertexCount) {
         this.unkn1 = unkn1;
         this.vertexId = vertexId;
         this.indexId = indexId;
         this.unkn2 = unk2;
         this.vertexOffset = vertexOffset;
-        this.unkn4 = unk4;
         this.vertexCount = vertexCount;
     }
     
@@ -26,8 +37,7 @@ public class HSEMDrawEntry implements HSEMEntry {
         vertexId = source.readShort();
         indexId = source.readShort();
         unkn2 = source.readShort();
-        vertexOffset = source.readShort();
-        unkn4 = source.readShort();
+        vertexOffset = source.readInteger();
         vertexCount = source.readInteger();
     }
     
@@ -40,8 +50,7 @@ public class HSEMDrawEntry implements HSEMEntry {
         dest.writeShort(vertexId);
         dest.writeShort(indexId);
         dest.writeShort(unkn2);
-        dest.writeShort(vertexOffset);
-        dest.writeShort(unkn4);
+        dest.writeInteger(vertexOffset);
         dest.writeInteger(vertexCount);
     }
     
@@ -66,8 +75,8 @@ public class HSEMDrawEntry implements HSEMEntry {
 
     @Override
     public String toString() {
-        return String.format("Draw | M: %s | VID: %s | FID: %s | U2: %s | VOff: %s | U4: %s | VCnt: %s", 
-                             unkn1, vertexId, indexId, unkn2, vertexOffset, unkn4, vertexCount);
+        return String.format("Draw | M: %s | VID: %s | FID: %s | U2: %s | VOff: %s | VCnt: %s", 
+                             unkn1, vertexId, indexId, unkn2, vertexOffset, vertexCount);
         
     }
 }

@@ -595,7 +595,7 @@ public class ModelImporter extends PayloadPanel {
             hsemPayload.add(new HSEM07Entry((short) 0x000F, (short) 0, (short) 0, (short) 0));
             if (!boneMapping.isEmpty())
                 hsemPayload.add(new HSEMJointEntry(boneMapping));
-            hsemPayload.add(new HSEMDrawEntry((short) 4, i, i, (short) 0, (short) 0, (short) 0, faces.size() * 3));
+            hsemPayload.add(new HSEMDrawEntry((short) 4, i, i, (short) 0, 0, faces.size() * 3));
         }
 
         float[] headerArray = rootKCAP.getHSEM().get(0).getHeaderData();
