@@ -48,10 +48,10 @@ public class Randomizer {
         // makerom
     }
     
-    private static final String _3DSTOOL = "3dstool";
-    private static final String CRTTOOL = "ctrtool";
-    private static final String MAKEROM = "makerom";
-    private static final String ARMIPS = "armips";
+    private static final String _3DSTOOL = "./3dstool";
+    private static final String CRTTOOL = "./ctrtool";
+    private static final String MAKEROM = "./makerom";
+    private static final String ARMIPS = "./armips";
     
     public static boolean extractCIAFile(Path working, Path inputFile) {
         try {
@@ -234,7 +234,7 @@ public class Randomizer {
             Files.delete(codeBin);
             Files.copy(codeBin2, codeBin);
             Files.delete(codeBin2);
-            ProcessBuilder applyASM = new ProcessBuilder().command(ARMIPS, path.toAbsolutePath().toString()).directory(tempDir.toFile());
+            ProcessBuilder applyASM = new ProcessBuilder().command(Path.of(ARMIPS).toAbsolutePath().toString(), path.toAbsolutePath().toString()).directory(tempDir.toFile());
             applyASM.start().waitFor();
         }
         catch (InterruptedException e) {
@@ -338,8 +338,7 @@ public class Randomizer {
         try {
             Path tempDir = Files.createTempDirectory(Paths.get("."), "rebuild");
             Path buildDir = Files.createTempDirectory(Paths.get("."), "build");
-            
-            
+
             // TODO formalise rebuild dir, allowing more forms of modification such as xdelta
             Utils.listFiles(inputDir.toFile()).stream().map(File::toPath).forEach(a -> createTmpLink(tempDir, a, inputDir.relativize(a)));
             modFolders.forEach(modFolder -> Utils.listFiles(modFolder.toFile()).stream().map(File::toPath).forEach(a -> {
