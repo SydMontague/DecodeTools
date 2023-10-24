@@ -113,6 +113,7 @@ public class BTXPanel extends PayloadPanel {
         
         File file = inputFileDialogue.getSelectedFile();
         
+        // TODO switch to Utils.csvToBTX
         List<Tuple<Integer, BTXEntry>> list = payload.getEntries();
         list.clear();
         

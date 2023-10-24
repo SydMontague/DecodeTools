@@ -9,7 +9,15 @@ public class RTCLPayload extends NameablePayload {
     private int id;
     private int parentBone;
     private int locIndex;
-    private int unknown4; // padding?
+    
+    /*
+     * Some kind of mode/flag
+     * 
+     * see getRTCLMatrix in Ghidra for the math...
+     * 
+     * Valid values 0-7?
+     */
+    private int flag; // padding?
     
     private float[] matrix = new float[16];
     
@@ -19,7 +27,7 @@ public class RTCLPayload extends NameablePayload {
         id = source.readInteger();
         parentBone = source.readInteger();
         locIndex = source.readInteger();
-        unknown4 = source.readInteger();
+        flag = source.readInteger();
         
         for (int i = 0; i < matrix.length; i++)
             matrix[i] = source.readFloat();
@@ -56,7 +64,7 @@ public class RTCLPayload extends NameablePayload {
         dest.writeInteger(id);
         dest.writeInteger(parentBone);
         dest.writeInteger(locIndex);
-        dest.writeInteger(unknown4);
+        dest.writeInteger(flag);
         
         for (float i : matrix)
             dest.writeFloat(i);

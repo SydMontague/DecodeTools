@@ -31,6 +31,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 
 import net.digimonworld.decodetools.Main;
 import net.digimonworld.decodetools.arcv.ARCVFile;
@@ -44,9 +46,6 @@ import net.digimonworld.decodetools.res.DummyResData;
 import net.digimonworld.decodetools.res.ResPayload;
 import net.digimonworld.decodetools.res.ResPayload.Payload;
 import net.digimonworld.decodetools.res.payload.BTXPayload;
-
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
 
 public class MainWindow extends JFrame implements Observer {
     private static final long serialVersionUID = -8269477952146086450L;
@@ -70,6 +69,7 @@ public class MainWindow extends JFrame implements Observer {
     private final JMenuItem mntmMassStringReplacer = new JMenuItem("Mass String Replacer");
     private final JMenuItem mntmMergeBTX = new JMenuItem("Merge BTX folder to file");
     private final JMenuItem mntmExtractBTX = new JMenuItem("Extract BTX as CSV");
+    private final JMenuItem mntmInsertBTX = new JMenuItem("Insert CSVs into BTX");
     private final JMenuItem mntmUnpackARCV = new JMenuItem("New menu item");
 
     public MainWindow() {
@@ -137,6 +137,8 @@ public class MainWindow extends JFrame implements Observer {
         
         mntmExtractBTX.setAction(new ExtractBTXAction());
         mnTools.add(mntmExtractBTX);
+        mntmInsertBTX.setAction(new InsertBTXAction());
+        mnTools.add(mntmInsertBTX);
 
         contentPane = new JPanel();
         contentPane.setBorder(null);
@@ -436,6 +438,74 @@ public class MainWindow extends JFrame implements Observer {
 
     }
 
+
+    class InsertBTXAction extends AbstractAction {
+        private static final long serialVersionUID = 5390678357430487294L;
+
+        public InsertBTXAction() {
+            super("Insert all CSV into BTX");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ee) {
+            JFileChooser inputFileDialogue = new JFileChooser("./");
+            inputFileDialogue.setDialogTitle("Please select the directory with the input vanilla files");
+            inputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            inputFileDialogue.showOpenDialog(null);
+
+            JFileChooser inputCSVDialogue = new JFileChooser("./");
+            inputCSVDialogue.setDialogTitle("Please select the directory with the input CSV files");
+            inputCSVDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            inputCSVDialogue.showOpenDialog(null);
+
+            JFileChooser outputFileDialogue = new JFileChooser("./");
+            outputFileDialogue.setDialogTitle("Please select the directory in which the exported files will be saved.");
+            outputFileDialogue.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            outputFileDialogue.setMultiSelectionEnabled(false);
+            outputFileDialogue.showSaveDialog(null);
+
+            var outputPath = outputFileDialogue.getSelectedFile().toPath();
+            var inputPath = inputFileDialogue.getSelectedFile().toPath();
+            var csvPath = inputCSVDialogue.getSelectedFile().toPath();
+
+            try (Stream<Path> files = Files.walk(inputPath)) {
+                files.filter(Files::isRegularFile).forEach(a -> {
+                    String name = inputPath.relativize(a).toString();
+                    try (Access b = new FileAccess(a.toFile())) {
+                        ResPayload f = ResPayload.craft(b);
+                        var elements = f.getElementsWithType(Payload.BTX);
+                        
+                        if(elements.isEmpty())
+                            return;
+
+                        var csvFolder = csvPath.resolve(name);
+                        var outputFile = outputPath.resolve(name);
+
+                        Files.createDirectories(outputFile);
+                        
+                        for (int i = 0; i < elements.size(); i++) {
+                            var filePath = csvFolder.resolve(String.format("btx_%d.csv", i));
+                            var entries = Utils.csvToBTX(Files.readAllLines(filePath));
+                            var payload = (BTXPayload) elements.get(i);
+                            payload.setEntries(entries);
+                        }
+
+                        f.repack(outputFile.toFile());
+                    }
+                    catch (Exception e) {
+                        Main.LOGGER.log(Level.SEVERE, String.format("Error while handling %s.", a.toString()), e);
+                    }
+
+                });
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    
+    
     class ExtractBTXAction extends AbstractAction {
         private static final long serialVersionUID = 5390678357430487294L;
 
@@ -457,14 +527,19 @@ public class MainWindow extends JFrame implements Observer {
             outputFileDialogue.showSaveDialog(null);
 
             var outputPath = outputFileDialogue.getSelectedFile().toPath();
+            var inputPath = inputFileDialogue.getSelectedFile().toPath();
 
-            try (Stream<Path> files = Files.walk(inputFileDialogue.getSelectedFile().toPath())) {
+            try (Stream<Path> files = Files.walk(inputPath)) {
                 files.filter(Files::isRegularFile).forEach(a -> {
 
-                    String name = a.subpath(a.getNameCount() - 1, a.getNameCount()).toString();
+                    String name = inputPath.relativize(a).toString();
                     try (Access b = new FileAccess(a.toFile())) {
                         ResPayload f = ResPayload.craft(b);
                         var elements = f.getElementsWithType(Payload.BTX);
+                        
+                        if(elements.isEmpty())
+                            return;
+                        
                         var folderPath = outputPath.resolve(name);
 
                         Files.createDirectories(folderPath);

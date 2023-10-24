@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.Objects;
 
 import net.digimonworld.decodetools.res.payload.BTXPayload.BTXEntry;
+import net.digimonworld.decodetools.res.payload.BTXPayload.BTXMeta;
 
 public class Utils {
     private Utils() {
     }
-    
+
     /**
      * <p>
      * Aligns an input to a given alignment.
@@ -23,25 +24,25 @@ public class Utils {
      * <li>evenly divisible by the alignment (-> value % alignment == 0)
      * </ul>
      * 
-     * @param input the value to be aligned
+     * @param input     the value to be aligned
      * @param alignment the alignment, must be larger than 0
      * @return the aligned value
      */
     public static int align(int input, int alignment) {
         if (alignment <= 0)
             throw new IllegalArgumentException("Can't align to an alignment of 0 or less!");
-        
+
         if (input % alignment == 0)
             return input;
-        
+
         int value = input + (alignment - Math.abs(input % alignment));
-        
+
         if (value < input)
             throw new IllegalArgumentException("New value is smaller than the input, have you encountered an overflow?");
-        
+
         return value;
     }
-    
+
     /**
      * <p>
      * Aligns an input to a given alignment.
@@ -52,27 +53,27 @@ public class Utils {
      * <li>evenly divisible by the alignment (-> value % alignment == 0)
      * </ul>
      * 
-     * @param input the value to be aligned
+     * @param input     the value to be aligned
      * @param alignment the alignment, must be larger than 0
      * @return the aligned value
      */
     public static long align(long input, int alignment) {
         if (alignment <= 0)
             throw new IllegalArgumentException("Can't align to an alignment of 0 or less!");
-        
+
         if (input % alignment == 0)
             return input;
-        
+
         long value = input + (alignment - Math.abs(input % alignment));
-        
+
         if (value < input)
             throw new IllegalArgumentException("New value is smaller than the input, have you encountered an overflow?");
-        
+
         return value;
     }
-    
+
     /**
-     * Mirrors an image on the vertical (Y) Axis. 
+     * Mirrors an image on the vertical (Y) Axis.
      * The input image will get manipulated manipulated and returned.
      * 
      * @param image the image to flip
@@ -81,34 +82,35 @@ public class Utils {
     public static BufferedImage mirrorImageVertical(BufferedImage image) {
         return mirrorImageVertical(image, false);
     }
-    
+
     /**
-     * Mirrors an image on the vertical (Y) Axis. 
+     * Mirrors an image on the vertical (Y) Axis.
      * The method can create a new image or modify the input image, based on the newImage parameter.
      * 
-     * @param image the image to flip
+     * @param image    the image to flip
      * @param newImage whether to manipulate the input image or to create a new image
      * @return the flipped image, the same as the input if {@code newImage} is true, a new instance otherwise
      */
     public static BufferedImage mirrorImageVertical(BufferedImage image, boolean newImage) {
         if (image == null)
             throw new IllegalArgumentException("Expected BufferedImage, null given.");
-        
-        BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType()) : image;
-        
+
+        BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType())
+                                        : image;
+
         int[] original = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
         int[] flipped = new int[image.getWidth() * image.getHeight()];
-        
+
         for (int x = 0; x < image.getWidth(); x++)
             for (int y = 0; y < image.getHeight(); y++)
                 flipped[x + y * image.getWidth()] = original[x + (image.getHeight() - y - 1) * image.getWidth()];
-            
+
         target.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
         return target;
     }
 
     /**
-     * Mirrors an image on the horizontal (X) Axis. 
+     * Mirrors an image on the horizontal (X) Axis.
      * The input image will get manipulated manipulated and returned.
      * 
      * @param image the image to flip
@@ -117,32 +119,33 @@ public class Utils {
     public static BufferedImage mirrorImageHorizontal(BufferedImage image) {
         return mirrorImageHorizontal(image, false);
     }
-    
+
     /**
-     * Mirrors an image on the horizontal (X) Axis. 
+     * Mirrors an image on the horizontal (X) Axis.
      * The method can create a new image or modify the input image, based on the newImage parameter.
      * 
-     * @param image the image to flip
+     * @param image    the image to flip
      * @param newImage whether to manipulate the input image or to create a new image
      * @return the flipped image, the same as the input if {@code newImage} is true, a new instance otherwise
      */
     public static BufferedImage mirrorImageHorizontal(BufferedImage image, boolean newImage) {
         if (image == null)
             throw new IllegalArgumentException("Expected BufferedImage, null given.");
-        
-        BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType()) : image;
-        
+
+        BufferedImage target = newImage ? new BufferedImage(image.getWidth(), image.getHeight(), image.getType())
+                                        : image;
+
         int[] original = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
         int[] flipped = new int[image.getWidth() * image.getHeight()];
-        
+
         for (int x = 0; x < image.getWidth(); x++)
             for (int y = 0; y < image.getHeight(); y++)
                 flipped[x + y * image.getWidth()] = original[(image.getWidth() - x - 1) + y * image.getWidth()];
-            
+
         target.setRGB(0, 0, image.getWidth(), image.getHeight(), flipped, 0, image.getWidth());
         return target;
     }
-    
+
     /**
      * Creates a List of all files in a given directory and it's sub-directories.
      * 
@@ -153,28 +156,28 @@ public class Utils {
      */
     public static List<File> listFiles(File file) {
         List<File> files = new ArrayList<>();
-        
-        if(file == null)
+
+        if (file == null)
             return files;
-        
-        if(file.isFile()) {
+
+        if (file.isFile()) {
             files.add(file);
             return files;
         }
-        
+
         File[] input = file.listFiles();
-        
+
         for (File f : input)
             if (f.isFile())
                 files.add(f);
-            
+
         for (File f : input)
             if (f.isDirectory())
                 files.addAll(listFiles(f));
-            
+
         return files;
     }
-    
+
     /**
      * Checks whether a given number is a power of 2.
      * 
@@ -194,7 +197,7 @@ public class Utils {
          */
         return x >= 0 && (x & (x - 1)) == 0;
     }
-    
+
     /**
      * Returns a cropped value to be between a lower and an upper boundary.
      * If the given input is smaller than the lower boundary the lower boundary is returned,
@@ -202,67 +205,67 @@ public class Utils {
      * Otherwise, the input itself is returned.
      * 
      * @param input the value to crop
-     * @param b1 the first boundary
-     * @param b2 the second boundary
+     * @param b1    the first boundary
+     * @param b2    the second boundary
      * @return the cropped value
      */
     public static long crop(long input, long b1, long b2) {
         long min = b1 < b2 ? b1 : b2;
         long max = b1 < b2 ? b2 : b1;
-        
+
         return Math.min(Math.max(min, input), max);
     }
-    
+
     /**
      * Returns the sum of two numbers where the second input is interpreted as a 3-bit signed integer.
      * 
-     * @param base the first summand
+     * @param base  the first summand
      * @param toAdd the second, 3-bit, summand, must be between 0 and 7 (inclusive)
      * @return the sum of the two numbers, interpreting the second input as 3-bit signed number
      */
     public static long add3BitSigned(long base, long toAdd) {
         if (toAdd < 0 || toAdd > 7)
             throw new IllegalArgumentException("Second argument must be between 0 and 7 (inclusive), but was " + toAdd);
-        
+
         if ((toAdd & 0x4) == 0) // bit 3 is the signed bit, it being 0 means we can add normally
             return base + toAdd;
-        
+
         return base - ((~toAdd & 0x3) + 1); // build the two's complement and subtract it
     }
-    
+
     /**
      * Returns whether a bit in a given number is set or not set.
      * 
      * @param value the value to check
-     * @param bit the index of the bit, starting at 0 at the LSB. Must be between 0 and 63
+     * @param bit   the index of the bit, starting at 0 at the LSB. Must be between 0 and 63
      * @return true when the bit is 1, false otherwise
      */
     public static boolean getBitValue(long value, int bit) {
         if (bit >= Long.SIZE || bit < 0)
             throw new IllegalArgumentException("Can't get the " + bit + " bit of a 64bit number.");
-        
+
         return (value >>> bit & 0x1) != 0;
     }
-    
+
     /**
      * Returns an integer from within a given value starting from a given bit with a given length.
      * The result does not consider signed values, so unless the extracted value exceeds the maximal value of a Long, it
      * will always be positive.
      * 
      * 
-     * @param value the value to extract the integer from
-     * @param bit the bit to start extracting from starting from LSB, most be positive and lower than 63
+     * @param value  the value to extract the integer from
+     * @param bit    the bit to start extracting from starting from LSB, most be positive and lower than 63
      * @param length the number of bits that should make up the extracted integer, most larger than 0 and smaller than
-     *        64 - {@code bit}
+     *               64 - {@code bit}
      * @return the extracted number
      */
     public static long getSubInteger(long value, int bit, int length) {
         if (bit < 0 || length <= 0 || Long.SIZE - bit < length)
             throw new IllegalArgumentException("Can't get bits " + bit + " to " + (bit + length) + " of a long int.");
-        
+
         return (value << Long.SIZE - length - bit) >>> (Long.SIZE - length);
     }
-    
+
     /**
      * Expands a 4-bit number into a 8-bit number by shifting it by 4 bit to the left and adding itself onto it.
      * If the number is outside of the defined range for a 4-bit unsigned number only the lower most 4-bit will be
@@ -273,10 +276,10 @@ public class Utils {
      */
     public static long extend4To8(long value) {
         long tmp = value & 0xF;
-        
+
         return (tmp << 4) + tmp;
     }
-    
+
     /**
      * Expands a 5-bit number into a 8-bit number by shifting it by 3 bit to the left and adding it's lowest 3 bits onto
      * it.
@@ -288,10 +291,10 @@ public class Utils {
      */
     public static long extend5To8(long value) {
         long tmp = value & 0x1F;
-        
+
         return (tmp << 3) + (tmp >>> 2);
     }
-    
+
     /**
      * Expands a 5-bit number into a 6-bit number by shifting it by 2 bit to the left and adding it's lowest 2 bits onto
      * it.
@@ -303,13 +306,13 @@ public class Utils {
      */
     public static long extend6To8(long value) {
         long tmp = value & 0x3F;
-        
+
         return (tmp << 2) + (tmp >>> 4);
     }
-    
+
     public static int[] untile(short width, short height, int[] pixelData) {
         int[] data = new int[width * height];
-        
+
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
                 int posY = height - 1 - i;
@@ -319,10 +322,10 @@ public class Utils {
             }
         return data;
     }
-    
+
     public static int[] tile(int width, int height, int[] pixelData) {
         int[] data = new int[width * height];
-        
+
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
                 int posY = height - 1 - i;
@@ -330,18 +333,18 @@ public class Utils {
                 int offset = getMortonOffset(j, posY) + coarseY * width;
                 data[offset] = pixelData[i * width + j];
             }
-        
+
         return data;
     }
-    
+
     private static int getMortonOffset(int x, int y) {
         int blockHeight = 8;
-        int coarseX = x & ~7; //all but the lowest 3 bits of x
-        int i = mortonInterleave(x, y); 
-        
+        int coarseX = x & ~7; // all but the lowest 3 bits of x
+        int i = mortonInterleave(x, y);
+
         return i + coarseX * blockHeight;
     }
-    
+
     /**
      * Interleaves the lowest 3 bits of the given x and y values with the pattern YXYXYX.
      * 
@@ -356,35 +359,35 @@ public class Utils {
         i = (i | (i >>> 7)) & 0x3F;
         return i;
     }
-    
+
     /**
      * Fills a collection up to a set size with a given value.
      * 
-     * @param list the collection to pad
-     * @param size the size to pad to
+     * @param list  the collection to pad
+     * @param size  the size to pad to
      * @param value the value to pad with
      */
     public static <T> void padList(Collection<T> list, int size, T value) {
         for (int i = list.size(); i < size; i++)
             list.add(value);
     }
-    
+
     public static long parseLongOrDefault(String val, long defaultVal) {
         try {
             return Long.parseLong(val);
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             return defaultVal;
         }
     }
-    
 
-    public static String btxToCSV(Tuple<Integer, BTXEntry> input)
-    {
+    public static String btxToCSV(Tuple<Integer, BTXEntry> input) {
         List<String> str = new ArrayList<>();
-        
+
         str.add(input.getKey().toString());
-        str.add("\"" + input.getValue().getString().replace("\n", "\\n").replace("\"", "\"\"").replace(";", "\\1") + "\"");
-        
+        str.add("\"" + input.getValue().getString().replace("\n", "\\n").replace("\r", "").replace("\"", "\"\"").replace(";", "\\1")
+                + "\"");
+
         input.getValue().getMeta().ifPresent(c -> {
             str.add(Objects.toString(c.getSpeaker()));
             str.add(Objects.toString(c.getUnk1()));
@@ -393,7 +396,44 @@ public class Utils {
             str.add(Objects.toString(c.getUnk4()));
             str.add("\"" + c.getVoiceLine().replace("\"", "\"\"") + "\"");
         });
-        
+
         return String.join(";", str);
+    }
+
+    public static List<Tuple<Integer, BTXEntry>> csvToBTX(List<String> lines) {
+        List<Tuple<Integer, BTXEntry>> list = new ArrayList<>();
+
+        lines.forEach(b -> {
+            String[] split = b.split(";");
+
+            if (split[0].contains("id"))
+                return;
+
+            int id = Integer.parseInt(split[0]);
+            String string = split[1];
+            if (string.startsWith("\"") && string.endsWith("\""))
+                string = string.substring(1, string.length() - 1);
+            string = string.replace("\\n", "\n");
+            string = string.replace("\"\"", "\"");
+            string = string.replace("\\1", ";");
+
+            BTXMeta meta = null;
+
+            if (split.length >= 7) {
+                int speaker = Integer.parseInt(split[2]);
+                short unk1 = Short.parseShort(split[3]);
+                short unk2 = Short.parseShort(split[4]);
+                short unk3 = Short.parseShort(split[5]);
+                short unk4 = Short.parseShort(split[6]);
+
+                String voiceLine = split.length == 8 ? split[7] : "";
+                if (voiceLine.startsWith("\"") && voiceLine.endsWith("\""))
+                    voiceLine = voiceLine.substring(1, voiceLine.length() - 1);
+                meta = new BTXMeta(id, speaker, unk1, unk2, unk3, unk4, voiceLine);
+            }
+            list.add(new Tuple<>(id, new BTXEntry(string, meta)));
+        });
+
+        return list;
     }
 }
