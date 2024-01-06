@@ -25,7 +25,7 @@ public class GlobalKeepData {
     private final MappedSet<Short, EnemyData> enemyData;
     private final GenericPayload trainingStations;
     private final GenericPayload shops;
-    private final List<Accessories> accessories;
+    private final List<AccessoryData> accessories;
     private final GenericPayload unk6;
     private final List<MapEnemyData> enemyMapData;
     private final AbstractKCAP unk7;
@@ -81,7 +81,7 @@ public class GlobalKeepData {
         this.enemyData = new MappedSet<>(EnemyData.class, EnemyData::getEnemyId, convertGenericToList((GenericPayload) kcap.get(9), EnemyData::new));
         this.trainingStations = (GenericPayload) kcap.get(10);
         this.shops = (GenericPayload) kcap.get(11);
-        this.accessories = convertGenericToList((GenericPayload) kcap.get(12), Accessories::new);
+        this.accessories = convertGenericToList((GenericPayload) kcap.get(12), AccessoryData::new);
         this.unk6 = (GenericPayload) kcap.get(13);
         this.enemyMapData = convertGenericToList((GenericPayload) kcap.get(14), MapEnemyData::new);
         this.unk7 = (AbstractKCAP) kcap.get(15);
@@ -210,7 +210,7 @@ public class GlobalKeepData {
         return items;
     }
     
-    public List<Accessories> getAccessories() {
+    public List<AccessoryData> getAccessories() {
         return accessories;
     }
     
