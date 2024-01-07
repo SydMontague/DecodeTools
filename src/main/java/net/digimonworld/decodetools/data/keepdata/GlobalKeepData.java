@@ -54,7 +54,7 @@ public class GlobalKeepData {
     private final GenericPayload unk18;
     private final GenericPayload unk19;
     private final GenericPayload unk20;
-    private final  List<AccessoryOrder> accessoriesOrder;
+    private final List<AccessoryOrder> accessoriesOrder;
     private final GenericPayload storageCards;
     private final AbstractKCAP unk22;
     private final GenericPayload unk23;
