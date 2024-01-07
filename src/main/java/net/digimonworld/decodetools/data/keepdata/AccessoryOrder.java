@@ -6,7 +6,7 @@ public class AccessoryOrder implements GenericKeepData {
     public int id;
 
     public AccessoryOrder(Access access) {
-        this.id=access.readInteger();
+        this.id = access.readInteger();
     }
 
     public int getId() {
