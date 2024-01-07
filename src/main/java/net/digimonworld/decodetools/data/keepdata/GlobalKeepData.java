@@ -217,6 +217,7 @@ public class GlobalKeepData {
     public List<AccessoryOrder> getAccessoryOrder() {
         return accessoriesOrder;
     }
+    
     public TypeAlignmentChart getTypeAlignmentChart() {
         return typeAlignmentChart;
     }
