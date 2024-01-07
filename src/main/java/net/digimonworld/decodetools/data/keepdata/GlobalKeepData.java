@@ -25,7 +25,7 @@ public class GlobalKeepData {
     private final MappedSet<Short, EnemyData> enemyData;
     private final GenericPayload trainingStations;
     private final GenericPayload shops;
-    private final GenericPayload accessories;
+    private final List<AccessoryData> accessories;
     private final GenericPayload unk6;
     private final List<MapEnemyData> enemyMapData;
     private final AbstractKCAP unk7;
@@ -54,7 +54,7 @@ public class GlobalKeepData {
     private final GenericPayload unk18;
     private final GenericPayload unk19;
     private final GenericPayload unk20;
-    private final GenericPayload unk21;
+    private final List<AccessoryOrder> accessoriesOrder;
     private final GenericPayload storageCards;
     private final AbstractKCAP unk22;
     private final GenericPayload unk23;
@@ -81,7 +81,7 @@ public class GlobalKeepData {
         this.enemyData = new MappedSet<>(EnemyData.class, EnemyData::getEnemyId, convertGenericToList((GenericPayload) kcap.get(9), EnemyData::new));
         this.trainingStations = (GenericPayload) kcap.get(10);
         this.shops = (GenericPayload) kcap.get(11);
-        this.accessories = (GenericPayload) kcap.get(12);
+        this.accessories = convertGenericToList((GenericPayload) kcap.get(12), AccessoryData::new);
         this.unk6 = (GenericPayload) kcap.get(13);
         this.enemyMapData = convertGenericToList((GenericPayload) kcap.get(14), MapEnemyData::new);
         this.unk7 = (AbstractKCAP) kcap.get(15);
@@ -110,7 +110,7 @@ public class GlobalKeepData {
         this.unk18 = (GenericPayload) kcap.get(38);
         this.unk19 = (GenericPayload) kcap.get(39);
         this.unk20 = (GenericPayload) kcap.get(40);
-        this.unk21 = (GenericPayload) kcap.get(41);
+        this.accessoriesOrder = convertGenericToList((GenericPayload) kcap.get(41), AccessoryOrder::new);
         this.storageCards = (GenericPayload) kcap.get(42);
         this.unk22 = (AbstractKCAP) kcap.get(43);
         this.unk23 = (GenericPayload) kcap.get(44);
@@ -140,7 +140,7 @@ public class GlobalKeepData {
         entries.add(convertListToGeneric(enemyData));
         entries.add(trainingStations);
         entries.add(shops);
-        entries.add(accessories);
+        entries.add(convertListToGeneric(accessories));
         entries.add(unk6);
         entries.add(convertListToGeneric(enemyMapData));
         entries.add(unk7); // true
@@ -169,7 +169,7 @@ public class GlobalKeepData {
         entries.add(unk18);
         entries.add(unk19);
         entries.add(unk20);
-        entries.add(unk21);
+        entries.add(convertListToGeneric(accessoriesOrder));
         entries.add(storageCards);
         entries.add(unk22); // true
         entries.add(unk23);
@@ -208,6 +208,14 @@ public class GlobalKeepData {
     
     public List<Item> getItems() {
         return items;
+    }
+    
+    public List<AccessoryData> getAccessories() {
+        return accessories;
+    }
+    
+    public List<AccessoryOrder> getAccessoryOrder() {
+        return accessoriesOrder;
     }
     
     public TypeAlignmentChart getTypeAlignmentChart() {
