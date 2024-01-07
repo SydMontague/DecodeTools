@@ -17,7 +17,6 @@ public class AccessoryData implements GenericKeepData {
         this.unk4 = access.readInteger();
     }
 
-
     public int getGroup() {
         return group;
     }
